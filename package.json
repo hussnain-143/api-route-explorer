@@ -1,14 +1,30 @@
 {
   "name": "api-route-explorer",
   "displayName": "API Route Explorer",
-  "description": "Discover, organize, and navigate API routes directly inside VS Code.",
-  "version": "0.8.0",
+  "description": "Discover, analyze, search, and navigate API routes directly inside VS Code.",
+  "version": "1.0.0",
   "publisher": "api-route-explorer",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/api-route-explorer/api-route-explorer"
   },
+  "bugs": {
+    "url": "https://github.com/api-route-explorer/api-route-explorer/issues"
+  },
+  "homepage": "https://github.com/api-route-explorer/api-route-explorer#readme",
+  "keywords": [
+    "api",
+    "routes",
+    "router",
+    "express",
+    "nextjs",
+    "fastify",
+    "nestjs",
+    "rest",
+    "endpoints",
+    "navigation"
+  ],
   "icon": "resources/icons/icon.png",
   "engines": {
     "vscode": "^1.90.0"

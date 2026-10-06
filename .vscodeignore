@@ -16,5 +16,7 @@ assets
 assets/**
 resources/branding
 resources/branding/**
+scratch/**
+.git/**
 
 
