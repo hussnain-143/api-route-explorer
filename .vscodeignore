@@ -3,12 +3,9 @@
 src/**
 .gitignore
 .yarnrc
-vsc-extension-quickstart.md
 **/tsconfig.json
 **/eslint.config.mjs
 **/*.map
 **/*.ts
 **/.vscode-test.*
-assets/**
-index.html
-BRAND_GUIDELINES.md
+resources/branding/**

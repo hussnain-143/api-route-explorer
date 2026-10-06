@@ -8,12 +8,8 @@
     "vscode": "^1.90.0"
   },
   "categories": [
-    "Other",
-    "Programming Languages"
-  ],
-  "activationEvents": [
-    "onView:apiRouteExplorer.routesView",
-    "onCommand:apiRouteExplorer.scan"
+    "Programming Languages",
+    "Other"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -70,9 +66,5 @@
     "eslint": "^10.5.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.61.1"
-  },
-  "overrides": {
-    "diff": "^8.0.4",
-    "serialize-javascript": "^7.0.6"
   }
 }

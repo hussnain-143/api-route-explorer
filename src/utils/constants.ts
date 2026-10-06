@@ -1,11 +1,7 @@
 /**
  * Extension constants and brand identity configuration.
- * Adheres strictly to the Emerald Green + Teal + Cyan palette.
+ * Strictly adheres to Emerald Green + Teal + Cyan palette.
  */
-
-export const EXTENSION_ID = 'api-route-explorer';
-export const EXTENSION_NAME = 'API Route Explorer';
-export const EXTENSION_TAGLINE = 'See every API route. Jump straight to the code.';
 
 export const COMMANDS = {
   SCAN_ROUTES: 'apiRouteExplorer.scan',
