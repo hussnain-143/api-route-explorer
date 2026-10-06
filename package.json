@@ -13,10 +13,25 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "apiRouteExplorer",
+          "title": "API Route Explorer",
+          "icon": "resources/icons/activity-bar.svg"
+        }
+      ]
+    },
     "views": {
-      "explorer": [
+      "apiRouteExplorer": [
         {
           "id": "apiRouteExplorer.routesView",
+          "name": "API Routes"
+        }
+      ],
+      "explorer": [
+        {
+          "id": "apiRouteExplorer.explorerRoutesView",
           "name": "API Routes"
         }
       ]
@@ -38,12 +53,12 @@
       "view/title": [
         {
           "command": "apiRouteExplorer.refresh",
-          "when": "view == apiRouteExplorer.routesView",
+          "when": "view == apiRouteExplorer.routesView || view == apiRouteExplorer.explorerRoutesView",
           "group": "navigation@1"
         },
         {
           "command": "apiRouteExplorer.scan",
-          "when": "view == apiRouteExplorer.routesView",
+          "when": "view == apiRouteExplorer.routesView || view == apiRouteExplorer.explorerRoutesView",
           "group": "navigation@2"
         }
       ]

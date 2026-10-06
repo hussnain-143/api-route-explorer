@@ -10,6 +10,7 @@ export const COMMANDS = {
 
 export const VIEWS = {
   ROUTES: 'apiRouteExplorer.routesView',
+  EXPLORER_ROUTES: 'apiRouteExplorer.explorerRoutesView',
 } as const;
 
 export const BRAND_COLORS = {
