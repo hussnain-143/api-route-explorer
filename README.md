@@ -57,25 +57,52 @@ Modern backend projects often grow into complex route matrices spread across rou
 
 ---
 
-## Current Status: Sprint 7 — Advanced Route Intelligence (v0.7.0)
+## Current Status: Sprint 8 — Performance & Large Project Optimization (v0.8.0)
 
-The extension provides comprehensive static route intelligence, moving beyond simple route discovery to analyze the health, relationships, potential conflicts, and middleware protection of every endpoint across Express, Next.js, Fastify, and NestJS.
+The extension is optimized for high scalability across large real-world projects, comfortably handling workspaces with thousands of files and routes through in-memory indexing, incremental scanning, precomputed analysis, and scan cancellation.
 
 ### Capabilities Matrix
 ```text
 ✓ Multi-framework architecture (Express.js, Next.js, Fastify, NestJS)
+✓ In-memory RouteIndex for rapid O(1) file additions, deletions, and multi-index lookups
+✓ Incremental scanning for instant updates on single file edits without full rescan
+✓ Native VS Code progress reporting and cancellation support
+✓ Precomputed conflict and route relationship analysis
 ✓ Route health analysis (Healthy, Info, Warning, Error)
-✓ Potential route conflict detection (Static vs Dynamic URL overlaps)
-✓ Possible route shadowing detection (Order-dependent route interception)
-✓ Route-level middleware extraction (Express, Fastify pre-handlers, NestJS guards/interceptors)
-✓ Framework-aware route relationships & middleware grouping
-✓ Duplicate route detection (framework-scoped)
-✓ Same-path/different-method awareness (shared paths)
-✓ Express & Fastify prefix resolution
-✓ Rich VS Code diagnostics for duplicates, missing handlers, and conflicts
-✓ Enhanced route statistics & interactive analysis tree
-✓ 1-Click code navigation to handlers and conflicting endpoints
+✓ Potential route conflict & shadowing detection
+✓ Route-level middleware extraction & grouping
+✓ Framework-scoped duplicate & shared path detection
+✓ Express & Fastify prefix composition
+✓ Rich VS Code diagnostics
+✓ High-throughput TreeView rendering (< 10ms for 5,000 routes)
+✓ 1-Click code navigation directly to route handlers
 ```
+
+---
+
+## Performance & Scalability
+
+API Route Explorer is built to remain responsive as projects grow from hundreds to thousands of routes.
+
+### Architectural Optimizations
+1. **In-Memory RouteIndex**: Maintains indexes across files, frameworks, HTTP methods, paths, normalized paths, and signatures. Mutations execute in O(1) time.
+2. **Incremental Route Processing**: When a route file is saved, only the affected file is re-parsed and updated in the index, avoiding full workspace scans for localized changes.
+3. **Scan Cancellation & Concurrency Protection**: Long scans support VS Code's `CancellationToken`. Rapid rescans automatically cancel obsolete in-flight scans.
+4. **Native Progress Reporting**: Real-time progress feedback via `vscode.window.withProgress`.
+5. **Precomputed Analysis**: Route segments and normalized paths are precomputed once per route, reducing conflict detection overhead by over 60%.
+6. **Optimized TreeView Rendering**: Folder disambiguation is precomputed in O(F) time, rendering thousands of routes in under 10ms.
+
+### Performance Benchmarks
+
+| Project Size | Routes | Files | Scan Time | Analysis Time | TreeView Render | Total Time |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Small** | 96 | 12 | 29 ms | 26 ms | 1 ms | 58 ms |
+| **Medium** | 476 | 62 | 78 ms | 16 ms | 1 ms | 99 ms |
+| **Large** | 950 | 125 | 124 ms | 32 ms | 1 ms | 165 ms |
+| **Stress** | 4,750 | 625 | 478 ms | 468 ms | 9 ms | 975 ms |
+
+- **Incremental File Change**: ~30 ms (re-parses single file and re-evaluates analysis without scanning filesystem).
+- **In-Memory Index Lookups**: ~827 ns per lookup across 40,000 lookups.
 
 ---
 

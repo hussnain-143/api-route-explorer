@@ -52,15 +52,15 @@ export function buildRouteRelationships(
     list.push(conflict);
   }
 
-  // 3. Index missing handlers by route key
+  // 3. Index missing handlers by route key using O(1) map
+  const routeLocationMap = new Map<string, ApiRoute>();
+  for (const r of routes) {
+    routeLocationMap.set(`${r.filePath}:${r.line}:${r.method}`, r);
+  }
+
   const missingByRouteKey = new Map<string, MissingHandlerWarning>();
   for (const warning of missingHandlers) {
-    const match = routes.find(
-      (r) =>
-        r.filePath === warning.filePath &&
-        r.line === warning.line &&
-        r.method === warning.method
-    );
+    const match = routeLocationMap.get(`${warning.filePath}:${warning.line}:${warning.method}`);
     if (match) {
       missingByRouteKey.set(getRouteKey(match), warning);
     }
@@ -69,10 +69,11 @@ export function buildRouteRelationships(
   // 4. Extract middleware for each route
   const routesWithMiddleware = new Map<ApiRoute, RouteMiddleware[]>();
   const relationships = new Map<string, RouteRelationship>();
+  const linesCache = new Map<string, string[]>();
 
   for (const route of routes) {
     const key = getRouteKey(route);
-    const middleware = extractRouteMiddleware(route, fileSources);
+    const middleware = extractRouteMiddleware(route, fileSources, linesCache);
     routesWithMiddleware.set(route, middleware);
 
     const dups = duplicatesByRouteKey.get(key) || [];

@@ -229,7 +229,8 @@ function cleanMiddlewareName(arg: string): string {
  */
 export function extractRouteMiddleware(
   route: ApiRoute,
-  fileSources: Map<string, string> | Record<string, string>
+  fileSources: Map<string, string> | Record<string, string>,
+  linesCache?: Map<string, string[]>
 ): RouteMiddleware[] {
   const source =
     fileSources instanceof Map
@@ -240,13 +241,145 @@ export function extractRouteMiddleware(
     return [];
   }
 
+  let lines: string[] | undefined;
+  if (linesCache) {
+    lines = linesCache.get(route.filePath);
+    if (!lines) {
+      lines = source.split('\n');
+      linesCache.set(route.filePath, lines);
+    }
+  } else {
+    lines = source.split('\n');
+  }
+
+  if (route.line >= lines.length) {
+    return [];
+  }
+
   switch (route.framework) {
-    case 'express':
-      return extractExpressRouteMiddleware(source, route);
-    case 'fastify':
-      return extractFastifyRouteMiddleware(source, route);
-    case 'nestjs':
-      return extractNestjsRouteMiddleware(source, route);
+    case 'express': {
+      // Look ahead up to 10 lines to capture multiline declaration
+      const chunk = lines.slice(route.line, Math.min(lines.length, route.line + 10)).join('\n');
+      const methodLower = route.method.toLowerCase();
+
+      // Match: (app|router).method('path', ...args)
+      const callRegex = new RegExp(
+        `\\b(?:app|router|[a-zA-Z0-9_$]+)\\s*\\.\\s*(?:${methodLower}|all)\\s*(?:<[^>]*>)?\\s*\\(\\s*['"\`][^'"\`\r\n]+['"\`]\\s*,\\s*([\\s\\S]*?)(?:\\);|\\)$|\\n\\s*\\n)`,
+        'm'
+      );
+      const match = chunk.match(callRegex);
+      if (!match) {
+        return [];
+      }
+
+      const rawArgs = match[1].trim();
+      if (!rawArgs) {
+        return [];
+      }
+
+      const args = splitTopLevelArguments(rawArgs);
+      if (args.length <= 1) {
+        return [];
+      }
+
+      const middlewareArgs = args.slice(0, args.length - 1);
+      const result: RouteMiddleware[] = [];
+
+      for (const arg of middlewareArgs) {
+        const cleaned = arg.trim();
+        if (!cleaned) {
+          continue;
+        }
+
+        if (cleaned.startsWith('[') && cleaned.endsWith(']')) {
+          const inner = cleaned.substring(1, cleaned.length - 1);
+          const items = splitTopLevelArguments(inner);
+          for (const item of items) {
+            const name = cleanMiddlewareName(item);
+            if (name) {
+              result.push({ name, type: 'middleware', filePath: route.filePath, line: route.line });
+            }
+          }
+        } else {
+          const name = cleanMiddlewareName(cleaned);
+          if (name) {
+            result.push({ name, type: 'middleware', filePath: route.filePath, line: route.line });
+          }
+        }
+      }
+
+      return result;
+    }
+    case 'fastify': {
+      const chunk = lines.slice(route.line, Math.min(lines.length, route.line + 15)).join('\n');
+      const result: RouteMiddleware[] = [];
+
+      const preHandlerRegex = /\bpreHandler\s*:\s*(\[[^\]]+\]|[a-zA-Z0-9_$]+(?:\([^)]*\))?)/;
+      const phMatch = chunk.match(preHandlerRegex);
+      if (phMatch) {
+        const val = phMatch[1].trim();
+        if (val.startsWith('[')) {
+          const inner = val.substring(1, val.length - 1);
+          for (const item of splitTopLevelArguments(inner)) {
+            const name = cleanMiddlewareName(item);
+            if (name) {
+              result.push({ name, type: 'pre-handler', filePath: route.filePath, line: route.line });
+            }
+          }
+        } else {
+          const name = cleanMiddlewareName(val);
+          if (name) {
+            result.push({ name, type: 'pre-handler', filePath: route.filePath, line: route.line });
+          }
+        }
+      }
+
+      const methodLower = route.method.toLowerCase();
+      const directRegex = new RegExp(
+        `\\b(?:fastify|server|app)\\s*\\.\\s*${methodLower}\\s*\\(\\s*['"\`][^'"\`\r\n]+['"\`]\\s*,\\s*([a-zA-Z0-9_$]+)\\s*,\\s*`,
+        'm'
+      );
+      const directMatch = chunk.match(directRegex);
+      if (directMatch && !directMatch[1].startsWith('{')) {
+        const name = cleanMiddlewareName(directMatch[1]);
+        if (name && !result.some((m) => m.name === name)) {
+          result.push({ name, type: 'pre-handler', filePath: route.filePath, line: route.line });
+        }
+      }
+
+      return result;
+    }
+    case 'nestjs': {
+      const startLine = Math.max(0, route.line - 8);
+      const chunk = lines.slice(startLine, route.line + 2).join('\n');
+      const result: RouteMiddleware[] = [];
+
+      const guardRegex = /@UseGuards\s*\(([^)]+)\)/g;
+      let gMatch: RegExpExecArray | null;
+      while ((gMatch = guardRegex.exec(chunk)) !== null) {
+        const items = splitTopLevelArguments(gMatch[1]);
+        for (const item of items) {
+          const name = cleanMiddlewareName(item);
+          if (name) {
+            result.push({ name, type: 'guard', filePath: route.filePath, line: route.line });
+          }
+        }
+      }
+
+      const interceptorRegex = /@UseInterceptors\s*\(([^)]+)\)/g;
+      let iMatch: RegExpExecArray | null;
+      while ((iMatch = interceptorRegex.exec(chunk)) !== null) {
+        const items = splitTopLevelArguments(iMatch[1]);
+        for (const item of items) {
+          const name = cleanMiddlewareName(item);
+          if (name) {
+            result.push({ name, type: 'interceptor', filePath: route.filePath, line: route.line });
+          }
+        }
+      }
+
+      return result;
+    }
     default:
       return [];
   }
