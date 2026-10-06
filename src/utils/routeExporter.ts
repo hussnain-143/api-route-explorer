@@ -173,14 +173,53 @@ export function exportRoutesToMarkdown(
 
 /**
  * Prompts user to select format and destination, exporting the route inventory safely.
+ * Offers explicit choice between filtered subset or all routes if filtering is active.
  */
 export async function showExportRoutesDialog(
   routes: ApiRoute[],
-  analysis?: RouteAnalysisResult
+  analysis?: RouteAnalysisResult,
+  filteredRoutes?: ApiRoute[]
 ): Promise<void> {
   if (routes.length === 0) {
     vscode.window.showInformationMessage('No API routes available to export.');
     return;
+  }
+
+  let targetRoutes = routes;
+  let isFilteredExport = false;
+
+  // If filtered routes are provided and differ from all routes, offer explicit scope choice
+  if (filteredRoutes && filteredRoutes.length > 0 && filteredRoutes.length < routes.length) {
+    interface ScopeItem extends vscode.QuickPickItem {
+      scope: 'all' | 'filtered';
+    }
+    const scopePick = await vscode.window.showQuickPick<ScopeItem>(
+      [
+        {
+          label: `$(filter) Filtered Routes (${filteredRoutes.length})`,
+          description: 'Export only the currently filtered route subset',
+          scope: 'filtered',
+        },
+        {
+          label: `$(list-unordered) All Discovered Routes (${routes.length})`,
+          description: 'Export the complete workspace route inventory',
+          scope: 'all',
+        },
+      ],
+      {
+        title: 'API Route Explorer: Select Export Scope',
+        placeHolder: 'Choose which routes to export',
+      }
+    );
+
+    if (!scopePick) {
+      return;
+    }
+
+    if (scopePick.scope === 'filtered') {
+      targetRoutes = filteredRoutes;
+      isFilteredExport = true;
+    }
   }
 
   interface FormatPickItem extends vscode.QuickPickItem {
@@ -191,12 +230,12 @@ export async function showExportRoutesDialog(
     [
       {
         label: '$(json) Export as JSON',
-        description: 'Structured, machine-readable format (.json)',
+        description: `Structured, machine-readable format (.json) — ${targetRoutes.length} routes`,
         format: 'json',
       },
       {
         label: '$(markdown) Export as Markdown',
-        description: 'Formatted documentation with health and middleware details (.md)',
+        description: `Formatted documentation with health & middleware (.md) — ${targetRoutes.length} routes`,
         format: 'markdown',
       },
     ],
@@ -210,7 +249,8 @@ export async function showExportRoutesDialog(
     return;
   }
 
-  const defaultFileName = pick.format === 'json' ? 'api-routes.json' : 'api-routes.md';
+  const prefix = isFilteredExport ? 'api-routes-filtered' : 'api-routes';
+  const defaultFileName = pick.format === 'json' ? `${prefix}.json` : `${prefix}.md`;
   const filterLabel = pick.format === 'json' ? 'JSON' : 'Markdown';
   const fileExt = pick.format === 'json' ? ['json'] : ['md'];
 
@@ -230,14 +270,14 @@ export async function showExportRoutesDialog(
 
   const content =
     pick.format === 'json'
-      ? exportRoutesToJson(routes, analysis)
-      : exportRoutesToMarkdown(routes, analysis);
+      ? exportRoutesToJson(targetRoutes, analysis)
+      : exportRoutesToMarkdown(targetRoutes, analysis);
 
   const encoder = new TextEncoder();
   await vscode.workspace.fs.writeFile(saveUri, encoder.encode(content));
 
   const action = await vscode.window.showInformationMessage(
-    `Exported ${routes.length} routes to ${saveUri.fsPath.split('/').pop()}`,
+    `Exported ${targetRoutes.length} routes to ${saveUri.fsPath.split('/').pop()}`,
     'Open File'
   );
 

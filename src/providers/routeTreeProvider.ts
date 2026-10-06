@@ -358,12 +358,20 @@ export class RouteTreeItem extends vscode.TreeItem {
  * Informational placeholder TreeItem for empty/unscanned states.
  */
 export class RoutePlaceholderItem extends vscode.TreeItem {
-  constructor(label: string, description: string, icon: string = 'info') {
+  constructor(
+    label: string,
+    description: string,
+    icon: string = 'info',
+    command?: vscode.Command
+  ) {
     super(label, vscode.TreeItemCollapsibleState.None);
     this.description = description;
     this.iconPath = new vscode.ThemeIcon(icon);
     this.contextValue = CONTEXT_VALUES.PLACEHOLDER;
     this.tooltip = `${label}: ${description}`;
+    if (command) {
+      this.command = command;
+    }
   }
 }
 
@@ -377,6 +385,7 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
 
   private routes: ApiRoute[] = [];
   private hasScanned: boolean = false;
+  private isScanning: boolean = false;
   private groupingMode: RouteGroupingMode = 'file';
   private filterOptions: RouteFilterOptions = {};
   private activeMethodFilter?: HttpMethod | 'SHARED' | 'DUPLICATES';
@@ -399,10 +408,25 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
   }
 
   /**
+   * Sets the scanning status and triggers a responsive tree view refresh.
+   */
+  public setIsScanning(scanning: boolean): void {
+    if (this.isScanning !== scanning) {
+      this.isScanning = scanning;
+      this.refresh();
+    }
+  }
+
+  public getIsScanning(): boolean {
+    return this.isScanning;
+  }
+
+  /**
    * Replaces current route collection, caches pre-sorted groups, and triggers refresh.
    */
   public setRoutes(routes: ApiRoute[], analysis?: RouteAnalysisResult): void {
     this.hasScanned = true;
+    this.isScanning = false;
     this.routes = routes;
     this.analysis = analysis;
     this.indexAnalysis(analysis);
@@ -429,7 +453,12 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
    * Sets route filter options and updates TreeView in-memory.
    */
   public setFilterOptions(options: RouteFilterOptions): void {
-    this.filterOptions = options;
+    this.filterOptions = { ...options };
+    if (options.method && options.method !== 'ALL') {
+      this.activeMethodFilter = options.method;
+    } else if (options.method === 'ALL') {
+      this.activeMethodFilter = undefined;
+    }
     this.rebuildGroups();
     this.refresh();
   }
@@ -621,13 +650,28 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
       return Promise.resolve([]);
     }
 
+    // Root level: Scanning in progress
+    if (this.isScanning && !this.hasScanned) {
+      return Promise.resolve([
+        new RoutePlaceholderItem(
+          'Scanning workspace routes...',
+          'Discovering API routes across workspace files...',
+          'loading~spin'
+        ),
+      ]);
+    }
+
     // Root level: Unscanned state
     if (!this.hasScanned) {
       return Promise.resolve([
         new RoutePlaceholderItem(
           MESSAGES.NO_ROUTES_TITLE,
           MESSAGES.NO_ROUTES_DESCRIPTION,
-          'search'
+          'search',
+          {
+            command: COMMANDS.SCAN_ROUTES,
+            title: 'Scan Routes',
+          }
         ),
       ]);
     }
@@ -638,7 +682,11 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
         new RoutePlaceholderItem(
           MESSAGES.NO_ROUTES_FOUND,
           MESSAGES.NO_ROUTES_EMPTY_DESCRIPTION,
-          'info'
+          'info',
+          {
+            command: COMMANDS.SCAN_ROUTES,
+            title: 'Rescan Routes',
+          }
         ),
       ]);
     }
@@ -650,8 +698,12 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
       return Promise.resolve([
         new RoutePlaceholderItem(
           'No routes match active filter',
-          'Run "API Route Explorer: Filter Routes" or click filter to clear.',
-          'filter'
+          'Click to adjust filter criteria or reset filters.',
+          'filter',
+          {
+            command: COMMANDS.FILTER_ROUTES,
+            title: 'Filter Routes',
+          }
         ),
       ]);
     }
@@ -709,12 +761,33 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
 
   public setMethodFilter(filter?: HttpMethod | 'SHARED' | 'DUPLICATES'): void {
     this.activeMethodFilter = filter;
+    if (filter === 'SHARED' || filter === 'DUPLICATES') {
+      this.filterOptions.state = filter;
+      this.filterOptions.method = undefined;
+    } else if (filter) {
+      this.filterOptions.method = filter;
+      if (this.filterOptions.state === 'SHARED' || this.filterOptions.state === 'DUPLICATES') {
+        this.filterOptions.state = undefined;
+      }
+    } else {
+      this.filterOptions.method = undefined;
+      if (this.filterOptions.state === 'SHARED' || this.filterOptions.state === 'DUPLICATES') {
+        this.filterOptions.state = undefined;
+      }
+    }
     this.rebuildGroups();
     this.refresh();
   }
 
   public getMethodFilter(): HttpMethod | 'SHARED' | 'DUPLICATES' | undefined {
     return this.activeMethodFilter;
+  }
+
+  /**
+   * Returns the current array of routes matching all active filters.
+   */
+  public getFilteredRoutesList(): ApiRoute[] {
+    return this.getFilteredRoutes();
   }
 
   /**
