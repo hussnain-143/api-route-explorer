@@ -6,8 +6,14 @@ import {
   RouteTreeProvider,
 } from './providers/routeTreeProvider';
 import { createRouteFileWatcher } from './scanner/routeWatcher';
-import { scanWorkspaceRoutes } from './scanner/routeScanner';
+import { scanWorkspaceDetailed } from './scanner/routeScanner';
 import { showRouteQuickPick } from './scanner/routeSearch';
+import {
+  analyzeWorkspaceRoutes,
+  RouteAnalysisResult,
+} from './analysis/routeAnalyzer';
+import { RouteDiagnosticsManager } from './analysis/diagnostics';
+import { showRouteStatisticsModal } from './analysis/routeStatistics';
 import { COMMANDS, MESSAGES, VIEWS } from './utils/constants';
 import { openFile, openRoute } from './utils/navigation';
 
@@ -65,6 +71,7 @@ export function extractFilePathFromArg(arg: unknown): string | undefined {
  */
 export function activate(context: vscode.ExtensionContext): void {
   const routeTreeProvider = new RouteTreeProvider();
+  const diagnosticsManager = new RouteDiagnosticsManager();
 
   // Create dedicated TreeView instance for Activity Bar to enable reveal & selection
   const routesTreeView = vscode.window.createTreeView(VIEWS.ROUTES, {
@@ -72,16 +79,19 @@ export function activate(context: vscode.ExtensionContext): void {
     showCollapseAll: true,
   });
 
-  // Track scanning state to avoid concurrent scans and race conditions
+  // Track scanning state and latest smart analysis result
   let isScanning = false;
   let scanPending = false;
+  let currentAnalysis: RouteAnalysisResult | undefined;
 
   /**
-   * Scans the workspace, passes discovered routes to RouteTreeProvider, and provides feedback.
+   * Scans the workspace, executes smart analysis (prefixes, duplicates, missing handlers, stats),
+   * and refreshes TreeView, diagnostics, and search state.
    */
   const executeScan = async (showFeedback: boolean = true): Promise<void> => {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders || workspaceFolders.length === 0) {
+      diagnosticsManager.clear();
       if (showFeedback) {
         vscode.window.showWarningMessage(MESSAGES.NO_WORKSPACE);
       }
@@ -95,15 +105,19 @@ export function activate(context: vscode.ExtensionContext): void {
 
     isScanning = true;
     try {
-      const routes = await scanWorkspaceRoutes();
-      console.log('Discovered routes:', routes);
-      routeTreeProvider.setRoutes(routes);
+      const { routes: rawRoutes, fileSources } = await scanWorkspaceDetailed();
+      const analysis = analyzeWorkspaceRoutes(rawRoutes, fileSources);
+      currentAnalysis = analysis;
+
+      console.log('Discovered routes with resolved prefixes:', analysis.routes);
+      routeTreeProvider.setRoutes(analysis.routes);
+      diagnosticsManager.updateDiagnostics(analysis.duplicates, analysis.missingHandlers);
 
       if (showFeedback) {
-        if (routes.length === 0) {
+        if (analysis.routes.length === 0) {
           vscode.window.showInformationMessage(MESSAGES.NO_ROUTES_FOUND);
         } else {
-          vscode.window.showInformationMessage(`Discovered ${routes.length} API routes.`);
+          vscode.window.showInformationMessage(`Discovered ${analysis.routes.length} API routes.`);
         }
       }
     } catch (error) {
@@ -133,18 +147,21 @@ export function activate(context: vscode.ExtensionContext): void {
 
     const match = routeTreeProvider.findRouteItemAt(currentFilePath, currentLine);
     if (match) {
-      routesTreeView.reveal(match.routeItem, {
-        select: true,
-        focus: false,
-        expand: true,
-      }).then(undefined, () => {
-        // Safe: ignore any reveal errors if tree is not visible or ready
-      });
+      routesTreeView
+        .reveal(match.routeItem, {
+          select: true,
+          focus: false,
+          expand: true,
+        })
+        .then(undefined, () => {
+          // Safe: ignore any reveal errors if tree is not visible or ready
+        });
     }
   };
 
   context.subscriptions.push(
     routesTreeView,
+    diagnosticsManager,
 
     // File Explorer sidebar section
     vscode.window.registerTreeDataProvider(VIEWS.EXPLORER_ROUTES, routeTreeProvider),
@@ -206,6 +223,20 @@ export function activate(context: vscode.ExtensionContext): void {
         await vscode.env.clipboard.writeText(`${route.method} ${route.path}`);
         vscode.window.showInformationMessage(MESSAGES.ROUTE_COPIED);
       }
+    }),
+
+    // 8. Show Route Statistics command (Sprint 4: modal breakdown of routes, methods, duplicates, shared paths)
+    vscode.commands.registerCommand(COMMANDS.SHOW_STATISTICS, async () => {
+      if (!routeTreeProvider.getHasScanned() || !currentAnalysis) {
+        await executeScan(false);
+      }
+
+      if (!currentAnalysis || currentAnalysis.routes.length === 0) {
+        vscode.window.showInformationMessage(MESSAGES.NO_ROUTES_FOUND);
+        return;
+      }
+
+      await showRouteStatisticsModal(currentAnalysis.statistics);
     })
   );
 }

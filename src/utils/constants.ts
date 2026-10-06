@@ -11,6 +11,7 @@ export const COMMANDS = {
   OPEN_FILE: 'apiRouteExplorer.openFile',
   COPY_ROUTE: 'apiRouteExplorer.copyRoute',
   COPY_ROUTE_PATH: 'apiRouteExplorer.copyRoutePath',
+  SHOW_STATISTICS: 'apiRouteExplorer.showStatistics',
 } as const;
 
 export const VIEWS = {

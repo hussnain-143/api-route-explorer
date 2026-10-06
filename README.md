@@ -19,18 +19,64 @@ Modern backend projects often grow into complex route matrices spread across rou
 
 ---
 
-## Current Status: Sprint 3 — Developer Navigation & Route UX
+## Current Status: Sprint 4 — Smart Route Analysis (v0.4.0)
 
-The project is currently in **Sprint 3**. API Route Explorer has been expanded into an everyday developer tool with native search, clipboard actions, and auto-refresh:
-- **Instant Route Search**: Press `Cmd+Shift+P` / `Ctrl+Shift+P` and run `API Route Explorer: Search Routes` (or click Search on the sidebar title) to filter endpoints by HTTP method, path, or filename, then jump straight to the code.
-- **Context Menu Actions**: Right-click any route item to:
-  - **Copy Route Path**: Copies `/api/users/:id` to clipboard.
-  - **Copy Route**: Copies full signature `GET /api/users/:id` to clipboard.
-  - **Open File**: Opens the containing source file.
-  - **Open Route**: Jumps to the exact line/column definition.
-- **Intelligent Auto-Refresh**: Background workspace watcher listens for changes to `.js`, `.jsx`, `.ts`, and `.tsx` files with debouncing (750ms), keeping the TreeView automatically synchronized without running duplicate scans.
-- **Active Route Awareness**: Tracks active editor line changes and synchronizes the TreeView selection with the open route definition.
-- **Resilient State Management**: Single source of truth for discovered routes with concurrency protection against overlapping scans.
+The project is currently in **Sprint 4**. API Route Explorer introduces an intelligent static analysis layer that understands Express route relationships, mounts, duplicates, and health diagnostics without heavy AST overhead:
+
+### Smart Route Analysis
+```text
+✓ Duplicate route detection
+✓ Same-path/different-method awareness
+✓ Express router prefix resolution
+✓ Possible missing handler detection
+✓ Route statistics
+✓ Route diagnostics
+```
+
+#### 1. Express Router Prefix Composition
+Resolves nested prefix mounts across files and within the same file (e.g. `app.use('/api/v1', router)` + `router.get('/users', ...)` resolves to `GET /api/v1/users`).
+- Searches and matches work directly against the fully resolved route path while source navigation jumps straight to the original handler definition.
+- Chained sub-routers (e.g. `app.use('/api', v1Router)` -> `v1Router.use('/users', userRouter)`) are statically traced.
+
+#### 2. Duplicate Route Detection vs Shared Paths
+A route is considered a duplicate only when **both** the HTTP method and normalized route path match:
+```text
+${method}:${normalizedPath}
+```
+
+- **Valid Shared Path (NOT a duplicate):**
+  ```text
+  GET    /api/users
+  POST   /api/users
+  PUT    /api/users
+  DELETE /api/users
+  ```
+  These share the same endpoint path but represent distinct HTTP operations. They are grouped as a shared route path and **not** flagged as duplicate warnings.
+
+- **Duplicate Route (DETECTED):**
+  ```text
+  GET /api/users
+  GET /api/users
+  ```
+  Even if declared in different files (e.g., `userRoutes.ts` and `adminRoutes.ts`), this conflict is flagged with a diagnostic warning. Parameter names are also normalized (e.g., `GET /api/users/:id` and `GET /api/users/:userId` are detected as conflicting patterns).
+
+#### 3. Possible Missing Handler Detection
+Flags suspicious route declarations missing middleware or route handlers (e.g., `router.get('/users')`), using conservative detection to avoid false positives on valid middleware chains.
+
+#### 4. Route Statistics Command
+Run `API Route Explorer: Show Route Statistics` (`apiRouteExplorer.showStatistics`) via the Command Palette or the sidebar header icon to view comprehensive workspace route metrics:
+- Total routes & unique files
+- Breakdown by HTTP method (GET, POST, PUT, PATCH, DELETE)
+- Duplicate route count
+- Shared route path count
+- Detected backend framework
+
+#### 5. Native VS Code Diagnostics
+Provides non-intrusive warnings directly in the Problems panel:
+- `Duplicate route detected: GET /api/users`
+- `Possible missing handler for GET /api/users`
+
+Diagnostics are automatically synchronized on file changes, saves, deletions, or manual scans, and cleanly disposed.
 
 ---
 
@@ -38,10 +84,10 @@ The project is currently in **Sprint 3**. API Route Explorer has been expanded i
 
 | Framework | Status | Target Sprint |
 | :--- | :--- | :--- |
-| **Express (Node.js)** | ✅ Full Discovery & Navigation | Sprint 1–3 |
-| **Next.js (App & Pages Router)** | 📋 Planned | Sprint 4 |
-| **Fastify** | 📋 Planned | Sprint 5 |
-| **NestJS** | 📋 Planned | Sprint 6 |
+| **Express (Node.js)** | ✅ Full Discovery, Navigation & Analysis | Sprint 1–4 |
+| **Next.js (App & Pages Router)** | 📋 Planned | Sprint 5 |
+| **Fastify** | 📋 Planned | Future |
+| **NestJS** | 📋 Planned | Future |
 
 ---
 
@@ -73,10 +119,15 @@ The project is currently in **Sprint 3**. API Route Explorer has been expanded i
   - Intelligent auto-refresh with debouncing
   - Active editor route awareness and TreeView synchronization
   - Concurrency-safe scanner queueing
-- [ ] **Sprint 4: Next.js & Additional Frameworks**
+- [x] **Sprint 4: Smart Route Analysis**
+  - Static Express router prefix resolution (`app.use(prefix, router)`)
+  - Duplicate route detection with path parameter normalization
+  - Same-path / different-method shared path aggregation
+  - Conservative possible missing handler analysis
+  - Route statistics calculation and modal reporting
+  - Integrated VS Code Diagnostics collection lifecycle
+- [ ] **Sprint 5: Multi-Framework Expansion**
   - Next.js App Router and Pages Router route detection
-- [ ] **Sprint 5: Route Diagnostics & Collision Detection**
-  - Collision detection for duplicate routes and unhandled endpoints
 
 ---
 
