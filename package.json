@@ -26,13 +26,15 @@
       "apiRouteExplorer": [
         {
           "id": "apiRouteExplorer.routesView",
-          "name": "API Routes"
+          "name": "API Routes",
+          "icon": "resources/icons/activity-bar.svg"
         }
       ],
       "explorer": [
         {
           "id": "apiRouteExplorer.explorerRoutesView",
-          "name": "API Routes"
+          "name": "API Routes",
+          "icon": "resources/icons/activity-bar.svg"
         }
       ]
     },
@@ -70,6 +72,7 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
+    "test:unit": "mocha --ui tdd out/test/routeParser.test.js",
     "test": "vscode-test"
   },
   "devDependencies": {
