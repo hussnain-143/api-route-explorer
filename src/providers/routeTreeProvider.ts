@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { ApiRoute, HttpMethod } from '../models/route';
 import { RouteAnalysisResult } from '../analysis/routeAnalyzer';
+import { getRouteKey } from '../analysis/routeRelationshipAnalyzer';
 import { COMMANDS, CONTEXT_VALUES, MESSAGES } from '../utils/constants';
 
 /**
@@ -130,6 +131,13 @@ export class RouteFileGroupItem extends vscode.TreeItem {
   }
 }
 
+import {
+  RouteHealth,
+  RouteIssue,
+  RouteMiddleware,
+  RouteConflict,
+} from '../analysis/analysisTypes';
+
 /**
  * Contextual analysis flags for an individual route tree item.
  */
@@ -138,6 +146,10 @@ export interface RouteAnalysisContext {
   isShared?: boolean;
   isMissingHandler?: boolean;
   sharedMethods?: HttpMethod[];
+  health?: RouteHealth;
+  issues?: RouteIssue[];
+  middleware?: RouteMiddleware[];
+  conflicts?: RouteConflict[];
 }
 
 /**
@@ -157,10 +169,17 @@ export class RouteTreeItem extends vscode.TreeItem {
 
     if (analysisContext?.isDuplicate) {
       desc = `Line ${route.line + 1} • ⚠️ Duplicate`;
-      icon = new vscode.ThemeIcon('warning', new vscode.ThemeColor('charts.orange'));
+      icon = new vscode.ThemeIcon('error', new vscode.ThemeColor('charts.red'));
     } else if (analysisContext?.isMissingHandler) {
       desc = `Line ${route.line + 1} • ⚠️ Missing handler`;
       icon = new vscode.ThemeIcon('warning', new vscode.ThemeColor('charts.yellow'));
+    } else if (analysisContext?.conflicts && analysisContext.conflicts.length > 0) {
+      const isShadow = analysisContext.conflicts.some((c) => c.isShadowing);
+      desc = `Line ${route.line + 1} • ${isShadow ? '⚠️ Shadowed' : '⚠️ Conflict'}`;
+      icon = new vscode.ThemeIcon('warning', new vscode.ThemeColor('charts.orange'));
+    } else if (analysisContext?.health === 'warning') {
+      desc = `Line ${route.line + 1} • ⚠️ Warning`;
+      icon = new vscode.ThemeIcon('warning', new vscode.ThemeColor('charts.orange'));
     } else if (analysisContext?.isShared) {
       desc = `Line ${route.line + 1} • Shared`;
     }
@@ -184,11 +203,37 @@ export class RouteTreeItem extends vscode.TreeItem {
     tooltip.appendMarkdown(`- **Location**: Line ${route.line + 1}, Column ${route.column + 1}\n`);
     tooltip.appendMarkdown(`- **Framework**: ${fwName}\n`);
 
+    const healthLabel =
+      analysisContext?.health === 'error'
+        ? 'Error'
+        : analysisContext?.health === 'warning'
+        ? 'Warning'
+        : analysisContext?.health === 'info'
+        ? 'Info'
+        : 'Healthy';
+    tooltip.appendMarkdown(`- **Health**: ${healthLabel}\n`);
+
     if (analysisContext?.isDuplicate) {
       tooltip.appendMarkdown(`\n\n> ⚠️ **Duplicate Route**: Another route with method \`${route.method}\` and identical normalized path exists.`);
     } else if (analysisContext?.isMissingHandler) {
       tooltip.appendMarkdown(`\n\n> ⚠️ **Possible Missing Handler**: No controller or middleware appears to be supplied.`);
-    } else if (analysisContext?.isShared) {
+    }
+
+    if (analysisContext?.issues && analysisContext.issues.length > 0) {
+      tooltip.appendMarkdown(`\n**Issues**:\n`);
+      for (const issue of analysisContext.issues) {
+        tooltip.appendMarkdown(`• ${issue.message}\n`);
+      }
+    }
+
+    if (analysisContext?.middleware && analysisContext.middleware.length > 0) {
+      tooltip.appendMarkdown(`\n**Middleware**:\n`);
+      for (const mw of analysisContext.middleware) {
+        tooltip.appendMarkdown(`• ${mw.name} (${mw.type})\n`);
+      }
+    }
+
+    if (analysisContext?.isShared) {
       const methodsStr = analysisContext.sharedMethods ? analysisContext.sharedMethods.join(', ') : 'multiple HTTP methods';
       tooltip.appendMarkdown(`\n\n> 🔄 **Shared Route Path**: Endpoint mounted with ${methodsStr}.`);
     }
@@ -328,11 +373,18 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
     if (element instanceof RouteFileGroupItem) {
       const items = element.routes.map((route) => {
         const key = `${route.method}:${route.filePath}:${route.line}`;
+        const relKey = getRouteKey(route);
+        const rel = this.analysis?.relationships?.get(relKey);
+
         const analysisContext: RouteAnalysisContext = {
           isDuplicate: this.duplicateKeys.has(key),
           isShared: this.sharedPathMap.has(key),
           isMissingHandler: this.missingHandlerKeys.has(key),
           sharedMethods: this.sharedPathMap.get(key),
+          health: rel?.health,
+          issues: rel?.issues,
+          middleware: rel?.middleware,
+          conflicts: rel?.conflicts,
         };
         return new RouteTreeItem(route, element.relativeFilePath, analysisContext);
       });

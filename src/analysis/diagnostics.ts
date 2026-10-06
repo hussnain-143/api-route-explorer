@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
 import { DuplicateRouteGroup } from './duplicateDetector';
 import { MissingHandlerWarning } from './handlerAnalyzer';
+import { RouteConflict } from './analysisTypes';
 
 /**
  * Manages VS Code diagnostics for API Route Explorer.
- * Publishes warnings for duplicate routes and possible missing handlers.
+ * Publishes diagnostics for duplicate routes, possible missing handlers, and route conflicts/shadowing.
  */
 export class RouteDiagnosticsManager implements vscode.Disposable {
   private readonly collection: vscode.DiagnosticCollection;
@@ -14,17 +15,18 @@ export class RouteDiagnosticsManager implements vscode.Disposable {
   }
 
   /**
-   * Refreshes diagnostics based on analyzed duplicate groups and missing handler warnings.
+   * Refreshes diagnostics based on analyzed duplicate groups, missing handler warnings, and route conflicts.
    */
   public updateDiagnostics(
     duplicates: DuplicateRouteGroup[],
-    missingHandlers: MissingHandlerWarning[]
+    missingHandlers: MissingHandlerWarning[],
+    conflicts: RouteConflict[] = []
   ): void {
     this.collection.clear();
 
     const diagnosticsByUri = new Map<string, { uri: vscode.Uri; items: vscode.Diagnostic[] }>();
 
-    // 1. Duplicate route warnings
+    // 1. Duplicate route errors
     for (const group of duplicates) {
       for (const route of group.routes) {
         const uri = vscode.Uri.file(route.filePath);
@@ -37,8 +39,8 @@ export class RouteDiagnosticsManager implements vscode.Disposable {
 
         const diagnostic = new vscode.Diagnostic(
           range,
-          `Duplicate route detected: ${route.method} ${route.path}`,
-          vscode.DiagnosticSeverity.Warning
+          `Duplicate route: ${route.method} ${route.path}`,
+          vscode.DiagnosticSeverity.Error
         );
         diagnostic.source = 'API Route Explorer';
         diagnostic.code = 'duplicate-route';
@@ -69,6 +71,32 @@ export class RouteDiagnosticsManager implements vscode.Disposable {
       );
       diagnostic.source = 'API Route Explorer';
       diagnostic.code = 'missing-handler';
+
+      let entry = diagnosticsByUri.get(uriKey);
+      if (!entry) {
+        entry = { uri, items: [] };
+        diagnosticsByUri.set(uriKey, entry);
+      }
+      entry.items.push(diagnostic);
+    }
+
+    // 3. Route conflict & shadowing warnings
+    for (const conflict of conflicts) {
+      const uri = vscode.Uri.file(conflict.route.filePath);
+      const uriKey = uri.toString();
+
+      const line = Math.max(0, conflict.route.line);
+      const col = Math.max(0, conflict.route.column);
+      const length = Math.max(1, conflict.route.method.length + conflict.route.path.length + 6);
+      const range = new vscode.Range(line, col, line, col + length);
+
+      const diagnostic = new vscode.Diagnostic(
+        range,
+        conflict.reason,
+        vscode.DiagnosticSeverity.Warning
+      );
+      diagnostic.source = 'API Route Explorer';
+      diagnostic.code = conflict.isShadowing ? 'route-shadowing' : 'route-conflict';
 
       let entry = diagnosticsByUri.get(uriKey);
       if (!entry) {
