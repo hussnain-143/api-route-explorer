@@ -6,12 +6,22 @@
 export const COMMANDS = {
   SCAN_ROUTES: 'apiRouteExplorer.scan',
   REFRESH_ROUTES: 'apiRouteExplorer.refresh',
+  SEARCH_ROUTES: 'apiRouteExplorer.searchRoutes',
   OPEN_ROUTE: 'apiRouteExplorer.openRoute',
+  OPEN_FILE: 'apiRouteExplorer.openFile',
+  COPY_ROUTE: 'apiRouteExplorer.copyRoute',
+  COPY_ROUTE_PATH: 'apiRouteExplorer.copyRoutePath',
 } as const;
 
 export const VIEWS = {
   ROUTES: 'apiRouteExplorer.routesView',
   EXPLORER_ROUTES: 'apiRouteExplorer.explorerRoutesView',
+} as const;
+
+export const CONTEXT_VALUES = {
+  ROUTE: 'apiRouteExplorer.route',
+  FILE_GROUP: 'apiRouteExplorer.fileGroup',
+  PLACEHOLDER: 'apiRouteExplorer.placeholder',
 } as const;
 
 export const BRAND_COLORS = {
@@ -34,5 +44,8 @@ export const MESSAGES = {
   NO_ROUTES_TITLE: 'No routes discovered yet',
   NO_ROUTES_DESCRIPTION: 'Scan your workspace to discover API routes.',
   NO_ROUTES_EMPTY_DESCRIPTION: 'No Express routes discovered in workspace.',
+  SEARCH_NO_SCAN: 'No routes discovered yet. Run Scan Routes first.',
+  ROUTE_PATH_COPIED: 'Route path copied.',
+  ROUTE_COPIED: 'Route copied.',
   FILE_NOT_FOUND: 'Route source file no longer exists or could not be opened.',
 } as const;

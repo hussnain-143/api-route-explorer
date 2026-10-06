@@ -2,7 +2,7 @@
   "name": "api-route-explorer",
   "displayName": "API Route Explorer",
   "description": "Discover, organize, and navigate API routes directly inside VS Code.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "icon": "resources/icons/icon.png",
   "engines": {
     "vscode": "^1.90.0"
@@ -49,19 +49,90 @@
         "title": "Refresh Routes",
         "category": "API Route Explorer",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "apiRouteExplorer.searchRoutes",
+        "title": "Search Routes",
+        "category": "API Route Explorer",
+        "icon": "$(search)"
+      },
+      {
+        "command": "apiRouteExplorer.openRoute",
+        "title": "Open Route",
+        "category": "API Route Explorer"
+      },
+      {
+        "command": "apiRouteExplorer.openFile",
+        "title": "Open File",
+        "category": "API Route Explorer"
+      },
+      {
+        "command": "apiRouteExplorer.copyRoute",
+        "title": "Copy Route",
+        "category": "API Route Explorer"
+      },
+      {
+        "command": "apiRouteExplorer.copyRoutePath",
+        "title": "Copy Route Path",
+        "category": "API Route Explorer"
       }
     ],
     "menus": {
       "view/title": [
         {
-          "command": "apiRouteExplorer.refresh",
+          "command": "apiRouteExplorer.searchRoutes",
           "when": "view == apiRouteExplorer.routesView || view == apiRouteExplorer.explorerRoutesView",
           "group": "navigation@1"
         },
         {
-          "command": "apiRouteExplorer.scan",
+          "command": "apiRouteExplorer.refresh",
           "when": "view == apiRouteExplorer.routesView || view == apiRouteExplorer.explorerRoutesView",
           "group": "navigation@2"
+        },
+        {
+          "command": "apiRouteExplorer.scan",
+          "when": "view == apiRouteExplorer.routesView || view == apiRouteExplorer.explorerRoutesView",
+          "group": "navigation@3"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "apiRouteExplorer.openRoute",
+          "when": "viewItem == apiRouteExplorer.route",
+          "group": "navigation@1"
+        },
+        {
+          "command": "apiRouteExplorer.openFile",
+          "when": "viewItem == apiRouteExplorer.route || viewItem == apiRouteExplorer.fileGroup",
+          "group": "navigation@2"
+        },
+        {
+          "command": "apiRouteExplorer.copyRoute",
+          "when": "viewItem == apiRouteExplorer.route",
+          "group": "copy@1"
+        },
+        {
+          "command": "apiRouteExplorer.copyRoutePath",
+          "when": "viewItem == apiRouteExplorer.route",
+          "group": "copy@2"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "apiRouteExplorer.openRoute",
+          "when": "false"
+        },
+        {
+          "command": "apiRouteExplorer.openFile",
+          "when": "false"
+        },
+        {
+          "command": "apiRouteExplorer.copyRoute",
+          "when": "false"
+        },
+        {
+          "command": "apiRouteExplorer.copyRoutePath",
+          "when": "false"
         }
       ]
     }
