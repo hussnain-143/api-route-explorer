@@ -2,6 +2,18 @@
 
 All notable changes to the "api-route-explorer" extension will be documented in this file.
 
+## [1.0.0] - v1.0 Production Release
+
+### Added
+- **Multi-Framework Route Discovery**: Native static discovery across Express.js, Next.js (App Router & Pages Router), Fastify, and NestJS without executing runtime code.
+- **Interactive Route Explorer UI**: Dual-tree Explorer sidebar grouping routes by module/resource folder and individual endpoints with semantic HTTP method glyphs.
+- **1-Click Source Code Navigation**: Jump directly to exact controller handler definitions, HTTP method exports, or decorators across all supported frameworks.
+- **Route Intelligence & Health Analysis**: Automatic classification of endpoint health (`Healthy`, `Info`, `Warning`, `Error`) with detection of parameter collisions, missing handlers, and route shadowing.
+- **Middleware & Guard Extraction**: Framework-aware detection of chained middleware in Express, pre-handlers in Fastify, and `@UseGuards()` / `@UseInterceptors()` in NestJS.
+- **In-Memory Route Index & Search**: High-throughput indexed search via QuickPick with multi-index lookups across method, path, filename, and framework.
+- **Scalability & Incremental Scanning**: Instant incremental re-parsing on single file edits, native VS Code progress reporting, cancellation support, and sub-second analysis on workspaces with 5,000+ routes.
+- **Developer Productivity Tools**: One-click clipboard actions for Route Path, Route Signature, and reproducible `cURL` commands.
+
 ## [0.8.0] - Sprint 8: Performance & Large Project Optimization
 
 ### Added

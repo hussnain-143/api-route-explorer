@@ -127,7 +127,6 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const applyAnalysis = (analysis: RouteAnalysisResult): void => {
     currentAnalysis = analysis;
-    console.log('Discovered routes with resolved prefixes:', analysis.routes);
     routeTreeProvider.setRoutes(analysis.routes, analysis);
     routeAnalysisProvider.setAnalysis(analysis);
     diagnosticsManager.updateDiagnostics(

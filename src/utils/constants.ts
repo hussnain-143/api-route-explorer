@@ -48,7 +48,7 @@ export const MESSAGES = {
   NO_ROUTES_FOUND: 'No API routes found.',
   NO_ROUTES_TITLE: 'No routes discovered yet',
   NO_ROUTES_DESCRIPTION: 'Scan your workspace to discover API routes.',
-  NO_ROUTES_EMPTY_DESCRIPTION: 'No Express routes discovered in workspace.',
+  NO_ROUTES_EMPTY_DESCRIPTION: 'No API routes discovered in workspace.',
   SEARCH_NO_SCAN: 'No routes discovered yet. Run Scan Routes first.',
   ROUTE_PATH_COPIED: 'Route path copied.',
   ROUTE_COPIED: 'Route copied.',
