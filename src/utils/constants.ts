@@ -11,7 +11,10 @@ export const COMMANDS = {
   OPEN_FILE: 'apiRouteExplorer.openFile',
   COPY_ROUTE: 'apiRouteExplorer.copyRoute',
   COPY_ROUTE_PATH: 'apiRouteExplorer.copyRoutePath',
+  COPY_CURL: 'apiRouteExplorer.copyCurl',
   SHOW_STATISTICS: 'apiRouteExplorer.showStatistics',
+  FILTER_BY_METHOD: 'apiRouteExplorer.filterByMethod',
+  STATUS_BAR_MENU: 'apiRouteExplorer.statusBarMenu',
 } as const;
 
 export const VIEWS = {

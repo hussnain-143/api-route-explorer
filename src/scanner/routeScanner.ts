@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { ApiRoute } from '../models/route';
-import { parseExpressRoutes } from './routeParser';
-import { resolveRouterPrefixes } from '../analysis/prefixResolver';
+import { defaultFrameworkRegistry } from '../frameworks/frameworkRegistry';
 
 /**
  * File search patterns for source code discovery.
@@ -27,6 +26,7 @@ export interface IRouteScanner {
 
 /**
  * Scans the workspace, collecting raw parsed routes and file source text.
+ * Routes are discovered via the registered framework adapters (Express, Next.js).
  */
 export async function scanWorkspaceDetailed(): Promise<ScannedWorkspaceData> {
   const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -36,6 +36,7 @@ export async function scanWorkspaceDetailed(): Promise<ScannedWorkspaceData> {
 
   const routes: ApiRoute[] = [];
   const fileSources = new Map<string, string>();
+  const registry = defaultFrameworkRegistry;
 
   try {
     const fileUris = await vscode.workspace.findFiles(
@@ -55,8 +56,11 @@ export async function scanWorkspaceDetailed(): Promise<ScannedWorkspaceData> {
         const source = textDecoder.decode(fileBytes);
         fileSources.set(uri.fsPath, source);
 
-        const fileRoutes = parseExpressRoutes(source, uri.fsPath);
-        routes.push(...fileRoutes);
+        const matchedAdapters = registry.getAdaptersForFile(uri.fsPath, source);
+        for (const adapter of matchedAdapters) {
+          const fileRoutes = adapter.parseRoutes(uri.fsPath, source);
+          routes.push(...fileRoutes);
+        }
       } catch (fileError) {
         // Safe error handling: log diagnostic information and proceed without crashing
         console.warn(`[API Route Explorer] Could not process file: ${uri.fsPath}`, fileError);
@@ -71,8 +75,8 @@ export async function scanWorkspaceDetailed(): Promise<ScannedWorkspaceData> {
 }
 
 /**
- * Scans the currently opened VS Code workspace for Express.js routes
- * and applies static router mount prefix resolution.
+ * Scans the currently opened VS Code workspace for API routes across all supported frameworks
+ * and applies framework-specific post-processing (e.g. router prefix composition).
  *
  * Safe execution guarantees:
  * - Returns [] if no workspace is opened or workspace is empty.
@@ -85,7 +89,15 @@ export async function scanWorkspaceRoutes(): Promise<ApiRoute[]> {
   if (routes.length === 0) {
     return [];
   }
-  return resolveRouterPrefixes(routes, fileSources);
+
+  let processed = routes;
+  for (const adapter of defaultFrameworkRegistry.getAdapters()) {
+    if (adapter.postProcessRoutes) {
+      processed = adapter.postProcessRoutes(processed, fileSources);
+    }
+  }
+
+  return processed;
 }
 
 /**

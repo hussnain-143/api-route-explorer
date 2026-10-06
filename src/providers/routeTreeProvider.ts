@@ -38,9 +38,73 @@ export function getMethodIcon(method: HttpMethod): vscode.ThemeIcon {
       return new vscode.ThemeIcon('diff-modified', new vscode.ThemeColor('charts.yellow'));
     case 'DELETE':
       return new vscode.ThemeIcon('trash', new vscode.ThemeColor('charts.red'));
+    case 'ANY':
+      return new vscode.ThemeIcon('globe', new vscode.ThemeColor('charts.purple'));
     default:
       return new vscode.ThemeIcon('symbol-method');
   }
+}
+
+/**
+ * Computes a developer-friendly folder display label for file groups.
+ * Replaces long repetitive paths (e.g. `src/modules/admin/booking/admin.booking.routes.js`)
+ * with clean module folder names (e.g. `booking` or `admin/booking`).
+ */
+export function getFolderDisplayLabel(
+  relativeFilePath: string,
+  allRelativeFilePaths?: string[]
+): { label: string; description: string; tooltip: string } {
+  const normalized = relativeFilePath.replace(/\\/g, '/');
+  const parts = normalized.split('/').filter(Boolean);
+  const fileName = parts.length > 0 ? parts[parts.length - 1] : relativeFilePath;
+
+  // Root level file (e.g. "app.js")
+  if (parts.length <= 1) {
+    return {
+      label: fileName,
+      description: '',
+      tooltip: normalized,
+    };
+  }
+
+  const lastFolder = parts[parts.length - 2];
+
+  // If the folder is generic (e.g. "routes", "src", "api") and there is no custom module name,
+  // display the filename for clean clarity (e.g. routes/authRoutes.js -> authRoutes.js).
+  const genericFolders = ['routes', 'src', 'api', 'controllers', 'handlers', 'endpoints'];
+  if (genericFolders.includes(lastFolder.toLowerCase())) {
+    return {
+      label: fileName,
+      description: lastFolder,
+      tooltip: normalized,
+    };
+  }
+
+  // Strictly show only the last folder name as the main label (e.g. "booking", "dash", "auth")
+  // If multiple route files in the workspace share the same last folder (e.g. admin/booking vs booking),
+  // disambiguate in the description with parent folder or filename.
+  let contextHint = '';
+  if (allRelativeFilePaths && allRelativeFilePaths.length > 0) {
+    const sameFolderFiles = allRelativeFilePaths.filter((p) => {
+      const segs = p.replace(/\\/g, '/').split('/').filter(Boolean);
+      return segs.length > 1 && segs[segs.length - 2] === lastFolder;
+    });
+
+    if (sameFolderFiles.length > 1) {
+      const parentFolder = parts.length >= 3 ? parts[parts.length - 3] : '';
+      if (parentFolder && !['src', 'modules', 'api', 'routes'].includes(parentFolder.toLowerCase())) {
+        contextHint = parentFolder;
+      } else {
+        contextHint = fileName;
+      }
+    }
+  }
+
+  return {
+    label: lastFolder,
+    description: contextHint,
+    tooltip: normalized,
+  };
 }
 
 /**
@@ -50,14 +114,18 @@ export class RouteFileGroupItem extends vscode.TreeItem {
   constructor(
     public readonly filePath: string,
     public readonly relativeFilePath: string,
-    public readonly routes: ApiRoute[]
+    public readonly routes: ApiRoute[],
+    allRelativeFilePaths?: string[]
   ) {
-    super(relativeFilePath, vscode.TreeItemCollapsibleState.Expanded);
+    const { label, description: contextHint, tooltip: fullPath } =
+      getFolderDisplayLabel(relativeFilePath, allRelativeFilePaths);
+
+    super(label, vscode.TreeItemCollapsibleState.Expanded);
 
     const countLabel = `${routes.length} route${routes.length === 1 ? '' : 's'}`;
-    this.description = countLabel;
-    this.iconPath = vscode.ThemeIcon.File;
-    this.tooltip = `${relativeFilePath} (${countLabel})`;
+    this.description = contextHint ? `${countLabel} • ${contextHint}` : countLabel;
+    this.iconPath = vscode.ThemeIcon.Folder;
+    this.tooltip = `${fullPath} (${countLabel})`;
     this.contextValue = CONTEXT_VALUES.FILE_GROUP;
   }
 }
@@ -105,8 +173,9 @@ export class RouteTreeItem extends vscode.TreeItem {
     const tooltip = new vscode.MarkdownString();
     tooltip.appendMarkdown(`### \`${route.method}\` ${route.path}\n\n`);
     tooltip.appendMarkdown(`- **File**: \`${relativeFilePath}\`\n`);
+    const fwName = route.framework === 'nextjs' || route.framework === 'next' ? 'Next.js' : 'Express';
     tooltip.appendMarkdown(`- **Location**: Line ${route.line + 1}, Column ${route.column + 1}\n`);
-    tooltip.appendMarkdown(`- **Framework**: Express\n`);
+    tooltip.appendMarkdown(`- **Framework**: ${fwName}\n`);
 
     if (analysisContext?.isDuplicate) {
       tooltip.appendMarkdown(`\n\n> ⚠️ **Duplicate Route**: Another route with method \`${route.method}\` and identical normalized path exists.`);
@@ -132,7 +201,7 @@ export class RouteTreeItem extends vscode.TreeItem {
  * Informational placeholder TreeItem for empty/unscanned states.
  */
 export class RoutePlaceholderItem extends vscode.TreeItem {
-  constructor(label: string, description: string, icon: string) {
+  constructor(label: string, description: string, icon: string = 'info') {
     super(label, vscode.TreeItemCollapsibleState.None);
     this.description = description;
     this.iconPath = new vscode.ThemeIcon(icon);
@@ -289,6 +358,17 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
       ]);
     }
 
+    // Root level: Filter applied but 0 routes matched filter
+    if (this.fileGroups.length === 0 && this.activeMethodFilter) {
+      return Promise.resolve([
+        new RoutePlaceholderItem(
+          `No ${this.activeMethodFilter} routes found`,
+          'Click the filter icon in the view title bar to clear or change filter.',
+          'filter'
+        ),
+      ]);
+    }
+
     // Root level: Return pre-computed file groups
     return Promise.resolve(this.fileGroups);
   }
@@ -334,18 +414,45 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
     return undefined;
   }
 
+  private activeMethodFilter?: HttpMethod | 'SHARED' | 'DUPLICATES';
+
+  public setMethodFilter(filter?: HttpMethod | 'SHARED' | 'DUPLICATES'): void {
+    this.activeMethodFilter = filter;
+    this.buildFileGroups();
+    this.refresh();
+  }
+
+  public getMethodFilter(): HttpMethod | 'SHARED' | 'DUPLICATES' | undefined {
+    return this.activeMethodFilter;
+  }
+
   /**
    * Groups routes by source file, sorts routes by path then method,
    * and sorts file groups alphabetically.
    *
    * Sorting strategy:
-   * 1. File groups: Alphabetical by relative file path for predictable file browsing.
+   * 1. File groups: Alphabetical by clean folder label for predictable browsing.
    * 2. Routes in file: Sorted primarily by path, then by HTTP method to group related endpoints.
    */
   private buildFileGroups(): void {
     const groupMap = new Map<string, ApiRoute[]>();
 
-    for (const route of this.routes) {
+    const targetRoutes = this.routes.filter((route) => {
+      if (!this.activeMethodFilter) {
+        return true;
+      }
+      if (this.activeMethodFilter === 'SHARED') {
+        const key = `${route.method}:${route.filePath}:${route.line}`;
+        return this.sharedPathMap.has(key);
+      }
+      if (this.activeMethodFilter === 'DUPLICATES') {
+        const key = `${route.method}:${route.filePath}:${route.line}`;
+        return this.duplicateKeys.has(key);
+      }
+      return route.method === this.activeMethodFilter;
+    });
+
+    for (const route of targetRoutes) {
       const existing = groupMap.get(route.filePath);
       if (existing) {
         existing.push(route);
@@ -354,6 +461,7 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
       }
     }
 
+    const allRelativePaths = Array.from(groupMap.keys()).map((p) => getRelativeFilePath(p));
     const groups: RouteFileGroupItem[] = [];
 
     for (const [filePath, fileRoutes] of groupMap.entries()) {
@@ -368,11 +476,12 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
         return a.method.localeCompare(b.method);
       });
 
-      groups.push(new RouteFileGroupItem(filePath, relativePath, fileRoutes));
+      groups.push(new RouteFileGroupItem(filePath, relativePath, fileRoutes, allRelativePaths));
     }
 
-    // Sort file groups alphabetically by relative path
-    groups.sort((a, b) => a.relativeFilePath.localeCompare(b.relativeFilePath));
+    // Sort file groups alphabetically by clean folder label
+    groups.sort((a, b) => a.label!.toString().localeCompare(b.label!.toString()));
     this.fileGroups = groups;
   }
 }
+

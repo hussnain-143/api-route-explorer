@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ApiRoute } from './models/route';
+import { ApiRoute, HttpMethod } from './models/route';
 import {
   RouteFileGroupItem,
   RouteTreeItem,
@@ -86,10 +86,36 @@ export function activate(context: vscode.ExtensionContext): void {
     showCollapseAll: true,
   });
 
+  // Dedicated Status Bar Item for real-time route counts and quick actions
+  const statusBarItem = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Right,
+    100
+  );
+  statusBarItem.command = COMMANDS.STATUS_BAR_MENU;
+  statusBarItem.tooltip = 'API Route Explorer: Click for route actions & search';
+
   // Track scanning state and latest smart analysis result
   let isScanning = false;
   let scanPending = false;
   let currentAnalysis: RouteAnalysisResult | undefined;
+
+  const updateStatusBar = (): void => {
+    if (!currentAnalysis || currentAnalysis.routes.length === 0) {
+      statusBarItem.text = '$(symbol-event) 0 Routes';
+      statusBarItem.tooltip = 'API Route Explorer: 0 routes discovered. Click to open menu.';
+    } else {
+      const count = currentAnalysis.routes.length;
+      const filter = routeTreeProvider.getMethodFilter();
+      if (filter) {
+        statusBarItem.text = `$(symbol-event) ${count} Routes [${filter}]`;
+        statusBarItem.tooltip = `API Route Explorer: Filtered by ${filter}. Click to open menu.`;
+      } else {
+        statusBarItem.text = `$(symbol-event) ${count} Routes`;
+        statusBarItem.tooltip = `API Route Explorer: ${count} routes discovered in ${currentAnalysis.statistics.totalFiles} files. Click to open menu.`;
+      }
+    }
+    statusBarItem.show();
+  };
 
   /**
    * Scans the workspace, executes smart analysis (prefixes, duplicates, missing handlers, stats),
@@ -104,6 +130,7 @@ export function activate(context: vscode.ExtensionContext): void {
       routesTreeView.description = undefined;
       routesTreeView.badge = undefined;
       analysisTreeView.description = undefined;
+      statusBarItem.hide();
       if (showFeedback) {
         vscode.window.showWarningMessage(MESSAGES.NO_WORKSPACE);
       }
@@ -136,6 +163,8 @@ export function activate(context: vscode.ExtensionContext): void {
         analysis.duplicates.length === 0
           ? `${analysis.sharedPaths.length} shared • Healthy`
           : `⚠️ ${analysis.duplicates.length} duplicate conflict(s)`;
+
+      updateStatusBar();
 
       if (showFeedback) {
         if (analysis.routes.length === 0) {
@@ -186,6 +215,7 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     routesTreeView,
     analysisTreeView,
+    statusBarItem,
     diagnosticsManager,
 
     // File Explorer sidebar section
@@ -250,7 +280,159 @@ export function activate(context: vscode.ExtensionContext): void {
       }
     }),
 
-    // 8. Show Route Statistics command (Sprint 4: modal breakdown of routes, methods, duplicates, shared paths)
+    // 8. Copy as cURL command (copies reproducible curl command)
+    vscode.commands.registerCommand(COMMANDS.COPY_CURL, async (arg: unknown) => {
+      const route = extractRouteFromArg(arg);
+      if (route) {
+        let curlCmd = `curl -X ${route.method} "http://localhost:3000${route.path}"`;
+        if (route.method === 'POST' || route.method === 'PUT' || route.method === 'PATCH') {
+          curlCmd += ` -H "Content-Type: application/json" -d '{}'`;
+        }
+        await vscode.env.clipboard.writeText(curlCmd);
+        vscode.window.showInformationMessage(`Copied cURL command: ${route.method} ${route.path}`);
+      }
+    }),
+
+    // 9. Filter routes by HTTP method or analysis context
+    vscode.commands.registerCommand(COMMANDS.FILTER_BY_METHOD, async () => {
+      const allRoutes = routeTreeProvider.getRoutes();
+      if (allRoutes.length === 0) {
+        vscode.window.showInformationMessage(MESSAGES.SEARCH_NO_SCAN);
+        return;
+      }
+
+      const currentFilter = routeTreeProvider.getMethodFilter();
+      const getCount = (m: string) => allRoutes.filter((r) => r.method === m).length;
+
+      interface FilterPickItem extends vscode.QuickPickItem {
+        filterValue?: HttpMethod | 'SHARED' | 'DUPLICATES';
+      }
+
+      const items: FilterPickItem[] = [
+        {
+          label: '$(list-unordered) All Methods',
+          description: `${allRoutes.length} routes`,
+          detail: currentFilter === undefined ? '✓ Currently showing all routes' : undefined,
+          filterValue: undefined,
+        },
+        {
+          label: '$(arrow-down) GET',
+          description: `${getCount('GET')} routes`,
+          detail: currentFilter === 'GET' ? '✓ Currently filtered by GET' : undefined,
+          filterValue: 'GET',
+        },
+        {
+          label: '$(add) POST',
+          description: `${getCount('POST')} routes`,
+          detail: currentFilter === 'POST' ? '✓ Currently filtered by POST' : undefined,
+          filterValue: 'POST',
+        },
+        {
+          label: '$(edit) PUT',
+          description: `${getCount('PUT')} routes`,
+          detail: currentFilter === 'PUT' ? '✓ Currently filtered by PUT' : undefined,
+          filterValue: 'PUT',
+        },
+        {
+          label: '$(diff) PATCH',
+          description: `${getCount('PATCH')} routes`,
+          detail: currentFilter === 'PATCH' ? '✓ Currently filtered by PATCH' : undefined,
+          filterValue: 'PATCH',
+        },
+        {
+          label: '$(trash) DELETE',
+          description: `${getCount('DELETE')} routes`,
+          detail: currentFilter === 'DELETE' ? '✓ Currently filtered by DELETE' : undefined,
+          filterValue: 'DELETE',
+        },
+        {
+          label: '$(git-merge) Shared Path Endpoints',
+          description: currentAnalysis ? `${currentAnalysis.sharedPaths.length} routes` : undefined,
+          detail: currentFilter === 'SHARED' ? '✓ Currently filtered by shared paths' : 'Endpoints supporting multiple HTTP methods',
+          filterValue: 'SHARED',
+        },
+        {
+          label: '$(warning) Duplicate Conflicts',
+          description: currentAnalysis ? `${currentAnalysis.duplicates.length} conflicts` : undefined,
+          detail: currentFilter === 'DUPLICATES' ? '✓ Currently filtered by duplicates' : 'Identical method and path declarations',
+          filterValue: 'DUPLICATES',
+        },
+      ];
+
+      const pick = await vscode.window.showQuickPick(items, {
+        title: 'Filter API Routes by Method',
+        placeHolder: 'Select an HTTP method or condition to filter the sidebar',
+      });
+
+      if (pick !== undefined) {
+        routeTreeProvider.setMethodFilter(pick.filterValue);
+        if (pick.filterValue) {
+          routesTreeView.description = `[Filter: ${pick.filterValue}]`;
+        } else if (currentAnalysis) {
+          routesTreeView.description = `${currentAnalysis.routes.length} routes (${currentAnalysis.statistics.totalFiles} files)`;
+        } else {
+          routesTreeView.description = undefined;
+        }
+        updateStatusBar();
+      }
+    }),
+
+    // 10. Status Bar Quick Menu
+    vscode.commands.registerCommand(COMMANDS.STATUS_BAR_MENU, async () => {
+      const totalRoutes = routeTreeProvider.getRoutes().length;
+      const filter = routeTreeProvider.getMethodFilter();
+      const filterLabel = filter ? ` (Filter: ${filter})` : '';
+
+      interface MenuActionItem extends vscode.QuickPickItem {
+        action: () => Promise<void> | void;
+      }
+
+      const items: MenuActionItem[] = [
+        {
+          label: '$(search) Search Routes...',
+          description: `${totalRoutes} routes available`,
+          detail: 'Fuzzy search by path, HTTP method, or file name',
+          action: async () => {
+            await vscode.commands.executeCommand(COMMANDS.SEARCH_ROUTES);
+          },
+        },
+        {
+          label: `$(filter) Filter by HTTP Method...${filterLabel}`,
+          description: filter ? `Active: ${filter}` : 'All methods shown',
+          detail: 'Show only GET, POST, PUT, DELETE, Duplicates, or Shared endpoints',
+          action: async () => {
+            await vscode.commands.executeCommand(COMMANDS.FILTER_BY_METHOD);
+          },
+        },
+        {
+          label: '$(graph) Route Statistics & Diagnostics...',
+          description: currentAnalysis ? `${currentAnalysis.routes.length} routes, ${currentAnalysis.statistics.totalFiles} files` : '',
+          detail: 'View breakdown by method, duplicates, and shared paths',
+          action: async () => {
+            await vscode.commands.executeCommand(COMMANDS.SHOW_STATISTICS);
+          },
+        },
+        {
+          label: '$(refresh) Rescan Workspace Routes',
+          description: 'Discover newly added or modified routes',
+          detail: 'Scans JavaScript and TypeScript files in workspace',
+          action: async () => {
+            await executeScan(true);
+          },
+        },
+      ];
+
+      const pick = await vscode.window.showQuickPick(items, {
+        title: 'API Route Explorer — Quick Hub',
+        placeHolder: 'Select an action to inspect or navigate API routes',
+      });
+
+      if (pick) {
+        await pick.action();
+      }
+    }),
+
+    // 11. Show Route Statistics command (Sprint 4: modal breakdown of routes, methods, duplicates, shared paths)
     vscode.commands.registerCommand(COMMANDS.SHOW_STATISTICS, async () => {
       if (!routeTreeProvider.getHasScanned() || !currentAnalysis) {
         await executeScan(false);

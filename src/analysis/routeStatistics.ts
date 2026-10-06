@@ -18,6 +18,7 @@ export interface RouteStatistics {
   duplicateCount: number;
   sharedPathCount: number;
   framework: string;
+  frameworkCounts?: Record<string, number>;
 }
 
 /**
@@ -46,12 +47,25 @@ export function calculateRouteStatistics(
     DELETE: 0,
     OPTIONS: 0,
     HEAD: 0,
+    ANY: 0,
   };
+
+  const frameworkCounts: Record<string, number> = {};
 
   for (const route of routes) {
     if (route.method in methodCounts) {
       methodCounts[route.method]++;
     }
+    const fw = route.framework === 'nextjs' || route.framework === 'next' ? 'Next.js' : 'Express';
+    frameworkCounts[fw] = (frameworkCounts[fw] || 0) + 1;
+  }
+
+  const fwKeys = Object.keys(frameworkCounts);
+  let frameworkLabel = 'Express';
+  if (fwKeys.length > 1) {
+    frameworkLabel = fwKeys.map((k) => `${k} (${frameworkCounts[k]})`).join(', ');
+  } else if (fwKeys.length === 1) {
+    frameworkLabel = fwKeys[0];
   }
 
   // Count duplicate routes: sum of (routes in duplicate group - 1) or total duplicate entries
@@ -66,7 +80,8 @@ export function calculateRouteStatistics(
     methodCounts,
     duplicateCount: duplicateRouteInstances,
     sharedPathCount: sharedPaths.length,
-    framework: 'Express',
+    framework: frameworkLabel,
+    frameworkCounts,
   };
 }
 

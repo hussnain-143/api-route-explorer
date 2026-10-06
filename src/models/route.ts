@@ -9,13 +9,11 @@ export type HttpMethod =
   | 'PATCH'
   | 'DELETE'
   | 'OPTIONS'
-  | 'HEAD';
+  | 'HEAD'
+  | 'ANY';
 
-export type ApiFramework =
-  | 'express'
-  | 'next'
-  | 'fastify'
-  | 'nestjs';
+import type { ApiFramework } from './framework';
+export type { ApiFramework };
 
 export interface ApiRoute {
   method: HttpMethod;

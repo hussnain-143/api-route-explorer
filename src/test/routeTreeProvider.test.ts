@@ -8,6 +8,7 @@ import {
   RoutePlaceholderItem,
   getRelativeFilePath,
   getMethodIcon,
+  getFolderDisplayLabel,
 } from '../providers/routeTreeProvider';
 import { COMMANDS, MESSAGES } from '../utils/constants';
 
@@ -239,5 +240,107 @@ suite('API Route Explorer — RouteTreeProvider Suite', () => {
   test('getRelativeFilePath falls back cleanly to basename if outside workspace', () => {
     const relative = getRelativeFilePath('/var/logs/server.js');
     assert.ok(relative.includes('server.js'));
+  });
+
+  test('getFolderDisplayLabel extracts last folder name instead of full path', () => {
+    const allPaths = [
+      'src/modules/admin/booking/admin.booking.routes.js',
+      'src/modules/booking/booking.routes.js',
+      'src/modules/admin/complaint/admin.complaint.routes.js',
+      'routes/authRoutes.js',
+      'server.js',
+    ];
+
+    // Single folder: complaint
+    const complaintDisplay = getFolderDisplayLabel(
+      'src/modules/admin/complaint/admin.complaint.routes.js',
+      allPaths
+    );
+    assert.strictEqual(complaintDisplay.label, 'complaint');
+    assert.strictEqual(complaintDisplay.description, '');
+
+    // Duplicate folders: admin/booking vs booking
+    const adminBookingDisplay = getFolderDisplayLabel(
+      'src/modules/admin/booking/admin.booking.routes.js',
+      allPaths
+    );
+    assert.strictEqual(adminBookingDisplay.label, 'booking');
+    assert.strictEqual(adminBookingDisplay.description, 'admin');
+
+    const bookingDisplay = getFolderDisplayLabel(
+      'src/modules/booking/booking.routes.js',
+      allPaths
+    );
+    assert.strictEqual(bookingDisplay.label, 'booking');
+
+    // Generic folder: routes/authRoutes.js
+    const genericDisplay = getFolderDisplayLabel('routes/authRoutes.js', allPaths);
+    assert.strictEqual(genericDisplay.label, 'authRoutes.js');
+
+    // Root file: server.js
+    const rootDisplay = getFolderDisplayLabel('server.js', allPaths);
+    assert.strictEqual(rootDisplay.label, 'server.js');
+  });
+
+  test('RouteTreeProvider setMethodFilter filters routes dynamically', async () => {
+    const provider = new RouteTreeProvider();
+    const routes: ApiRoute[] = [
+      {
+        method: 'GET',
+        path: '/users',
+        filePath: '/workspace/src/modules/user/user.routes.js',
+        line: 10,
+        column: 0,
+        framework: 'express',
+      },
+      {
+        method: 'POST',
+        path: '/users',
+        filePath: '/workspace/src/modules/user/user.routes.js',
+        line: 20,
+        column: 0,
+        framework: 'express',
+      },
+      {
+        method: 'DELETE',
+        path: '/users/:id',
+        filePath: '/workspace/src/modules/user/user.routes.js',
+        line: 30,
+        column: 0,
+        framework: 'express',
+      },
+    ];
+
+    provider.setRoutes(routes);
+
+    // Initial state: all routes
+    let rootGroups = await provider.getChildren();
+    assert.strictEqual(rootGroups.length, 1);
+    let childRoutes = await provider.getChildren(rootGroups[0]);
+    assert.strictEqual(childRoutes.length, 3);
+
+    // Filter by GET
+    provider.setMethodFilter('GET');
+    assert.strictEqual(provider.getMethodFilter(), 'GET');
+    rootGroups = await provider.getChildren();
+    assert.strictEqual(rootGroups.length, 1);
+    childRoutes = await provider.getChildren(rootGroups[0]);
+    assert.strictEqual(childRoutes.length, 1);
+    assert.strictEqual((childRoutes[0] as RouteTreeItem).route.method, 'GET');
+
+    // Filter by POST
+    provider.setMethodFilter('POST');
+    rootGroups = await provider.getChildren();
+    assert.strictEqual(rootGroups.length, 1);
+    childRoutes = await provider.getChildren(rootGroups[0]);
+    assert.strictEqual(childRoutes.length, 1);
+    assert.strictEqual((childRoutes[0] as RouteTreeItem).route.method, 'POST');
+
+    // Clear filter
+    provider.setMethodFilter(undefined);
+    assert.strictEqual(provider.getMethodFilter(), undefined);
+    rootGroups = await provider.getChildren();
+    childRoutes = await provider.getChildren(rootGroups[0]);
+    assert.strictEqual(childRoutes.length, 3);
   });
 });

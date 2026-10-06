@@ -2,6 +2,19 @@
 
 All notable changes to the "api-route-explorer" extension will be documented in this file.
 
+## [0.5.0] - Sprint 5: Multi-Framework Architecture + Next.js Support
+
+### Added
+- **Multi-Framework Route Architecture**: Pluggable framework abstraction layer (`FrameworkAdapter`, `FrameworkRegistry`, `FrameworkDetector`) isolating discovery logic from agnostic analysis and UI.
+- **Next.js App Router Support**: Full discovery for route handler files (`app/**/route.{ts,js,tsx,jsx}` and `src/app/**/route.{ts,js,tsx,jsx}`).
+- **Next.js Pages Router Support**: Discovery for API routes (`pages/api/**.{ts,js,tsx,jsx}` and `src/pages/api/**.{ts,js,tsx,jsx}`).
+- **Next.js HTTP Method Export Detection**: Discovers `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`, and `OPTIONS` exports with exact source line/column coordinates.
+- **Dynamic & Catch-All Route Segments**: Converts `[id]` to `:id` and catch-all `[...slug]` / `[[...slug]]` to `*slug`.
+- **Route Group Handling**: Strips parenthetical route groups like `(dashboard)` and `(auth)` from public URLs while preserving source file paths.
+- **Framework-Aware Route Statistics**: Comprehensive breakdown of discovered routes across Express and Next.js.
+- **Framework-Scoped Duplicate Detection**: Prevents false positive duplicate warnings between coexisting frameworks in mixed workspaces or monorepos.
+- **Enhanced Route Search**: Instant filtering by method, path, filename, and framework (e.g. `next`, `express`).
+
 ## [0.4.0] - 2026-10-06 - Sprint 4 & 4.5: Smart Route Analysis & Release Hardening
 
 ### Added
