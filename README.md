@@ -19,15 +19,18 @@ Modern backend projects often grow into complex route matrices spread across rou
 
 ---
 
-## Current Status: Sprint 2 — Route Explorer UI & Code Navigation
+## Current Status: Sprint 3 — Developer Navigation & Route UX
 
-The project is currently in **Sprint 2**. Discovered API routes are connected directly to the VS Code sidebar with interactive code navigation:
-- **Two-Level Tree Hierarchy**: Level 1 groups routes by source file (`routes/userRoutes.js`, `app.js`); Level 2 presents individual routes (`GET /users`, `POST /users`).
-- **1-Click Code Navigation**: Clicking any route opens the file in the editor, positions the cursor, and reveals the exact route definition line in the center.
-- **Accessible HTTP Method Icons**: Distinct `ThemeIcon` glyphs and semantic colors for GET, POST, PUT, PATCH, and DELETE endpoints with text labels for complete accessibility.
-- **Rich Markdown Tooltips**: Hovering over any endpoint displays formatted route details, relative file path, and exact 1-based line/column numbers.
-- **Safe File Handling**: Resilient handling with friendly alerts if a source file was moved or deleted outside VS Code.
-- **Instant Scan & Refresh**: Running `Scan Routes` or clicking `Refresh` triggers workspace re-discovery and immediately updates the TreeView.
+The project is currently in **Sprint 3**. API Route Explorer has been expanded into an everyday developer tool with native search, clipboard actions, and auto-refresh:
+- **Instant Route Search**: Press `Cmd+Shift+P` / `Ctrl+Shift+P` and run `API Route Explorer: Search Routes` (or click Search on the sidebar title) to filter endpoints by HTTP method, path, or filename, then jump straight to the code.
+- **Context Menu Actions**: Right-click any route item to:
+  - **Copy Route Path**: Copies `/api/users/:id` to clipboard.
+  - **Copy Route**: Copies full signature `GET /api/users/:id` to clipboard.
+  - **Open File**: Opens the containing source file.
+  - **Open Route**: Jumps to the exact line/column definition.
+- **Intelligent Auto-Refresh**: Background workspace watcher listens for changes to `.js`, `.jsx`, `.ts`, and `.tsx` files with debouncing (750ms), keeping the TreeView automatically synchronized without running duplicate scans.
+- **Active Route Awareness**: Tracks active editor line changes and synchronizes the TreeView selection with the open route definition.
+- **Resilient State Management**: Single source of truth for discovered routes with concurrency protection against overlapping scans.
 
 ---
 
@@ -35,10 +38,10 @@ The project is currently in **Sprint 2**. Discovered API routes are connected di
 
 | Framework | Status | Target Sprint |
 | :--- | :--- | :--- |
-| **Express (Node.js)** | ✅ Detected & Interactive (Sprint 2) | Sprint 1 & 2 |
-| **Next.js (App & Pages Router)** | 📋 Planned | Sprint 3 |
-| **Fastify** | 📋 Planned | Sprint 4 |
-| **NestJS** | 📋 Planned | Sprint 5 |
+| **Express (Node.js)** | ✅ Full Discovery & Navigation | Sprint 1–3 |
+| **Next.js (App & Pages Router)** | 📋 Planned | Sprint 4 |
+| **Fastify** | 📋 Planned | Sprint 5 |
+| **NestJS** | 📋 Planned | Sprint 6 |
 
 ---
 
@@ -63,11 +66,17 @@ The project is currently in **Sprint 2**. Discovered API routes are connected di
   - Rich Markdown tooltips with route metadata
   - Resilient missing file handling
   - Synchronized Scan and Refresh command flow
-- [ ] **Sprint 3: Next.js & Additional Frameworks**
+- [x] **Sprint 3: Developer Navigation & Route UX**
+  - Fast QuickPick route search matching method, path, and file
+  - Route path and route signature clipboard actions
+  - Open containing source file action
+  - Intelligent auto-refresh with debouncing
+  - Active editor route awareness and TreeView synchronization
+  - Concurrency-safe scanner queueing
+- [ ] **Sprint 4: Next.js & Additional Frameworks**
   - Next.js App Router and Pages Router route detection
-- [ ] **Sprint 4: Route Diagnostics & Search**
-  - Quick-pick route filter (⌘P / Ctrl+P integration)
-  - Collision detection for duplicate routes
+- [ ] **Sprint 5: Route Diagnostics & Collision Detection**
+  - Collision detection for duplicate routes and unhandled endpoints
 
 ---
 
@@ -94,7 +103,7 @@ npm run compile
 1. Open the project in VS Code.
 2. Press `F5` to start a new **Extension Development Host** window.
 3. Open the **Explorer** sidebar and look for the **API Routes** section.
-4. Run the command `API Route Explorer: Scan Routes` from the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`).
+4. Run the command `API Route Explorer: Scan Routes` or `API Route Explorer: Search Routes` from the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`).
 
 ---
 
@@ -103,11 +112,16 @@ npm run compile
 | Command | Command ID | Description |
 | :--- | :--- | :--- |
 | **API Route Explorer: Scan Routes** | `apiRouteExplorer.scan` | Scans workspace files and discovers Express routes |
-| **API Route Explorer: Refresh Routes** | `apiRouteExplorer.refresh` | Refreshes the API Routes sidebar view |
+| **API Route Explorer: Refresh Routes** | `apiRouteExplorer.refresh` | Re-scans and refreshes the API Routes sidebar |
+| **API Route Explorer: Search Routes** | `apiRouteExplorer.searchRoutes` | QuickPick search matching method, path, or filename |
+| **Open Route** | `apiRouteExplorer.openRoute` | Jumps to the exact route definition line in code |
+| **Open File** | `apiRouteExplorer.openFile` | Opens the source file containing the route |
+| **Copy Route** | `apiRouteExplorer.copyRoute` | Copies complete route signature (e.g. `GET /api/users`) |
+| **Copy Route Path** | `apiRouteExplorer.copyRoutePath` | Copies route path only (e.g. `/api/users`) |
 
 ---
 
 ## Version
 
-- **Current Version**: `0.2.0` (Sprint 2 — Route Explorer UI & Code Navigation)
+- **Current Version**: `0.3.0` (Sprint 3 — Developer Navigation & Route UX)
 - **License**: MIT

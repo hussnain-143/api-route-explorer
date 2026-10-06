@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ApiRoute, HttpMethod } from '../models/route';
-import { COMMANDS, MESSAGES } from '../utils/constants';
+import { COMMANDS, CONTEXT_VALUES, MESSAGES } from '../utils/constants';
 
 /**
  * Computes a readable path relative to the workspace root.
@@ -57,7 +57,7 @@ export class RouteFileGroupItem extends vscode.TreeItem {
     this.description = countLabel;
     this.iconPath = vscode.ThemeIcon.File;
     this.tooltip = `${relativeFilePath} (${countLabel})`;
-    this.contextValue = 'routeFileGroup';
+    this.contextValue = CONTEXT_VALUES.FILE_GROUP;
   }
 }
 
@@ -75,7 +75,7 @@ export class RouteTreeItem extends vscode.TreeItem {
     // Display 1-based line number for developer readability
     this.description = `Line ${route.line + 1}`;
     this.iconPath = getMethodIcon(route.method);
-    this.contextValue = 'route';
+    this.contextValue = CONTEXT_VALUES.ROUTE;
 
     // Rich Markdown tooltip
     const tooltip = new vscode.MarkdownString();
@@ -102,7 +102,7 @@ export class RoutePlaceholderItem extends vscode.TreeItem {
     super(label, vscode.TreeItemCollapsibleState.None);
     this.description = description;
     this.iconPath = new vscode.ThemeIcon(icon);
-    this.contextValue = 'placeholder';
+    this.contextValue = CONTEXT_VALUES.PLACEHOLDER;
     this.tooltip = `${label}: ${description}`;
   }
 }
@@ -155,8 +155,19 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
     return this.hasScanned;
   }
 
+  public getFileGroups(): RouteFileGroupItem[] {
+    return this.fileGroups;
+  }
+
   public getTreeItem(element: vscode.TreeItem): vscode.TreeItem {
     return element;
+  }
+
+  public getParent(element: vscode.TreeItem): vscode.ProviderResult<vscode.TreeItem> {
+    if (element instanceof RouteTreeItem) {
+      return this.fileGroups.find((group) => group.filePath === element.route.filePath);
+    }
+    return undefined;
   }
 
   public getChildren(element?: vscode.TreeItem): Thenable<vscode.TreeItem[]> {
@@ -196,6 +207,40 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
 
     // Root level: Return pre-computed file groups
     return Promise.resolve(this.fileGroups);
+  }
+
+  /**
+   * Finds the route item at or near a specific line in a source file.
+   * Useful for active-editor route awareness.
+   */
+  public findRouteItemAt(
+    filePath: string,
+    line: number
+  ): { fileGroup: RouteFileGroupItem; routeItem: RouteTreeItem } | undefined {
+    const group = this.fileGroups.find((g) => g.filePath === filePath);
+    if (!group) {
+      return undefined;
+    }
+
+    let closestRoute: ApiRoute | undefined;
+    let minDiff = Infinity;
+
+    for (const r of group.routes) {
+      const diff = Math.abs(r.line - line);
+      if (diff < minDiff && diff <= 3) {
+        minDiff = diff;
+        closestRoute = r;
+      }
+    }
+
+    if (closestRoute) {
+      return {
+        fileGroup: group,
+        routeItem: new RouteTreeItem(closestRoute, group.relativeFilePath),
+      };
+    }
+
+    return undefined;
   }
 
   /**
