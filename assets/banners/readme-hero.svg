@@ -1,0 +1,165 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 420" width="1000" height="420" fill="none">
+    <defs>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&amp;family=Inter:wght@400;500;600;700;800&amp;display=swap');
+            .ui-title { font-family: 'Inter', sans-serif; font-size: 28px; font-weight: 800; fill: #FFFFFF; letter-spacing: -0.5px; }
+            .ui-tagline { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 500; fill: #94A3B8; }
+            .code-mono { font-family: 'Fira Code', monospace; font-size: 12.5px; }
+            .badge-txt { font-family: 'Fira Code', monospace; font-size: 10px; font-weight: 700; text-anchor: middle; }
+        </style>
+        <linearGradient id="hero-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#0B1220"/>
+            <stop offset="100%" stop-color="#060A12"/>
+        </linearGradient>
+    </defs>
+
+    <rect width="1000" height="420" rx="20" fill="url(#hero-bg)"/>
+    <rect x="1" y="1" width="998" height="418" rx="19" stroke="#1F2937" stroke-width="2"/>
+
+    <!-- Subtle Green/Teal Route Blueprint Grid -->
+    <g opacity="0.12">
+        <line x1="0" y1="70" x2="1000" y2="70" stroke="#10B981" stroke-dasharray="4 4"/>
+        <line x1="480" y1="70" x2="480" y2="420" stroke="#14B8A6" stroke-dasharray="4 4"/>
+    </g>
+
+    <!-- TOP HEADER -->
+    <g transform="translate(36, 24)">
+        <circle cx="8" cy="14" r="6" fill="#EF4444"/>
+        <circle cx="28" cy="14" r="6" fill="#F59E0B"/>
+        <circle cx="48" cy="14" r="6" fill="#10B981"/>
+
+        <g transform="translate(80, 0)">
+            <text y="20">
+                <tspan class="ui-title">API Route </tspan>
+                <tspan class="ui-title" fill="#10B981">Explorer</tspan>
+            </text>
+        </g>
+
+        <g transform="translate(670, 2)">
+            <rect width="250" height="26" rx="6" fill="#111827" stroke="#1F2937" stroke-width="1"/>
+            <circle cx="16" cy="13" r="4" fill="#10B981"/>
+            <text x="30" y="17" font-family="'Inter', sans-serif" font-size="11" font-weight="600" fill="#E2E8F0">DISCOVERED 7 ROUTES • AST SYNC</text>
+        </g>
+    </g>
+
+    <!-- LEFT PANEL: VS CODE SIDEBAR ROUTE TREE -->
+    <g transform="translate(36, 86)">
+        <rect width="420" height="308" rx="12" fill="#111827" stroke="#1F2937" stroke-width="1.5"/>
+        
+        <path d="M 0 12 C 0 5.37 5.37 0 12 0 L 408 0 C 414.63 0 420 5.37 420 12 L 420 38 L 0 38 Z" fill="#0C1424"/>
+        <text x="16" y="24" font-family="'Inter', sans-serif" font-size="11" font-weight="700" fill="#10B981" letter-spacing="1px">API ROUTE EXPLORER</text>
+        
+        <rect x="220" y="8" width="186" height="22" rx="4" fill="#0B1220" stroke="#1F2937" stroke-width="1"/>
+        <text x="232" y="23" font-family="'Inter', sans-serif" font-size="10.5" fill="#64748B">Filter routes (⌘P)...</text>
+
+        <!-- ROUTE TREE LIST -->
+        <!-- Group AUTH -->
+        <g transform="translate(16, 52)">
+            <path d="M 6 12 v 34 h 10 M 6 34 h 10" stroke="#14B8A6" stroke-width="1.5" stroke-dasharray="2 2" fill="none" opacity="0.6"/>
+            <text x="4" y="12" class="code-mono" font-weight="600" fill="#10B981">▼ AUTH</text>
+            
+            <g transform="translate(20, 22)">
+                <rect x="0" y="0" width="42" height="18" rx="4" fill="rgba(20, 184, 166, 0.15)" stroke="#14B8A6" stroke-width="1"/>
+                <text x="21" y="13" class="badge-txt" fill="#14B8A6">POST</text>
+                <text x="50" y="13" class="code-mono" fill="#F1F5F9">/api/v1/auth/login</text>
+            </g>
+
+            <g transform="translate(20, 44)">
+                <rect x="0" y="0" width="42" height="18" rx="4" fill="rgba(20, 184, 166, 0.15)" stroke="#14B8A6" stroke-width="1"/>
+                <text x="21" y="13" class="badge-txt" fill="#14B8A6">POST</text>
+                <text x="50" y="13" class="code-mono" fill="#F1F5F9">/api/v1/auth/register</text>
+            </g>
+        </g>
+
+        <!-- Group USERS -->
+        <g transform="translate(16, 126)">
+            <path d="M 6 12 v 34 h 10 M 6 34 h 10" stroke="#10B981" stroke-width="1.5" stroke-dasharray="2 2" fill="none" opacity="0.6"/>
+            <text x="4" y="12" class="code-mono" font-weight="600" fill="#10B981">▼ USERS</text>
+            
+            <g transform="translate(20, 22)">
+                <rect x="0" y="0" width="36" height="18" rx="4" fill="rgba(16, 185, 129, 0.15)" stroke="#10B981" stroke-width="1"/>
+                <text x="18" y="13" class="badge-txt" fill="#10B981">GET</text>
+                <text x="44" y="13" class="code-mono" fill="#F1F5F9">/api/v1/users</text>
+            </g>
+
+            <!-- GET /users/:id (HIGHLIGHTED / JUMPED) -->
+            <g transform="translate(14, 44)">
+                <rect x="-6" y="-2" width="378" height="24" rx="5" fill="#0B1220" stroke="#10B981" stroke-width="1.5"/>
+                <rect x="4" y="1" width="36" height="18" rx="4" fill="rgba(16, 185, 129, 0.25)" stroke="#10B981" stroke-width="1"/>
+                <text x="22" y="14" class="badge-txt" fill="#10B981">GET</text>
+                <text x="48" y="14" class="code-mono" font-weight="600" fill="#6EE7B7">/api/v1/users/:id</text>
+                
+                <circle cx="348" cy="10" r="8" fill="#10B981"/>
+                <path d="M 344 10 L 352 10 M 349 7 L 352 10 L 349 13" stroke="#0B1220" stroke-width="1.8" stroke-linecap="round"/>
+            </g>
+        </g>
+
+        <!-- Group PRODUCTS -->
+        <g transform="translate(16, 218)">
+            <path d="M 6 12 v 34 h 10 M 6 34 h 10" stroke="#14B8A6" stroke-width="1.5" stroke-dasharray="2 2" fill="none" opacity="0.6"/>
+            <text x="4" y="12" class="code-mono" font-weight="600" fill="#10B981">▼ PRODUCTS</text>
+            
+            <g transform="translate(20, 22)">
+                <rect x="0" y="0" width="36" height="18" rx="4" fill="rgba(16, 185, 129, 0.15)" stroke="#10B981" stroke-width="1"/>
+                <text x="18" y="13" class="badge-txt" fill="#10B981">GET</text>
+                <text x="44" y="13" class="code-mono" fill="#F1F5F9">/api/v1/products</text>
+            </g>
+
+            <g transform="translate(20, 44)">
+                <rect x="0" y="0" width="42" height="18" rx="4" fill="rgba(20, 184, 166, 0.15)" stroke="#14B8A6" stroke-width="1"/>
+                <text x="21" y="13" class="badge-txt" fill="#14B8A6">POST</text>
+                <text x="50" y="13" class="code-mono" fill="#F1F5F9">/api/v1/products</text>
+            </g>
+        </g>
+    </g>
+
+    <!-- RIGHT PANEL: CODE EDITOR LANDING & AST JUMP -->
+    <g transform="translate(486, 86)">
+        <rect width="478" height="308" rx="12" fill="#111827" stroke="#1F2937" stroke-width="1.5"/>
+
+        <path d="M 0 12 C 0 5.37 5.37 0 12 0 L 478 0 C 478 5.37 478 12 L 478 38 L 0 38 Z" fill="#0C1424"/>
+        <rect x="12" y="6" width="220" height="32" rx="6" fill="#111827" stroke="#1F2937" stroke-width="1"/>
+        <circle cx="26" cy="22" r="4" fill="#10B981"/>
+        <text x="38" y="26" class="code-mono" font-size="11.5" fill="#E2E8F0">controllers/users.controller.ts</text>
+
+        <!-- CODE HIGHLIGHT -->
+        <g transform="translate(20, 56)">
+            <text x="0" y="16" class="code-mono" fill="#475569">21</text>
+            <text x="32" y="16" class="code-mono" fill="#94A3B8">// User router registration</text>
+
+            <text x="0" y="38" class="code-mono" fill="#475569">22</text>
+            <text x="32" y="38" class="code-mono"><tspan fill="#F43F5E">export const</tspan> <tspan fill="#06B6D4">userRouter</tspan> = <tspan fill="#10B981">Router()</tspan>;</text>
+
+            <!-- Line 24: Target Jump Line -->
+            <g transform="translate(0, 50)">
+                <rect x="-10" y="0" width="458" height="32" rx="4" fill="#0B1220" stroke="#10B981" stroke-width="1.5"/>
+                <text x="0" y="21" class="code-mono" font-weight="700" fill="#10B981">24</text>
+                <text x="32" y="21" class="code-mono">
+                    <tspan fill="#06B6D4">userRouter</tspan>.<tspan fill="#10B981">get</tspan>(<tspan fill="#FCD34D">'/:id'</tspan>, <tspan fill="#14B8A6">auth</tspan>, <tspan fill="#A7F3D0">getUserById</tspan>);
+                </text>
+                <rect x="364" y="6" width="2.5" height="18" fill="#10B981"/>
+            </g>
+
+            <text x="0" y="104" class="code-mono" fill="#475569">25</text>
+            <text x="32" y="104" class="code-mono"><tspan fill="#F43F5E">async function</tspan> <tspan fill="#A7F3D0">getUserById</tspan>(req, res) {</text>
+
+            <text x="0" y="126" class="code-mono" fill="#475569">26</text>
+            <text x="48" y="126" class="code-mono"><tspan fill="#F43F5E">const</tspan> user = <tspan fill="#F43F5E">await</tspan> db.users.findUnique(req.params.id);</text>
+
+            <text x="0" y="148" class="code-mono" fill="#475569">27</text>
+            <text x="48" y="148" class="code-mono">res.json({ success: <tspan fill="#06B6D4">true</tspan>, data: user });</text>
+
+            <text x="0" y="170" class="code-mono" fill="#475569">28</text>
+            <text x="32" y="170" class="code-mono">}</text>
+        </g>
+
+        <!-- Floating Tooltip -->
+        <g transform="translate(110, 240)">
+            <rect width="270" height="42" rx="8" fill="#111827" stroke="#10B981" stroke-width="1.5"/>
+            <circle cx="24" cy="21" r="9" fill="#10B981"/>
+            <path d="M 21 21 L 27 21 M 24 18 L 27 21 L 24 24" stroke="#0B1220" stroke-width="1.8" stroke-linecap="round"/>
+            <text x="42" y="18" font-family="'Inter', sans-serif" font-size="11" font-weight="700" fill="#FFFFFF">1-CLICK CODE JUMP</text>
+            <text x="42" y="32" font-family="'Inter', sans-serif" font-size="10" fill="#94A3B8">Jumped to line 24 via AST index</text>
+        </g>
+    </g>
+</svg>

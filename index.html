@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Route Explorer — Developer Brand Identity & Design System</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logos/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-emerald: #10B981;
+      --primary-emerald-hover: #059669;
+      --primary-emerald-subtle: rgba(16, 185, 129, 0.12);
+      --secondary-teal: #14B8A6;
+      --secondary-teal-hover: #0D9488;
+      --accent-cyan: #06B6D4;
+      --accent-cyan-subtle: rgba(6, 182, 212, 0.12);
+
+      --deep-bg: #0B1220;
+      --dark-surface: #111827;
+      --slate-border: #1F2937;
+      --slate-muted: #64748B;
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+
+      --bg-canvas: #0B1220;
+      --card-bg: rgba(17, 24, 39, 0.8);
+      --card-border: rgba(31, 41, 55, 0.8);
+
+      --success: #22C55E;
+      --warning: #F59E0B;
+      --error: #EF4444;
+
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'Fira Code', ui-monospace, monospace;
+      --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    [data-theme="light"] {
+      --bg-canvas: #F8FAFC;
+      --card-bg: #FFFFFF;
+      --card-border: #E2E8F0;
+      --text-main: #0B1220;
+      --text-muted: #64748B;
+      --dark-surface: #F1F5F9;
+      --slate-border: #CBD5E1;
+      --card-bg: rgba(255, 255, 255, 0.9);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg-canvas);
+      color: var(--text-main);
+      line-height: 1.6;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      overflow-x: hidden;
+    }
+
+    /* Architectural green/teal background grid */
+    .bg-grid-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: 
+        linear-gradient(to right, rgba(16, 185, 129, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(20, 184, 166, 0.035) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* HEADER & NAV */
+    header.site-header {
+      position: sticky;
+      top: 0;
+      background: rgba(11, 18, 32, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      z-index: 100;
+      padding: 16px 0;
+    }
+    [data-theme="light"] header.site-header {
+      background: rgba(248, 250, 252, 0.9);
+    }
+
+    .nav-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand-mark-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-mark-link img {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+    }
+
+    .nav-brand-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+    }
+
+    .nav-brand-title span {
+      color: var(--primary-emerald);
+      font-weight: 600;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: var(--transition);
+    }
+
+    .nav-links a:hover {
+      color: var(--primary-emerald);
+    }
+
+    .theme-toggle-btn {
+      background: var(--dark-surface);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: var(--transition);
+    }
+
+    .theme-toggle-btn:hover {
+      border-color: var(--primary-emerald);
+      transform: translateY(-1px);
+    }
+
+    /* HERO SECTION */
+    .hero-section {
+      padding: 64px 0 48px;
+      text-align: center;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: var(--primary-emerald-subtle);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--primary-emerald);
+      border-radius: 999px;
+      font-size: 0.825rem;
+      font-weight: 600;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-pill .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary-emerald);
+      box-shadow: 0 0 10px var(--primary-emerald);
+    }
+
+    .hero-title {
+      font-size: 3.25rem;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -1.5px;
+      margin-bottom: 16px;
+    }
+
+    .hero-title span {
+      background: linear-gradient(135deg, var(--primary-emerald), var(--secondary-teal));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-tagline {
+      font-size: 1.35rem;
+      color: var(--text-muted);
+      max-width: 680px;
+      margin: 0 auto 36px;
+      font-weight: 400;
+    }
+
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 48px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--primary-emerald);
+      color: #0B1220;
+      border: 1px solid transparent;
+      box-shadow: 0 4px 18px rgba(16, 185, 129, 0.35);
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-emerald-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(16, 185, 129, 0.5);
+    }
+
+    .btn-secondary {
+      background: var(--dark-surface);
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--primary-emerald);
+      transform: translateY(-2px);
+    }
+
+    /* INTERACTIVE VS CODE PRODUCT SIMULATOR */
+    .simulator-wrapper {
+      background: var(--deep-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+      margin-bottom: 80px;
+    }
+
+    .sim-header {
+      background: #0C1424;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .sim-dots {
+      display: flex;
+      gap: 8px;
+    }
+
+    .sim-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .sim-dot.red { background: #EF4444; }
+    .sim-dot.yellow { background: #F59E0B; }
+    .sim-dot.green { background: #10B981; }
+
+    .sim-title {
+      font-size: 0.85rem;
+      color: #94A3B8;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sim-status {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--primary-emerald);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .sim-body {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      min-height: 440px;
+    }
+
+    @media (max-width: 860px) {
+      .sim-body { grid-template-columns: 1fr; }
+    }
+
+    /* SIDEBAR TREE */
+    .sim-sidebar {
+      background: #0B1220;
+      border-right: 1px solid var(--card-border);
+      padding: 16px;
+    }
+
+    .sidebar-head-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #94A3B8;
+      letter-spacing: 0.5px;
+    }
+
+    .sidebar-search-box {
+      width: 100%;
+      background: #111827;
+      border: 1px solid #1F2937;
+      color: #F8FAFC;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-family: var(--font-sans);
+      font-size: 0.8rem;
+      margin-bottom: 16px;
+      outline: none;
+    }
+
+    .sidebar-search-box:focus {
+      border-color: var(--primary-emerald);
+    }
+
+    .route-group-label {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--primary-emerald);
+      margin: 12px 0 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .route-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-bottom: 4px;
+      border: 1px solid transparent;
+    }
+
+    .route-item:hover {
+      background: rgba(31, 41, 55, 0.7);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .route-item.active {
+      background: #111827;
+      border-color: var(--primary-emerald);
+    }
+
+    .route-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: #F1F5F9;
+    }
+
+    .method-pill {
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .method-get { background: rgba(16, 185, 129, 0.2); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .method-post { background: rgba(20, 184, 166, 0.2); color: #14B8A6; border: 1px solid rgba(20, 184, 166, 0.3); }
+    .method-put { background: rgba(245, 158, 11, 0.2); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .method-delete { background: rgba(239, 68, 68, 0.2); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    .jump-arrow-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      opacity: 0;
+      transition: var(--transition);
+    }
+
+    .route-item:hover .jump-arrow-hint,
+    .route-item.active .jump-arrow-hint {
+      opacity: 1;
+      color: var(--primary-emerald);
+    }
+
+    /* EDITOR AREA */
+    .sim-editor {
+      background: #060A12;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .editor-tab-bar {
+      background: #0B1220;
+      display: flex;
+      border-bottom: 1px solid var(--card-border);
+      padding: 0 12px;
+    }
+
+    .editor-tab {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: #E2E8F0;
+      background: #060A12;
+      border-right: 1px solid var(--card-border);
+      border-bottom: 2px solid var(--primary-emerald);
+    }
+
+    .editor-code-body {
+      padding: 20px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      line-height: 1.8;
+      overflow-x: auto;
+      flex-grow: 1;
+    }
+
+    .code-line {
+      display: flex;
+      gap: 20px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      transition: background 0.3s ease;
+    }
+
+    .code-line.highlight {
+      background: rgba(16, 185, 129, 0.16);
+      border-left: 3px solid var(--primary-emerald);
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+    }
+
+    .line-no {
+      color: #475569;
+      user-select: none;
+      width: 28px;
+      text-align: right;
+    }
+
+    .code-content {
+      color: #CBD5E1;
+    }
+
+    .kw { color: #F43F5E; }
+    .fn { color: var(--accent-cyan); }
+    .str { color: #FCD34D; }
+    .cmt { color: #64748B; font-style: italic; }
+    .acc { color: var(--secondary-teal); }
+
+    /* SECTION STYLES */
+    .section-wrap {
+      padding: 60px 0;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .section-heading {
+      margin-bottom: 36px;
+    }
+
+    .section-heading h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      margin-bottom: 8px;
+    }
+
+    .section-heading p {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+    }
+
+    /* LOGO ASSETS GRID */
+    .assets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .asset-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .asset-card:hover {
+      border-color: var(--primary-emerald);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+    }
+
+    .asset-preview-box {
+      width: 100%;
+      height: 180px;
+      background: var(--dark-surface);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      overflow: hidden;
+      padding: 16px;
+    }
+
+    .asset-preview-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .asset-preview-box.light-preview {
+      background: #F8FAFC;
+    }
+
+    .asset-meta {
+      width: 100%;
+    }
+
+    .asset-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .asset-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      min-height: 38px;
+    }
+
+    .asset-card-actions {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .asset-btn {
+      flex: 1;
+      padding: 8px 10px;
+      background: var(--dark-surface);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .asset-btn:hover {
+      background: var(--primary-emerald);
+      color: #0B1220;
+      border-color: var(--primary-emerald);
+    }
+
+    /* COLOR SYSTEM */
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .color-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .color-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .color-swatch {
+      height: 100px;
+      width: 100%;
+    }
+
+    .color-info {
+      padding: 14px;
+    }
+
+    .color-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .color-hex {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* ICON SYSTEM GRID */
+    .icon-system-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 16px;
+    }
+
+    .icon-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 18px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      text-align: center;
+      transition: var(--transition);
+    }
+
+    .icon-box:hover {
+      border-color: var(--primary-emerald);
+      transform: translateY(-2px);
+    }
+
+    .icon-box img {
+      width: 32px;
+      height: 32px;
+    }
+
+    .icon-box span {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* TOAST NOTIFICATION */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #0B1220;
+      color: #FFFFFF;
+      border: 1px solid var(--primary-emerald);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      z-index: 1000;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* FOOTER */
+    footer.site-footer {
+      border-top: 1px solid var(--card-border);
+      padding: 48px 0;
+      margin-top: 80px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-grid-overlay"></div>
+
+  <!-- SITE HEADER -->
+  <header class="site-header">
+    <div class="container nav-wrapper">
+      <a href="#" class="brand-mark-link">
+        <img src="assets/logos/logo-symbol.svg" alt="API Route Explorer Mark">
+        <div class="nav-brand-title">API Route <span>Explorer</span></div>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#simulator">Live Simulator</a></li>
+        <li><a href="#assets">Logo Lockups</a></li>
+        <li><a href="#colors">Color Tokens</a></li>
+        <li><a href="#icons">16-Icon Suite</a></li>
+        <li><a href="#guidelines">Brand Rules</a></li>
+      </ul>
+      <button class="theme-toggle-btn" id="theme-toggle" onclick="toggleTheme()">
+        <span id="theme-icon">☀️</span> Light Mode
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+      <div class="badge-pill">
+        <span class="pulse-dot"></span>
+        Green + Teal + Cyan Developer Identity
+      </div>
+      <h1 class="hero-title">
+        See every API route.<br>
+        <span>Jump straight to the code.</span>
+      </h1>
+      <p class="hero-tagline">
+        A professional, technical VS Code brand identity designed for JavaScript, TypeScript, Node.js, and Express developers.
+      </p>
+      <div class="hero-actions">
+        <a href="#simulator" class="btn btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Test 1-Click Code Jump
+        </a>
+        <a href="#assets" class="btn btn-secondary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Explore Vector SVGs
+        </a>
+      </div>
+    </section>
+
+    <!-- LIVE PRODUCT SIMULATOR SECTION -->
+    <section id="simulator">
+      <div class="simulator-wrapper">
+        <div class="sim-header">
+          <div class="sim-dots">
+            <span class="sim-dot red"></span>
+            <span class="sim-dot yellow"></span>
+            <span class="sim-dot green"></span>
+          </div>
+          <div class="sim-title">
+            <img src="assets/logos/favicon.svg" width="16" height="16" alt="Icon">
+            Visual Studio Code — API Route Explorer Live AST Session
+          </div>
+          <div class="sim-status">AST PARSER: READY • 7 ROUTES FOUND</div>
+        </div>
+
+        <div class="sim-body">
+          <!-- Sidebar: Route Tree -->
+          <div class="sim-sidebar">
+            <div class="sidebar-head-bar">
+              <span>EXPLORER: API ROUTES</span>
+              <span>⌘P FILTER</span>
+            </div>
+            <input type="text" class="sidebar-search-box" id="route-filter" placeholder="Filter routes (e.g. users, auth)..." oninput="filterRoutes(this.value)">
+
+            <!-- Group AUTH -->
+            <div class="route-group" id="group-auth">
+              <div class="route-group-label">▼ AUTH CONTROLLER</div>
+              <div class="route-item" onclick="selectRoute('auth-login', 12, 'POST /api/v1/auth/login')">
+                <div class="route-item-left">
+                  <span class="method-pill method-post">POST</span>
+                  <span>/auth/login</span>
+                </div>
+                <span class="jump-arrow-hint">Jump ➔</span>
+              </div>
+              <div class="route-item" onclick="selectRoute('auth-register', 24, 'POST /api/v1/auth/register')">
+                <div class="route-item-left">
+                  <span class="method-pill method-post">POST</span>
+                  <span>/auth/register</span>
+                </div>
+                <span class="jump-arrow-hint">Jump ➔</span>
+              </div>
+            </div>
+
+            <!-- Group USERS -->
+            <div class="route-group" id="group-users">
+              <div class="route-group-label">▼ USER CONTROLLER</div>
+              <div class="route-item" onclick="selectRoute('users-list', 36, 'GET /api/v1/users')">
+                <div class="route-item-left">
+                  <span class="method-pill method-get">GET</span>
+                  <span>/users</span>
+                </div>
+                <span class="jump-arrow-hint">Jump ➔</span>
+              </div>
+              <div class="route-item active" id="default-active" onclick="selectRoute('users-detail', 48, 'GET /api/v1/users/:id')">
+                <div class="route-item-left">
+                  <span class="method-pill method-get">GET</span>
+                  <span>/users/:id</span>
+                </div>
+                <span class="jump-arrow-hint">Jump ➔</span>
+              </div>
+              <div class="route-item" onclick="selectRoute('users-delete', 60, 'DELETE /api/v1/users/:id')">
+                <div class="route-item-left">
+                  <span class="method-pill method-delete">DEL</span>
+                  <span>/users/:id</span>
+                </div>
+                <span class="jump-arrow-hint">Jump ➔</span>
+              </div>
+            </div>
+
+            <!-- Group PRODUCTS -->
+            <div class="route-group" id="group-products">
+              <div class="route-group-label">▼ PRODUCT CONTROLLER</div>
+              <div class="route-item" onclick="selectRoute('products-list', 72, 'GET /api/v1/products')">
+                <div class="route-item-left">
+                  <span class="method-pill method-get">GET</span>
+                  <span>/products</span>
+                </div>
+                <span class="jump-arrow-hint">Jump ➔</span>
+              </div>
+              <div class="route-item" onclick="selectRoute('products-create', 84, 'POST /api/v1/products')">
+                <div class="route-item-left">
+                  <span class="method-pill method-post">POST</span>
+                  <span>/products</span>
+                </div>
+                <span class="jump-arrow-hint">Jump ➔</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Code Editor Area -->
+          <div class="sim-editor">
+            <div class="editor-tab-bar">
+              <div class="editor-tab" id="active-file-tab">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                src/controllers/users.controller.ts
+              </div>
+            </div>
+            <div class="editor-code-body" id="code-body">
+              <!-- Rendered lines -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: LOGO ASSETS -->
+    <section id="assets" class="section-wrap">
+      <div class="section-heading">
+        <h2>Brand Lockups &amp; Production SVGs</h2>
+        <p>Full suite of vector assets featuring the geometric Route Pathfinder with integrated &lt;/&gt; element.</p>
+      </div>
+
+      <div class="assets-grid">
+        <!-- 1. Pure Symbol -->
+        <div class="asset-card">
+          <div class="asset-preview-box">
+            <img src="assets/logos/logo-symbol.svg" alt="Logo Symbol">
+          </div>
+          <div class="asset-meta">
+            <div class="asset-title">1. Symbol Only</div>
+            <div class="asset-desc">Endpoint nodes, horizontal route highway, directional arrow, and integrated &lt;/&gt; code glyph.</div>
+            <div class="asset-card-actions">
+              <button class="asset-btn" onclick="copySvgPath('assets/logos/logo-symbol.svg')">Copy SVG</button>
+              <a href="assets/logos/logo-symbol.svg" download class="asset-btn">Download</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Symbol + API Route Explorer (Vertical) -->
+        <div class="asset-card">
+          <div class="asset-preview-box">
+            <img src="assets/logos/logo-vertical.svg" alt="Vertical Logo">
+          </div>
+          <div class="asset-meta">
+            <div class="asset-title">2. Symbol + Wordmark (Vertical)</div>
+            <div class="asset-desc">Stacked presentation badge, high-contrast wordmark, tagline, and HTTP method pill deco.</div>
+            <div class="asset-card-actions">
+              <button class="asset-btn" onclick="copySvgPath('assets/logos/logo-vertical.svg')">Copy SVG</button>
+              <a href="assets/logos/logo-vertical.svg" download class="asset-btn">Download</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Horizontal Logo -->
+        <div class="asset-card">
+          <div class="asset-preview-box">
+            <img src="assets/logos/logo-horizontal.svg" alt="Horizontal Logo">
+          </div>
+          <div class="asset-meta">
+            <div class="asset-title">3. Horizontal Logo</div>
+            <div class="asset-desc">Optimized horizontal lockup for documentation headers, navbars, and marketplace banners.</div>
+            <div class="asset-card-actions">
+              <button class="asset-btn" onclick="copySvgPath('assets/logos/logo-horizontal.svg')">Copy SVG</button>
+              <a href="assets/logos/logo-horizontal.svg" download class="asset-btn">Download</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. VS Code Extension Icon -->
+        <div class="asset-card">
+          <div class="asset-preview-box">
+            <img src="assets/logos/vscode-extension-icon.svg" alt="VS Code Extension Icon">
+          </div>
+          <div class="asset-meta">
+            <div class="asset-title">4. VS Code Extension Icon</div>
+            <div class="asset-desc">256x256 square icon with Deep Navy #0B1220 background, Emerald, Teal, and Cyan accents.</div>
+            <div class="asset-card-actions">
+              <button class="asset-btn" onclick="copySvgPath('assets/logos/vscode-extension-icon.svg')">Copy SVG</button>
+              <a href="assets/logos/vscode-extension-icon.svg" download class="asset-btn">Download</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Dark-Background Presentation -->
+        <div class="asset-card">
+          <div class="asset-preview-box">
+            <img src="assets/logos/logo-dark.svg" alt="Dark Background Logo">
+          </div>
+          <div class="asset-meta">
+            <div class="asset-title">5. Dark-Background Version</div>
+            <div class="asset-desc">Full Deep Navy container lockup with subtle border and crisp white wordmark.</div>
+            <div class="asset-card-actions">
+              <button class="asset-btn" onclick="copySvgPath('assets/logos/logo-dark.svg')">Copy SVG</button>
+              <a href="assets/logos/logo-dark.svg" download class="asset-btn">Download</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Light-Background Presentation -->
+        <div class="asset-card">
+          <div class="asset-preview-box light-preview">
+            <img src="assets/logos/logo-light.svg" alt="Light Background Logo">
+          </div>
+          <div class="asset-meta">
+            <div class="asset-title">6. Light-Background Version</div>
+            <div class="asset-desc">High-contrast presentation on #F8FAFC canvas with Deep Navy typography.</div>
+            <div class="asset-card-actions">
+              <button class="asset-btn" onclick="copySvgPath('assets/logos/logo-light.svg')">Copy SVG</button>
+              <a href="assets/logos/logo-light.svg" download class="asset-btn">Download</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. Monochrome White -->
+        <div class="asset-card">
+          <div class="asset-preview-box">
+            <img src="assets/logos/logo-monochrome-white.svg" alt="Monochrome White">
+          </div>
+          <div class="asset-meta">
+            <div class="asset-title">7. Monochrome White</div>
+            <div class="asset-desc">Single-color white layout for terminal output and dark monochrome environments.</div>
+            <div class="asset-card-actions">
+              <button class="asset-btn" onclick="copySvgPath('assets/logos/logo-monochrome-white.svg')">Copy SVG</button>
+              <a href="assets/logos/logo-monochrome-white.svg" download class="asset-btn">Download</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. Monochrome Black -->
+        <div class="asset-card">
+          <div class="asset-preview-box light-preview">
+            <img src="assets/logos/logo-monochrome-black.svg" alt="Monochrome Black">
+          </div>
+          <div class="asset-meta">
+            <div class="asset-title">8. Monochrome Black</div>
+            <div class="asset-desc">Single-color black layout for physical documentation, invoices, and light print.</div>
+            <div class="asset-card-actions">
+              <button class="asset-btn" onclick="copySvgPath('assets/logos/logo-monochrome-black.svg')">Copy SVG</button>
+              <a href="assets/logos/logo-monochrome-black.svg" download class="asset-btn">Download</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 9. GitHub Avatar -->
+        <div class="asset-card">
+          <div class="asset-preview-box">
+            <img src="assets/logos/github-avatar.svg" alt="GitHub Avatar">
+          </div>
+          <div class="asset-meta">
+            <div class="asset-title">GitHub Repository Avatar</div>
+            <div class="asset-desc">500x500 circular-crop safe profile graphic with technical blueprint grid.</div>
+            <div class="asset-card-actions">
+              <button class="asset-btn" onclick="copySvgPath('assets/logos/github-avatar.svg')">Copy SVG</button>
+              <a href="assets/logos/github-avatar.svg" download class="asset-btn">Download</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 10. npm Avatar -->
+        <div class="asset-card">
+          <div class="asset-preview-box">
+            <img src="assets/logos/npm-avatar.svg" alt="npm Avatar">
+          </div>
+          <div class="asset-meta">
+            <div class="asset-title">npm Package Avatar</div>
+            <div class="asset-desc">Square profile format with VS Code Extension badge for npm registry package page.</div>
+            <div class="asset-card-actions">
+              <button class="asset-btn" onclick="copySvgPath('assets/logos/npm-avatar.svg')">Copy SVG</button>
+              <a href="assets/logos/npm-avatar.svg" download class="asset-btn">Download</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 11. Favicon -->
+        <div class="asset-card">
+          <div class="asset-preview-box">
+            <img src="assets/logos/favicon.svg" alt="Favicon" style="width: 64px; height: 64px;">
+          </div>
+          <div class="asset-meta">
+            <div class="asset-title">Favicon (32x32 Optimized)</div>
+            <div class="asset-desc">High-contrast glyph with boosted stroke weights for crisp rendering in browser tabs.</div>
+            <div class="asset-card-actions">
+              <button class="asset-btn" onclick="copySvgPath('assets/logos/favicon.svg')">Copy SVG</button>
+              <a href="assets/logos/favicon.svg" download class="asset-btn">Download</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 12. README Hero Banner -->
+        <div class="asset-card" style="grid-column: span 2;">
+          <div class="asset-preview-box" style="height: 220px;">
+            <img src="assets/banners/readme-hero.svg" alt="README Hero">
+          </div>
+          <div class="asset-meta">
+            <div class="asset-title">GitHub README Hero Banner (1000x420)</div>
+            <div class="asset-desc">Technical diagram banner displaying route hierarchy tree and 1-click code jump.</div>
+            <div class="asset-card-actions">
+              <button class="asset-btn" onclick="copySvgPath('assets/banners/readme-hero.svg')">Copy SVG</button>
+              <a href="assets/banners/readme-hero.svg" download class="asset-btn">Download</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 13. Social Preview & Docs Header -->
+        <div class="asset-card" style="grid-column: span 2;">
+          <div class="asset-preview-box" style="height: 220px;">
+            <img src="assets/banners/social-preview.svg" alt="Social Preview">
+          </div>
+          <div class="asset-meta">
+            <div class="asset-title">Social Preview (1200x630 OpenGraph)</div>
+            <div class="asset-desc">Standard OpenGraph &amp; Twitter preview card optimized for GitHub social share.</div>
+            <div class="asset-card-actions">
+              <button class="asset-btn" onclick="copySvgPath('assets/banners/social-preview.svg')">Copy SVG</button>
+              <a href="assets/banners/social-preview.svg" download class="asset-btn">Download</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: COLOR PALETTE -->
+    <section id="colors" class="section-wrap">
+      <div class="section-heading">
+        <h2>Green + Teal + Cyan Color Architecture</h2>
+        <p>Click any color card to copy its HEX value directly to clipboard.</p>
+      </div>
+
+      <div class="color-grid">
+        <div class="color-card" onclick="copyToClipboard('#10B981', 'Primary Emerald Green')">
+          <div class="color-swatch" style="background: #10B981;"></div>
+          <div class="color-info">
+            <div class="color-name">Primary Emerald Green</div>
+            <div class="color-hex">#10B981 <span>Copy ⎘</span></div>
+          </div>
+        </div>
+
+        <div class="color-card" onclick="copyToClipboard('#14B8A6', 'Secondary Teal')">
+          <div class="color-swatch" style="background: #14B8A6;"></div>
+          <div class="color-info">
+            <div class="color-name">Secondary Teal</div>
+            <div class="color-hex">#14B8A6 <span>Copy ⎘</span></div>
+          </div>
+        </div>
+
+        <div class="color-card" onclick="copyToClipboard('#06B6D4', 'Accent Cyan')">
+          <div class="color-swatch" style="background: #06B6D4;"></div>
+          <div class="color-info">
+            <div class="color-name">Accent Cyan</div>
+            <div class="color-hex">#06B6D4 <span>Copy ⎘</span></div>
+          </div>
+        </div>
+
+        <div class="color-card" onclick="copyToClipboard('#0B1220', 'Deep Background')">
+          <div class="color-swatch" style="background: #0B1220;"></div>
+          <div class="color-info">
+            <div class="color-name">Deep Background</div>
+            <div class="color-hex">#0B1220 <span>Copy ⎘</span></div>
+          </div>
+        </div>
+
+        <div class="color-card" onclick="copyToClipboard('#111827', 'Dark Surface')">
+          <div class="color-swatch" style="background: #111827;"></div>
+          <div class="color-info">
+            <div class="color-name">Dark Surface</div>
+            <div class="color-hex">#111827 <span>Copy ⎘</span></div>
+          </div>
+        </div>
+
+        <div class="color-card" onclick="copyToClipboard('#1F2937', 'Slate')">
+          <div class="color-swatch" style="background: #1F2937;"></div>
+          <div class="color-info">
+            <div class="color-name">Slate</div>
+            <div class="color-hex">#1F2937 <span>Copy ⎘</span></div>
+          </div>
+        </div>
+
+        <div class="color-card" onclick="copyToClipboard('#F8FAFC', 'Light Background')">
+          <div class="color-swatch" style="background: #F8FAFC; border-bottom: 1px solid #E2E8F0;"></div>
+          <div class="color-info">
+            <div class="color-name">Light Background</div>
+            <div class="color-hex">#F8FAFC <span>Copy ⎘</span></div>
+          </div>
+        </div>
+
+        <div class="color-card" onclick="copyToClipboard('#FFFFFF', 'White')">
+          <div class="color-swatch" style="background: #FFFFFF; border-bottom: 1px solid #E2E8F0;"></div>
+          <div class="color-info">
+            <div class="color-name">White</div>
+            <div class="color-hex">#FFFFFF <span>Copy ⎘</span></div>
+          </div>
+        </div>
+
+        <div class="color-card" onclick="copyToClipboard('#22C55E', 'Success')">
+          <div class="color-swatch" style="background: #22C55E;"></div>
+          <div class="color-info">
+            <div class="color-name">Success</div>
+            <div class="color-hex">#22C55E <span>Copy ⎘</span></div>
+          </div>
+        </div>
+
+        <div class="color-card" onclick="copyToClipboard('#F59E0B', 'Warning')">
+          <div class="color-swatch" style="background: #F59E0B;"></div>
+          <div class="color-info">
+            <div class="color-name">Warning</div>
+            <div class="color-hex">#F59E0B <span>Copy ⎘</span></div>
+          </div>
+        </div>
+
+        <div class="color-card" onclick="copyToClipboard('#EF4444', 'Error')">
+          <div class="color-swatch" style="background: #EF4444;"></div>
+          <div class="color-info">
+            <div class="color-name">Error</div>
+            <div class="color-hex">#EF4444 <span>Copy ⎘</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: ICON SYSTEM -->
+    <section id="icons" class="section-wrap">
+      <div class="section-heading">
+        <h2>Unified 16-Icon Geometric System</h2>
+        <p>Built with identical 2px stroke width, rounded caps/joins, and matching proportions across all 16 symbols.</p>
+      </div>
+
+      <div class="icon-system-grid">
+        <div class="icon-box">
+          <img src="assets/icons/route.svg" alt="API Route">
+          <span>1. API Route</span>
+        </div>
+        <div class="icon-box">
+          <img src="assets/icons/get.svg" alt="GET">
+          <span>2. GET</span>
+        </div>
+        <div class="icon-box">
+          <img src="assets/icons/post.svg" alt="POST">
+          <span>3. POST</span>
+        </div>
+        <div class="icon-box">
+          <img src="assets/icons/put.svg" alt="PUT">
+          <span>4. PUT</span>
+        </div>
+        <div class="icon-box">
+          <img src="assets/icons/patch.svg" alt="PATCH">
+          <span>5. PATCH</span>
+        </div>
+        <div class="icon-box">
+          <img src="assets/icons/delete.svg" alt="DELETE">
+          <span>6. DELETE</span>
+        </div>
+        <div class="icon-box">
+          <img src="assets/icons/controller.svg" alt="Controller">
+          <span>7. Controller</span>
+        </div>
+        <div class="icon-box">
+          <img src="assets/icons/endpoint.svg" alt="Endpoint">
+          <span>8. Endpoint</span>
+        </div>
+        <div class="icon-box">
+          <img src="assets/icons/navigation.svg" alt="Navigation">
+          <span>9. Navigation</span>
+        </div>
+        <div class="icon-box">
+          <img src="assets/icons/search.svg" alt="Search">
+          <span>10. Search</span>
+        </div>
+        <div class="icon-box">
+          <img src="assets/icons/refresh.svg" alt="Refresh">
+          <span>11. Refresh</span>
+        </div>
+        <div class="icon-box">
+          <img src="assets/icons/folder.svg" alt="Folder">
+          <span>12. Folder</span>
+        </div>
+        <div class="icon-box">
+          <img src="assets/icons/duplicate-route.svg" alt="Duplicate">
+          <span>13. Duplicate Route</span>
+        </div>
+        <div class="icon-box">
+          <img src="assets/icons/missing-handler.svg" alt="Missing Handler">
+          <span>14. Missing Handler</span>
+        </div>
+        <div class="icon-box">
+          <img src="assets/icons/warning.svg" alt="Warning">
+          <span>15. Warning</span>
+        </div>
+        <div class="icon-box">
+          <img src="assets/icons/settings.svg" alt="Settings">
+          <span>16. Settings</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: BRAND GUIDELINES -->
+    <section id="guidelines" class="section-wrap">
+      <div class="section-heading">
+        <h2>Brand Rules &amp; Best Practices</h2>
+        <p>Ensuring visual precision, developer-grade consistency, and high brand recall.</p>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;">
+        <div class="asset-card" style="align-items: flex-start;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; color: #10B981; font-weight: 700;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            DO (Brand Best Practices)
+          </div>
+          <ul style="padding-left: 20px; font-size: 0.9rem; color: var(--text-muted); line-height: 1.8;">
+            <li>Use <strong>Emerald Green #10B981</strong> and <strong>Teal #14B8A6</strong> as the primary brand drivers.</li>
+            <li>Use <strong>Cyan #06B6D4</strong> only as an intentional secondary accent.</li>
+            <li>Maintain high contrast between Deep Navy (#0B1220) and typography.</li>
+            <li>Keep the route highway and arrow horizontal and balanced.</li>
+          </ul>
+        </div>
+
+        <div class="asset-card" style="align-items: flex-start;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; color: #EF4444; font-weight: 700;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            DON'T (Strict Visual Prohibitions)
+          </div>
+          <ul style="padding-left: 20px; font-size: 0.9rem; color: var(--text-muted); line-height: 1.8;">
+            <li>Do NOT use the typical purple/indigo developer-tool palette.</li>
+            <li>Do not add generic 3D effects, cartoon robots, or animal mascots.</li>
+            <li>Do not replace the symbol with generic server/cloud/database clipart.</li>
+            <li>Do not introduce rainbow gradients or cluttered drop-shadows.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p><strong>API Route Explorer</strong> — VS Code Extension Brand Identity</p>
+      <p style="margin-top: 6px; font-size: 0.8rem;">“See every API route. Jump straight to the code.”</p>
+    </div>
+  </footer>
+
+  <!-- Toast -->
+  <div id="toast" class="toast">Copied to clipboard!</div>
+
+  <script>
+    const routeCodeMap = {
+      'auth-login': {
+        file: 'src/controllers/auth.controller.ts',
+        line: 12,
+        code: [
+          { num: 10, text: '// Handles user authentication and token creation', type: 'cmt' },
+          { num: 11, text: 'export const authRouter = Router();', type: 'plain' },
+          { num: 12, text: "authRouter.post('/login', validateBody(LoginSchema), handleLogin);", type: 'target' },
+          { num: 13, text: 'async function handleLogin(req: Request, res: Response) {', type: 'plain' },
+          { num: 14, text: '  const { email, password } = req.body;', type: 'plain' },
+          { num: 15, text: '  const session = await authService.authenticate(email, password);', type: 'plain' },
+          { num: 16, text: '  return res.status(200).json({ success: true, token: session.jwt });', type: 'plain' },
+          { num: 17, text: '}', type: 'plain' }
+        ]
+      },
+      'auth-register': {
+        file: 'src/controllers/auth.controller.ts',
+        line: 24,
+        code: [
+          { num: 22, text: '// New account signup endpoint', type: 'cmt' },
+          { num: 23, text: 'const registerRateLimit = rateLimit({ max: 5 });', type: 'plain' },
+          { num: 24, text: "authRouter.post('/register', registerRateLimit, handleRegister);", type: 'target' },
+          { num: 25, text: 'async function handleRegister(req: Request, res: Response) {', type: 'plain' },
+          { num: 26, text: '  const newUser = await authService.createUser(req.body);', type: 'plain' },
+          { num: 27, text: '  return res.status(201).json({ user: newUser });', type: 'plain' },
+          { num: 28, text: '}', type: 'plain' }
+        ]
+      },
+      'users-list': {
+        file: 'src/controllers/users.controller.ts',
+        line: 36,
+        code: [
+          { num: 34, text: '// Paginated user list lookup', type: 'cmt' },
+          { num: 35, text: 'export const userRouter = Router();', type: 'plain' },
+          { num: 36, text: "userRouter.get('/', authMiddleware, getAllUsers);", type: 'target' },
+          { num: 37, text: 'async function getAllUsers(req: Request, res: Response) {', type: 'plain' },
+          { num: 38, text: '  const { page = 1, limit = 20 } = req.query;', type: 'plain' },
+          { num: 39, text: '  const users = await db.users.findMany({ skip: (page-1)*limit });', type: 'plain' },
+          { num: 40, text: '  res.json({ data: users });', type: 'plain' },
+          { num: 41, text: '}', type: 'plain' }
+        ]
+      },
+      'users-detail': {
+        file: 'src/controllers/users.controller.ts',
+        line: 48,
+        code: [
+          { num: 46, text: '// Single user profile query by unique identifier', type: 'cmt' },
+          { num: 47, text: 'const checkUserPerms = requirePermission("users:read");', type: 'plain' },
+          { num: 48, text: "userRouter.get('/:id', checkUserPerms, getUserById);", type: 'target' },
+          { num: 49, text: 'async function getUserById(req: Request, res: Response) {', type: 'plain' },
+          { num: 50, text: '  const user = await db.users.findUnique({ where: { id: req.params.id } });', type: 'plain' },
+          { num: 51, text: '  if (!user) throw new NotFoundError("User not found");', type: 'plain' },
+          { num: 52, text: '  return res.json({ success: true, data: user });', type: 'plain' },
+          { num: 53, text: '}', type: 'plain' }
+        ]
+      },
+      'users-delete': {
+        file: 'src/controllers/users.controller.ts',
+        line: 60,
+        code: [
+          { num: 58, text: '// Soft-delete user profile and revoke active tokens', type: 'cmt' },
+          { num: 59, text: 'const requireAdmin = requireRole("ADMIN");', type: 'plain' },
+          { num: 60, text: "userRouter.delete('/:id', requireAdmin, deleteUser);", type: 'target' },
+          { num: 61, text: 'async function deleteUser(req: Request, res: Response) {', type: 'plain' },
+          { num: 62, text: '  await db.users.update({ where: { id: req.params.id }, data: { deletedAt: new Date() } });', type: 'plain' },
+          { num: 63, text: '  res.status(204).send();', type: 'plain' },
+          { num: 64, text: '}', type: 'plain' }
+        ]
+      },
+      'products-list': {
+        file: 'src/controllers/products.controller.ts',
+        line: 72,
+        code: [
+          { num: 70, text: '// Public product catalog index with cache header', type: 'cmt' },
+          { num: 71, text: 'export const productRouter = Router();', type: 'plain' },
+          { num: 72, text: "productRouter.get('/', cache('5m'), listProducts);", type: 'target' },
+          { num: 73, text: 'async function listProducts(req: Request, res: Response) {', type: 'plain' },
+          { num: 74, text: '  const items = await catalogService.getActiveProducts();', type: 'plain' },
+          { num: 75, text: '  res.json({ products: items });', type: 'plain' },
+          { num: 76, text: '}', type: 'plain' }
+        ]
+      },
+      'products-create': {
+        file: 'src/controllers/products.controller.ts',
+        line: 84,
+        code: [
+          { num: 82, text: '// Create inventory item', type: 'cmt' },
+          { num: 83, text: 'const upload = multer({ dest: "uploads/" });', type: 'plain' },
+          { num: 84, text: "productRouter.post('/', upload.single('image'), createProduct);", type: 'target' },
+          { num: 85, text: 'async function createProduct(req: Request, res: Response) {', type: 'plain' },
+          { num: 86, text: '  const item = await catalogService.create(req.body);', type: 'plain' },
+          { num: 87, text: '  res.status(201).json(item);', type: 'plain' },
+          { num: 88, text: '}', type: 'plain' }
+        ]
+      }
+    };
+
+    function renderEditor(routeKey) {
+      const data = routeCodeMap[routeKey] || routeCodeMap['users-detail'];
+      document.getElementById('active-file-tab').innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        ${data.file} : ${data.line}
+      `;
+
+      const container = document.getElementById('code-body');
+      container.innerHTML = '';
+
+      data.code.forEach(item => {
+        const lineEl = document.createElement('div');
+        lineEl.className = 'code-line' + (item.type === 'target' ? ' highlight' : '');
+        
+        let formatted = item.text
+          .replace(/(export|const|async|function|return|if|throw|new)/g, '<span class="kw">$1</span>')
+          .replace(/(Router|Request|Response|NotFoundError)/g, '<span class="fn">$1</span>')
+          .replace(/('.*?')/g, '<span class="str">$1</span>')
+          .replace(/(\/\/.*)/g, '<span class="cmt">$1</span>');
+
+        lineEl.innerHTML = `
+          <div class="line-no">${item.num}</div>
+          <div class="code-content">${formatted}</div>
+        `;
+        container.appendChild(lineEl);
+      });
+    }
+
+    function selectRoute(key, line, title) {
+      document.querySelectorAll('.route-item').forEach(el => el.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      renderEditor(key);
+      showToast(`Jumped straight to line ${line} in editor!`);
+    }
+
+    function filterRoutes(val) {
+      const q = val.toLowerCase();
+      document.querySelectorAll('.route-item').forEach(el => {
+        const text = el.innerText.toLowerCase();
+        el.style.display = text.includes(q) ? 'flex' : 'none';
+      });
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').textContent = next === 'light' ? '🌙' : '☀️';
+      document.getElementById('theme-toggle').innerHTML = `<span id="theme-icon">${next === 'light' ? '🌙' : '☀️'}</span> ${next === 'light' ? 'Dark Mode' : 'Light Mode'}`;
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    function copyToClipboard(text, label) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(`Copied ${label} (${text}) to clipboard!`);
+      });
+    }
+
+    function copySvgPath(path) {
+      fetch(path)
+        .then(res => res.text())
+        .then(svg => {
+          navigator.clipboard.writeText(svg).then(() => {
+            showToast(`Copied ${path.split('/').pop()} SVG code!`);
+          });
+        })
+        .catch(() => {
+          showToast(`Asset ready at ${path}`);
+        });
+    }
+
+    // Initialize default view
+    renderEditor('users-detail');
+  </script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 96" width="480" height="96" fill="none">
+    <g transform="translate(16, 12)">
+        <rect width="72" height="72" rx="16" fill="#000000"/>
+        <g transform="translate(4, 4) scale(0.5)">
+            <g stroke-linecap="round" stroke-linejoin="round">
+        <!-- Main Route Highway (Emerald into Teal) -->
+        <line x1="28" y1="46" x2="64" y2="46" stroke="#FFFFFF" stroke-width="8.5"/>
+        <line x1="64" y1="46" x2="92" y2="46" stroke="#FFFFFF" stroke-width="8.5"/>
+        
+        <!-- Directional Navigation Arrow (Teal) -->
+        <path d="M 82 32 L 102 46 L 82 60" fill="none" stroke="#FFFFFF" stroke-width="8.5"/>
+        
+        <!-- Node 1: Origin Endpoint (Emerald with high-contrast core) -->
+        <circle cx="28" cy="46" r="8" fill="#FFFFFF"/>
+        <circle cx="28" cy="46" r="3.5" fill="#000000"/>
+        
+        <!-- Node 2: Route Junction (Cyan with deep core) -->
+        <circle cx="64" cy="46" r="8" fill="#FFFFFF"/>
+        <circle cx="64" cy="46" r="3.5" fill="#000000"/>
+        
+        <!-- Route Branch Stem into Code (Cyan) -->
+        <line x1="64" y1="54" x2="64" y2="72" stroke="#FFFFFF" stroke-width="5.5"/>
+        
+        <!-- Integrated Code Motif: </> -->
+        <!-- Left bracket < (Emerald) -->
+        <path d="M 44 79 L 35 86.5 L 44 94" fill="none" stroke="#FFFFFF" stroke-width="5.5"/>
+        <!-- Route Slash / (Cyan) centered at (64, 86.5) -->
+        <line x1="57" y1="95" x2="71" y2="78" stroke="#FFFFFF" stroke-width="5.5"/>
+        <!-- Right bracket > (Teal) -->
+        <path d="M 84 79 L 93 86.5 L 84 94" fill="none" stroke="#FFFFFF" stroke-width="5.5"/>
+    </g>
+        </g>
+    </g>
+    <g transform="translate(108, 42)">
+        <text y="0">
+            <tspan font-family="'Inter', sans-serif" font-size="26" font-weight="800" fill="#000000" letter-spacing="-0.6px">API Route </tspan>
+            <tspan font-family="'Inter', sans-serif" font-size="26" font-weight="600" fill="#000000" letter-spacing="-0.6px">Explorer</tspan>
+        </text>
+        <text y="24" font-family="'Inter', sans-serif" font-size="13" font-weight="500" fill="#4B5563">See every API route. Jump straight to the code.</text>
+    </g>
+</svg>

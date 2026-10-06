@@ -1,0 +1,78 @@
+{
+  "name": "api-route-explorer",
+  "displayName": "API Route Explorer",
+  "description": "Discover, organize, and navigate API routes directly inside VS Code.",
+  "version": "0.0.1",
+  "icon": "resources/icons/icon.png",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other",
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onView:apiRouteExplorer.routesView",
+    "onCommand:apiRouteExplorer.scan"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "id": "apiRouteExplorer.routesView",
+          "name": "API Routes"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "apiRouteExplorer.scan",
+        "title": "Scan Routes",
+        "category": "API Route Explorer"
+      },
+      {
+        "command": "apiRouteExplorer.refresh",
+        "title": "Refresh Routes",
+        "category": "API Route Explorer",
+        "icon": "$(refresh)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "apiRouteExplorer.refresh",
+          "when": "view == apiRouteExplorer.routesView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "apiRouteExplorer.scan",
+          "when": "view == apiRouteExplorer.routesView",
+          "group": "navigation@2"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "24.x",
+    "@types/vscode": "^1.90.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.0.0",
+    "eslint": "^10.5.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.1"
+  },
+  "overrides": {
+    "diff": "^8.0.4",
+    "serialize-javascript": "^7.0.6"
+  }
+}
