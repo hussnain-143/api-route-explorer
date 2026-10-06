@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import { ApiFramework, ApiRoute, HttpMethod } from './models/route';
 import {
-  getRelativeFilePath,
   RouteFileGroupItem,
+  RouteFilterOptions,
   RouteTreeItem,
   RouteTreeProvider,
 } from './providers/routeTreeProvider';
@@ -24,6 +24,12 @@ import { showRouteStatisticsModal } from './analysis/routeStatistics';
 import { showExportRoutesDialog } from './utils/routeExporter';
 import { COMMANDS, MESSAGES, RouteGroupingMode, VIEWS } from './utils/constants';
 import { openFile, openRoute } from './utils/navigation';
+import {
+  buildCurlCommand,
+  buildRouteDefinition,
+  buildRouteUrl,
+} from './utils/routeFormatters';
+import { RouteHealth } from './analysis/analysisTypes';
 
 /**
  * Extracts an ApiRoute from various possible command argument formats.
@@ -216,6 +222,7 @@ export function activate(context: vscode.ExtensionContext): void {
     }
 
     isScanning = true;
+    routeTreeProvider.setIsScanning(true);
     const cts = new vscode.CancellationTokenSource();
     activeCts = cts;
 
@@ -287,6 +294,7 @@ export function activate(context: vscode.ExtensionContext): void {
       }
     } finally {
       isScanning = false;
+      routeTreeProvider.setIsScanning(false);
       cts.dispose();
       if (activeCts === cts) {
         activeCts = undefined;
@@ -333,6 +341,11 @@ export function activate(context: vscode.ExtensionContext): void {
    * the entire workspace filesystem.
    */
   const executeIncrementalUpdate = async (events?: RouteFileChangeEvent[]): Promise<void> => {
+    if (isScanning) {
+      scanPending = true;
+      return;
+    }
+
     if (!events || events.length === 0 || !routeTreeProvider.getHasScanned()) {
       await executeScan(false);
       return;
@@ -435,6 +448,9 @@ export function activate(context: vscode.ExtensionContext): void {
         routeTreeProvider.setGroupingMode(mode);
         updateTreeViewDescription();
       }
+      if (e.affectsConfiguration('apiRouteExplorer.scan.exclude')) {
+        void executeScan(false);
+      }
     }),
 
     // Auto-refresh file watcher with debouncing and incremental updates (750ms)
@@ -504,11 +520,8 @@ export function activate(context: vscode.ExtensionContext): void {
       const route = extractRouteFromArg(arg);
       if (route) {
         const config = vscode.workspace.getConfiguration('apiRouteExplorer');
-        const baseUrl = config.get<string>('baseUrl', 'http://localhost:3000').replace(/\/+$/, '');
-        let curlCmd = `curl -X ${route.method} "${baseUrl}${route.path}"`;
-        if (route.method === 'POST' || route.method === 'PUT' || route.method === 'PATCH') {
-          curlCmd += ` -H "Content-Type: application/json" -d '{}'`;
-        }
+        const baseUrl = config.get<string>('baseUrl', 'http://localhost:3000');
+        const curlCmd = buildCurlCommand(route, baseUrl);
         await vscode.env.clipboard.writeText(curlCmd);
         vscode.window.showInformationMessage(`Copied cURL command: ${route.method} ${route.path}`);
       }
@@ -519,9 +532,8 @@ export function activate(context: vscode.ExtensionContext): void {
       const route = extractRouteFromArg(arg);
       if (route) {
         const config = vscode.workspace.getConfiguration('apiRouteExplorer');
-        const baseUrl = config.get<string>('baseUrl', 'http://localhost:3000').replace(/\/+$/, '');
-        const cleanPath = route.path.startsWith('/') ? route.path : `/${route.path}`;
-        const url = `${baseUrl}${cleanPath}`;
+        const baseUrl = config.get<string>('baseUrl', 'http://localhost:3000');
+        const url = buildRouteUrl(route, baseUrl);
         await vscode.env.clipboard.writeText(url);
         vscode.window.showInformationMessage(`Copied Route URL: ${url}`);
       }
@@ -531,8 +543,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand(COMMANDS.COPY_ROUTE_DEFINITION, async (arg: unknown) => {
       const route = extractRouteFromArg(arg);
       if (route) {
-        const relPath = getRelativeFilePath(route.filePath);
-        const def = `${route.method} ${route.path} -> ${relPath}:${route.line + 1}`;
+        const def = buildRouteDefinition(route);
         await vscode.env.clipboard.writeText(def);
         vscode.window.showInformationMessage(`Copied Route Definition: ${def}`);
       }
@@ -602,7 +613,8 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.window.showInformationMessage(MESSAGES.NO_ROUTES_FOUND);
         return;
       }
-      await showExportRoutesDialog(routes, routeTreeProvider.getAnalysis());
+      const filteredRoutes = routeTreeProvider.getFilteredRoutesList();
+      await showExportRoutesDialog(routes, routeTreeProvider.getAnalysis(), filteredRoutes);
     }),
 
     // 14. Filter routes by HTTP method
@@ -755,7 +767,7 @@ export function activate(context: vscode.ExtensionContext): void {
               const current = routeTreeProvider.getFilterOptions();
               routeTreeProvider.setFilterOptions({
                 ...current,
-                health: healthPick.value as any,
+                health: healthPick.value as RouteHealth | 'ALL',
               });
               updateTreeViewDescription();
               updateStatusBar();
@@ -781,7 +793,7 @@ export function activate(context: vscode.ExtensionContext): void {
               const current = routeTreeProvider.getFilterOptions();
               routeTreeProvider.setFilterOptions({
                 ...current,
-                state: statePick.value as any,
+                state: statePick.value as RouteFilterOptions['state'],
               });
               updateTreeViewDescription();
               updateStatusBar();

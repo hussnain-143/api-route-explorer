@@ -24,7 +24,7 @@ suite('API Route Explorer — Sprint 9 v1.0 Release Readiness Suite', () => {
 
     test('Package metadata satisfies production marketplace requirements', () => {
       const pkg = require('../../package.json');
-      assert.ok(pkg.version === '1.0.0' || pkg.version === '1.1.0', `Version should be valid release version, got ${pkg.version}`);
+      assert.ok(/^\d+\.\d+\.\d+$/.test(pkg.version), `Version should be valid release version, got ${pkg.version}`);
       assert.strictEqual(pkg.name, 'api-route-explorer');
       assert.strictEqual(pkg.publisher, 'api-route-explorer');
       assert.strictEqual(pkg.license, 'MIT');

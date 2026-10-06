@@ -45,6 +45,19 @@ export class RouteDiagnosticsManager implements vscode.Disposable {
         diagnostic.source = 'API Route Explorer';
         diagnostic.code = 'duplicate-route';
 
+        const otherDuplicates = group.routes.filter((r) => r !== route);
+        if (otherDuplicates.length > 0) {
+          diagnostic.relatedInformation = otherDuplicates.map((other) => {
+            const otherUri = vscode.Uri.file(other.filePath);
+            const otherLine = Math.max(0, other.line);
+            const otherCol = Math.max(0, other.column);
+            return new vscode.DiagnosticRelatedInformation(
+              new vscode.Location(otherUri, new vscode.Range(otherLine, otherCol, otherLine, otherCol + 1)),
+              `Conflicting duplicate declaration at line ${other.line + 1}`
+            );
+          });
+        }
+
         let entry = diagnosticsByUri.get(uriKey);
         if (!entry) {
           entry = { uri, items: [] };
@@ -98,6 +111,18 @@ export class RouteDiagnosticsManager implements vscode.Disposable {
       diagnostic.source = 'API Route Explorer';
       diagnostic.code = conflict.isShadowing ? 'route-shadowing' : 'route-conflict';
 
+      if (conflict.conflictingRoute) {
+        const confUri = vscode.Uri.file(conflict.conflictingRoute.filePath);
+        const confLine = Math.max(0, conflict.conflictingRoute.line);
+        const confCol = Math.max(0, conflict.conflictingRoute.column);
+        diagnostic.relatedInformation = [
+          new vscode.DiagnosticRelatedInformation(
+            new vscode.Location(confUri, new vscode.Range(confLine, confCol, confLine, confCol + 1)),
+            `Overlapping route: ${conflict.conflictingRoute.method} ${conflict.conflictingRoute.path} (line ${conflict.conflictingRoute.line + 1})`
+          ),
+        ];
+      }
+
       let entry = diagnosticsByUri.get(uriKey);
       if (!entry) {
         entry = { uri, items: [] };
@@ -117,6 +142,13 @@ export class RouteDiagnosticsManager implements vscode.Disposable {
    */
   public clear(): void {
     this.collection.clear();
+  }
+
+  /**
+   * Retrieves currently published diagnostics for a specific URI.
+   */
+  public getDiagnostics(uri: vscode.Uri): readonly vscode.Diagnostic[] {
+    return this.collection.get(uri) ?? [];
   }
 
   /**

@@ -23,9 +23,11 @@ export async function openRoute(route: ApiRoute): Promise<void> {
       preserveFocus: false,
     });
 
-    const targetLine = Math.max(0, route.line);
-    const targetColumn = Math.max(0, route.column);
-    const position = new vscode.Position(targetLine, targetColumn);
+    const maxLine = Math.max(0, document.lineCount - 1);
+    const safeLine = Math.min(Math.max(0, route.line), maxLine);
+    const lineLength = document.lineAt(safeLine).text.length;
+    const safeColumn = Math.min(Math.max(0, route.column), lineLength);
+    const position = new vscode.Position(safeLine, safeColumn);
     const selection = new vscode.Selection(position, position);
 
     editor.selection = selection;

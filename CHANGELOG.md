@@ -2,6 +2,31 @@
 
 All notable changes to the "api-route-explorer" extension will be documented in this file.
 
+## [1.1.1] - Sprint 11: User Feedback, Product Refinement & v1.1.1 Stability
+
+### Refinements & Stability
+- **Interactive TreeView UX & States**:
+  - Placeholder tree items now include actionable 1-click commands: triggers Scan on unscanned/empty workspaces, and opens Filter dialog when active filters yield zero matches.
+  - Added dedicated visual scanning progress state in the TreeView while workspace indexing is active.
+  - Synchronized method and advanced filter option states to eliminate inconsistent filtering conditions.
+- **Centralized & Defensive Route Formatters**:
+  - Centralized URL and command formatters (`buildRouteUrl`, `buildRouteDefinition`, `buildCurlCommand`).
+  - Added URL normalization handling missing protocols (defaults to `http://`), redundant slashes, and whitespace base URLs.
+  - Enhanced cURL generation to support `HEAD` requests (`curl -I`) and safe fallback for Next.js wildcard `ANY` methods (`GET`).
+  - Preserved dynamic parameter syntax (`:id`, `[slug]`) without inventing fictitious runtime values.
+- **Navigation Boundary Resilience**:
+  - Added automatic line and column clamping in `openRoute` against current editor line counts and text lengths, preventing crashes when navigating to routes in edited or truncated files.
+- **Interactive Diagnostics Navigation**:
+  - Attached `DiagnosticRelatedInformation` to duplicate route errors and potential conflict warnings in the Problems panel, enabling 1-click navigation to conflicting declarations.
+- **Context-Aware Route Inventory Export**:
+  - When filters are active, the Export command now prompts developers to select between exporting the filtered route subset or all discovered routes, generating appropriately named export files (`api-routes-filtered.json/.md`).
+- **Watcher & Concurrency Hardening**:
+  - Eliminated race conditions between full workspace scans and incremental file events, safely queuing pending scans.
+  - Extended file watcher ignore filter to incorporate user-configured exclusions from `apiRouteExplorer.scan.exclude`.
+- **Strict Code Quality & Type Safety**:
+  - Removed remaining `any` type casts across extension core.
+  - Expanded test suite to 166 passing tests with zero warnings or errors.
+
 ## [1.1.0] - Sprint 10: Developer Experience & v1.1 UX Upgrade
 
 ### Added

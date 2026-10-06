@@ -16,10 +16,28 @@ const IGNORED_PATH_SEGMENTS = [
 
 /**
  * Checks whether a file URI belongs to an ignored directory.
+ * Safely merges built-in exclusions with user-configured exclusions.
  */
 export function isIgnoredFile(uri: vscode.Uri): boolean {
   const normalizedPath = uri.fsPath.replace(/\\/g, '/');
-  return IGNORED_PATH_SEGMENTS.some((segment) => normalizedPath.includes(segment));
+  if (IGNORED_PATH_SEGMENTS.some((segment) => normalizedPath.includes(segment))) {
+    return true;
+  }
+
+  try {
+    const config = vscode.workspace.getConfiguration('apiRouteExplorer');
+    const userExcludes: string[] = config.get('scan.exclude') || [];
+    for (const item of userExcludes) {
+      const clean = item.trim().replace(/^[\/\*]+|[\/\*]+$/g, '');
+      if (clean && normalizedPath.includes(`/${clean}/`)) {
+        return true;
+      }
+    }
+  } catch {
+    // Graceful fallback
+  }
+
+  return false;
 }
 
 /**
