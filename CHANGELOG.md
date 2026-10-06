@@ -2,6 +2,23 @@
 
 All notable changes to the "api-route-explorer" extension will be documented in this file.
 
+## [1.1.0] - Sprint 10: Developer Experience & v1.1 UX Upgrade
+
+### Added
+- **Multi-Dimensional Route Grouping**: Switch between `Group by File`, `Group by Framework`, `Group by HTTP Method`, and `Group by Route Health` directly from the TreeView toolbar without rescanning.
+- **Advanced In-Memory Filtering**: Filter routes across Framework, HTTP Method, Health status (`Healthy`, `Warning`, `Error`, `Info`), State (`Duplicates`, `Shared Paths`, `Conflicts`, `Shadowed`, `Missing Handler`), and file/folder paths.
+- **Route Inventory Export**: Native VS Code export dialog supporting structured machine-readable **JSON** and human-readable **Markdown** route inventories with health, middleware, and issue details.
+- **New Developer Productivity Actions**:
+  - `Copy Route URL`: Generates fully-qualified local test URLs using configurable `apiRouteExplorer.baseUrl`.
+  - `Copy Route Definition`: Copies concise developer-readable representations (e.g. `GET /users/:id -> routes/users.ts:42`).
+  - `Search Similar Routes`: Pre-fills search QuickPick with the base resource segment to find related endpoints.
+- **Enhanced Route Search**: Multi-token QuickPick search matching across HTTP method, route path, framework, file name, parent folder, and controller handler name.
+- **Workspace Configuration Settings**:
+  - `apiRouteExplorer.defaultGrouping`: Set preferred startup grouping mode (`file`, `framework`, `method`, or `health`).
+  - `apiRouteExplorer.baseUrl`: Configurable base URL for Route URL generation (defaults to `http://localhost:3000`).
+  - `apiRouteExplorer.scan.exclude`: User-defined scan exclusions extending built-in safe defaults.
+  - `apiRouteExplorer.autoRefresh`: Toggle automatic incremental route updates on file changes.
+
 ## [1.0.0] - v1.0 Production Release
 
 ### Added
