@@ -2,7 +2,7 @@
   "name": "api-route-explorer",
   "displayName": "API Route Explorer",
   "description": "Discover, organize, and navigate API routes directly inside VS Code.",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "icon": "resources/icons/icon.png",
   "engines": {
     "vscode": "^1.90.0"

@@ -6,6 +6,7 @@
 export const COMMANDS = {
   SCAN_ROUTES: 'apiRouteExplorer.scan',
   REFRESH_ROUTES: 'apiRouteExplorer.refresh',
+  OPEN_ROUTE: 'apiRouteExplorer.openRoute',
 } as const;
 
 export const VIEWS = {
@@ -29,7 +30,9 @@ export const BRAND_COLORS = {
 
 export const MESSAGES = {
   NO_WORKSPACE: 'No workspace is open.',
-  NO_ROUTES_DISCOVERED: 'No API routes discovered.',
+  NO_ROUTES_FOUND: 'No API routes found.',
   NO_ROUTES_TITLE: 'No routes discovered yet',
   NO_ROUTES_DESCRIPTION: 'Scan your workspace to discover API routes.',
+  NO_ROUTES_EMPTY_DESCRIPTION: 'No Express routes discovered in workspace.',
+  FILE_NOT_FOUND: 'Route source file no longer exists or could not be opened.',
 } as const;
