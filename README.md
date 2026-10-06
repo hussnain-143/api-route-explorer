@@ -19,16 +19,15 @@ Modern backend projects often grow into complex route matrices spread across rou
 
 ---
 
-## Current Status: Sprint 1 — Express Route Detection
+## Current Status: Sprint 2 — Route Explorer UI & Code Navigation
 
-The project is currently in **Sprint 1**. The core route discovery engine has been built:
-- **Workspace Scanner**: Scans workspace `.js`, `.jsx`, `.ts`, and `.tsx` source files while ignoring build and dependency directories (`node_modules`, `.git`, `.next`, `dist`, `build`, `coverage`, `out`).
-- **Express Route Detection**: Detects Express application routes (`app.get()`, `app.post()`, `app.put()`, `app.patch()`, `app.delete()`) and router routes (`router.get()`, `router.post()`, `router.put()`, `router.patch()`, `router.delete()`).
-- **Route Information**: Extracts HTTP method, route path, file path, zero-based line/column position, and framework (`express`).
-- **Developer Feedback**: The `Scan Routes` command triggers discovery, logs results to the developer console, and provides notification feedback.
-
-> [!NOTE]
-> Sprint 2 will consume the discovered `ApiRoute[]` list to populate the interactive route TreeView in the sidebar.
+The project is currently in **Sprint 2**. Discovered API routes are connected directly to the VS Code sidebar with interactive code navigation:
+- **Two-Level Tree Hierarchy**: Level 1 groups routes by source file (`routes/userRoutes.js`, `app.js`); Level 2 presents individual routes (`GET /users`, `POST /users`).
+- **1-Click Code Navigation**: Clicking any route opens the file in the editor, positions the cursor, and reveals the exact route definition line in the center.
+- **Accessible HTTP Method Icons**: Distinct `ThemeIcon` glyphs and semantic colors for GET, POST, PUT, PATCH, and DELETE endpoints with text labels for complete accessibility.
+- **Rich Markdown Tooltips**: Hovering over any endpoint displays formatted route details, relative file path, and exact 1-based line/column numbers.
+- **Safe File Handling**: Resilient handling with friendly alerts if a source file was moved or deleted outside VS Code.
+- **Instant Scan & Refresh**: Running `Scan Routes` or clicking `Refresh` triggers workspace re-discovery and immediately updates the TreeView.
 
 ---
 
@@ -36,10 +35,10 @@ The project is currently in **Sprint 1**. The core route discovery engine has be
 
 | Framework | Status | Target Sprint |
 | :--- | :--- | :--- |
-| **Express (Node.js)** | ✅ Detected (Sprint 1) | Sprint 1 |
-| **Next.js (App & Pages Router)** | 📋 Planned | Sprint 2 |
-| **Fastify** | 📋 Planned | Sprint 3 |
-| **NestJS** | 📋 Planned | Sprint 4 |
+| **Express (Node.js)** | ✅ Detected & Interactive (Sprint 2) | Sprint 1 & 2 |
+| **Next.js (App & Pages Router)** | 📋 Planned | Sprint 3 |
+| **Fastify** | 📋 Planned | Sprint 4 |
+| **NestJS** | 📋 Planned | Sprint 5 |
 
 ---
 
@@ -57,10 +56,13 @@ The project is currently in **Sprint 1**. The core route discovery engine has be
   - Exact 0-based line and column location calculation
   - Comment masking to prevent false positives in inactive code
   - Integration with `apiRouteExplorer.scan` command
-- [ ] **Sprint 2: Sidebar TreeView Route Display & Navigation**
-  - Populate sidebar TreeView with discovered `ApiRoute[]`
-  - 1-Click jump to route definition in code editor
-  - Method badges (GET, POST, PUT, PATCH, DELETE)
+- [x] **Sprint 2: Sidebar TreeView Route Display & Navigation**
+  - Two-level TreeView with source file groups and route items
+  - 1-Click jump to route definition line in code editor
+  - Distinct HTTP method icons (GET, POST, PUT, PATCH, DELETE)
+  - Rich Markdown tooltips with route metadata
+  - Resilient missing file handling
+  - Synchronized Scan and Refresh command flow
 - [ ] **Sprint 3: Next.js & Additional Frameworks**
   - Next.js App Router and Pages Router route detection
 - [ ] **Sprint 4: Route Diagnostics & Search**
@@ -107,5 +109,5 @@ npm run compile
 
 ## Version
 
-- **Current Version**: `0.1.0` (Sprint 1 — Express Route Detection)
+- **Current Version**: `0.2.0` (Sprint 2 — Route Explorer UI & Code Navigation)
 - **License**: MIT

@@ -15,6 +15,10 @@ suite('API Route Explorer — Extension & Scanner Suite', () => {
       allCommands.includes(COMMANDS.REFRESH_ROUTES),
       `Expected ${COMMANDS.REFRESH_ROUTES} to be registered`
     );
+    assert.ok(
+      allCommands.includes(COMMANDS.OPEN_ROUTE),
+      `Expected ${COMMANDS.OPEN_ROUTE} to be registered`
+    );
   });
 
   test('RouteTreeProvider renders clean empty state when no routes discovered', async () => {
@@ -29,6 +33,19 @@ suite('API Route Explorer — Extension & Scanner Suite', () => {
   test('Scan routes command executes cleanly without throwing', async () => {
     await assert.doesNotReject(async () => {
       await vscode.commands.executeCommand(COMMANDS.SCAN_ROUTES);
+    });
+  });
+
+  test('Open route command handles missing file safely without crashing', async () => {
+    await assert.doesNotReject(async () => {
+      await vscode.commands.executeCommand(COMMANDS.OPEN_ROUTE, {
+        method: 'GET',
+        path: '/missing',
+        filePath: '/does/not/exist.js',
+        line: 0,
+        column: 0,
+        framework: 'express',
+      });
     });
   });
 });
