@@ -23,53 +23,87 @@ export function isIgnoredFile(uri: vscode.Uri): boolean {
 }
 
 /**
- * Creates a debounced FileSystemWatcher that triggers background route scans
+ * File mutation event types emitted by the watcher.
+ */
+export type FileChangeType = 'change' | 'create' | 'delete';
+
+/**
+ * File change descriptor containing the event type and file URI.
+ */
+export interface RouteFileChangeEvent {
+  type: FileChangeType;
+  uri: vscode.Uri;
+}
+
+/**
+ * Callback signature for file change notifications.
+ * Can be called with or without the list of batched events.
+ */
+export type RouteWatcherCallback = (events?: RouteFileChangeEvent[]) => Promise<void> | void;
+
+/**
+ * Creates a debounced FileSystemWatcher that triggers background route updates
  * when source files are modified, created, or deleted.
  *
  * Safe guarantees:
  * - Debounces rapid keystroke events (default 750ms).
+ * - Batches multiple rapid changes into a deduplicated event set.
  * - Filters out node_modules, .git, and build artifacts.
  * - Disposes watcher and timers cleanly.
  *
- * @param onTriggerScan Async callback to trigger workspace scan.
+ * @param onTriggerScan Async callback to trigger workspace scan or incremental update.
  * @param debounceMs Milliseconds to debounce file change events.
  * @returns Disposable to register in extension context subscriptions.
  */
 export function createRouteFileWatcher(
-  onTriggerScan: () => Promise<void>,
+  onTriggerScan: RouteWatcherCallback,
   debounceMs: number = 750
 ): vscode.Disposable {
   const watcher = vscode.workspace.createFileSystemWatcher(SCAN_INCLUDE_PATTERN);
 
   let timer: NodeJS.Timeout | undefined;
+  const pendingEvents = new Map<string, RouteFileChangeEvent>();
 
-  const handleFileEvent = (uri: vscode.Uri) => {
+  const queueEvent = (type: FileChangeType, uri: vscode.Uri) => {
     if (isIgnoredFile(uri)) {
       return;
     }
+
+    pendingEvents.set(uri.fsPath, { type, uri });
 
     if (timer) {
       clearTimeout(timer);
     }
 
     timer = setTimeout(() => {
-      onTriggerScan().catch((err) => {
+      const batchedEvents = Array.from(pendingEvents.values());
+      pendingEvents.clear();
+
+      try {
+        const result = onTriggerScan(batchedEvents);
+        if (result instanceof Promise) {
+          result.catch((err) => {
+            console.error('[API Route Explorer] Auto-refresh scan error:', err);
+          });
+        }
+      } catch (err) {
         console.error('[API Route Explorer] Auto-refresh scan error:', err);
-      });
+      }
     }, debounceMs);
   };
 
   const disposables: vscode.Disposable[] = [
     watcher,
-    watcher.onDidChange(handleFileEvent),
-    watcher.onDidCreate(handleFileEvent),
-    watcher.onDidDelete(handleFileEvent),
+    watcher.onDidChange((uri) => queueEvent('change', uri)),
+    watcher.onDidCreate((uri) => queueEvent('create', uri)),
+    watcher.onDidDelete((uri) => queueEvent('delete', uri)),
     {
       dispose: () => {
         if (timer) {
           clearTimeout(timer);
           timer = undefined;
         }
+        pendingEvents.clear();
       },
     },
   ];

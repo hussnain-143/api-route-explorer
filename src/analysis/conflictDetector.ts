@@ -33,26 +33,31 @@ function parseRouteSegments(routePath: string): RouteSegment[] {
 }
 
 /**
- * Detects whether two routes overlap in URL matching space and flags potential shadowing.
+ * Pre-computed representation of a route for high-throughput conflict evaluation.
+ */
+interface PreparedRoute {
+  route: ApiRoute;
+  normalizedPath: string;
+  segments: RouteSegment[];
+  hasCatchall: boolean;
+}
+
+/**
+ * Detects whether two pre-computed routes overlap in URL matching space and flags potential shadowing.
  */
 function evaluateRouteOverlap(
-  r1: ApiRoute,
-  r2: ApiRoute
+  p1: PreparedRoute,
+  p2: PreparedRoute
 ): { overlaps: boolean; moreGeneric: ApiRoute | null } | null {
   // Same normalized path is an exact duplicate (handled by duplicate detector)
-  const norm1 = normalizeRoutePath(r1.path);
-  const norm2 = normalizeRoutePath(r2.path);
-  if (norm1 === norm2) {
+  if (p1.normalizedPath === p2.normalizedPath) {
     return null;
   }
 
-  const segs1 = parseRouteSegments(r1.path);
-  const segs2 = parseRouteSegments(r2.path);
+  const segs1 = p1.segments;
+  const segs2 = p2.segments;
 
-  const hasCatchall1 = segs1.some((s) => s.type === 'catchall');
-  const hasCatchall2 = segs2.some((s) => s.type === 'catchall');
-
-  if (!hasCatchall1 && !hasCatchall2 && segs1.length !== segs2.length) {
+  if (!p1.hasCatchall && !p2.hasCatchall && segs1.length !== segs2.length) {
     return null;
   }
 
@@ -92,11 +97,11 @@ function evaluateRouteOverlap(
     }
   }
 
-  if (hasCatchall1 && segs1.length <= segs2.length) {
+  if (p1.hasCatchall && segs1.length <= segs2.length) {
     hasDynamicDivergence = true;
     genericScore1 += 2;
   }
-  if (hasCatchall2 && segs2.length <= segs1.length) {
+  if (p2.hasCatchall && segs2.length <= segs1.length) {
     hasDynamicDivergence = true;
     genericScore2 += 2;
   }
@@ -107,9 +112,9 @@ function evaluateRouteOverlap(
 
   let moreGeneric: ApiRoute | null = null;
   if (genericScore1 > genericScore2) {
-    moreGeneric = r1;
+    moreGeneric = p1.route;
   } else if (genericScore2 > genericScore1) {
-    moreGeneric = r2;
+    moreGeneric = p2.route;
   }
 
   return { overlaps: true, moreGeneric };
@@ -123,11 +128,24 @@ export function findRouteConflicts(routes: ApiRoute[]): RouteConflict[] {
   const conflicts: RouteConflict[] = [];
   const visitedPairs = new Set<string>();
 
-  // 1. Group routes by framework + HTTP method + root segment
-  const buckets = new Map<string, ApiRoute[]>();
+  // 1. Precompute parsed segments and normalized path for each route ONCE
+  const prepared: PreparedRoute[] = routes.map((r) => {
+    const segments = parseRouteSegments(r.path);
+    return {
+      route: r,
+      normalizedPath: normalizeRoutePath(r.path),
+      segments,
+      hasCatchall: segments.some((s) => s.type === 'catchall'),
+    };
+  });
 
-  for (const route of routes) {
-    const segs = parseRouteSegments(route.path);
+  // 2. Group routes by framework + HTTP method + root segment
+  const buckets = new Map<string, PreparedRoute[]>();
+  const globalWildcardBuckets = new Map<string, PreparedRoute[]>();
+
+  for (const p of prepared) {
+    const route = p.route;
+    const segs = p.segments;
     const rootSeg = segs.length > 0 && segs[0].type === 'static' ? segs[0].value : '*';
     const key = `${route.framework}:${route.method}:${rootSeg}`;
 
@@ -136,23 +154,79 @@ export function findRouteConflicts(routes: ApiRoute[]): RouteConflict[] {
       bucket = [];
       buckets.set(key, bucket);
     }
-    bucket.push(route);
+    bucket.push(p);
 
-    // Also include in wildcard bucket if root is dynamic or catchall
+    // Also track in global wildcard bucket if root is dynamic or catchall
     if (rootSeg === '*') {
-      const globalKey = `${route.framework}:${route.method}:*`;
-      let gBucket = buckets.get(globalKey);
+      const globalKey = `${route.framework}:${route.method}`;
+      let gBucket = globalWildcardBuckets.get(globalKey);
       if (!gBucket) {
         gBucket = [];
-        buckets.set(globalKey, gBucket);
+        globalWildcardBuckets.set(globalKey, gBucket);
       }
-      if (!gBucket.includes(route)) {
-        gBucket.push(route);
-      }
+      gBucket.push(p);
     }
   }
 
-  // 2. Compare within buckets
+  // Helper to test pairs
+  const testPair = (p1: PreparedRoute, p2: PreparedRoute) => {
+    const r1 = p1.route;
+    const r2 = p2.route;
+    const pairId = `${r1.filePath}:${r1.line}:${r1.column}<->${r2.filePath}:${r2.line}:${r2.column}`;
+    if (visitedPairs.has(pairId)) {
+      return;
+    }
+    visitedPairs.add(pairId);
+
+    const overlapResult = evaluateRouteOverlap(p1, p2);
+    if (!overlapResult || !overlapResult.overlaps) {
+      return;
+    }
+
+    const { moreGeneric } = overlapResult;
+
+    // Determine ordering / shadowing:
+    // If in same file, earlier line is registered earlier.
+    const sameFile = r1.filePath === r2.filePath;
+    const firstDeclared = sameFile ? (r1.line <= r2.line ? r1 : r2) : r1;
+    const secondDeclared = firstDeclared === r1 ? r2 : r1;
+
+    if (moreGeneric && firstDeclared === moreGeneric && sameFile) {
+      // Dynamic route declared first in the same file -> strong shadowing warning!
+      conflicts.push({
+        route: firstDeclared,
+        conflictingRoute: secondDeclared,
+        reason: `Possible route shadowing: ${firstDeclared.method} ${firstDeclared.path} may capture ${secondDeclared.method} ${secondDeclared.path}`,
+        isShadowing: true,
+        severity: 'warning',
+      });
+      conflicts.push({
+        route: secondDeclared,
+        conflictingRoute: firstDeclared,
+        reason: `Potentially shadowed by ${firstDeclared.method} ${firstDeclared.path} declared earlier`,
+        isShadowing: true,
+        severity: 'warning',
+      });
+    } else {
+      // Overlap warning without definite shadowing
+      conflicts.push({
+        route: r1,
+        conflictingRoute: r2,
+        reason: `Potential route conflict: ${r1.method} ${r1.path} overlaps with ${r2.method} ${r2.path}`,
+        isShadowing: false,
+        severity: 'warning',
+      });
+      conflicts.push({
+        route: r2,
+        conflictingRoute: r1,
+        reason: `Potential route conflict: ${r2.method} ${r2.path} overlaps with ${r1.method} ${r1.path}`,
+        isShadowing: false,
+        severity: 'warning',
+      });
+    }
+  };
+
+  // 3. Compare within buckets
   for (const bucket of buckets.values()) {
     if (bucket.length < 2) {
       continue;
@@ -160,60 +234,19 @@ export function findRouteConflicts(routes: ApiRoute[]): RouteConflict[] {
 
     for (let i = 0; i < bucket.length; i++) {
       for (let j = i + 1; j < bucket.length; j++) {
-        const r1 = bucket[i];
-        const r2 = bucket[j];
+        testPair(bucket[i], bucket[j]);
+      }
+    }
+  }
 
-        const pairId = `${r1.filePath}:${r1.line}:${r1.column}<->${r2.filePath}:${r2.line}:${r2.column}`;
-        if (visitedPairs.has(pairId)) {
-          continue;
-        }
-        visitedPairs.add(pairId);
-
-        const overlapResult = evaluateRouteOverlap(r1, r2);
-        if (!overlapResult || !overlapResult.overlaps) {
-          continue;
-        }
-
-        const { moreGeneric } = overlapResult;
-
-        // Determine ordering / shadowing:
-        // If in same file, earlier line is registered earlier.
-        const sameFile = r1.filePath === r2.filePath;
-        const firstDeclared = sameFile ? (r1.line <= r2.line ? r1 : r2) : r1;
-        const secondDeclared = firstDeclared === r1 ? r2 : r1;
-
-        if (moreGeneric && firstDeclared === moreGeneric && sameFile) {
-          // Dynamic route declared first in the same file -> strong shadowing warning!
-          conflicts.push({
-            route: firstDeclared,
-            conflictingRoute: secondDeclared,
-            reason: `Possible route shadowing: ${firstDeclared.method} ${firstDeclared.path} may capture ${secondDeclared.method} ${secondDeclared.path}`,
-            isShadowing: true,
-            severity: 'warning',
-          });
-          conflicts.push({
-            route: secondDeclared,
-            conflictingRoute: firstDeclared,
-            reason: `Potentially shadowed by ${firstDeclared.method} ${firstDeclared.path} declared earlier`,
-            isShadowing: true,
-            severity: 'warning',
-          });
-        } else {
-          // Overlap warning without definite shadowing
-          conflicts.push({
-            route: r1,
-            conflictingRoute: r2,
-            reason: `Potential route conflict: ${r1.method} ${r1.path} overlaps with ${r2.method} ${r2.path}`,
-            isShadowing: false,
-            severity: 'warning',
-          });
-          conflicts.push({
-            route: r2,
-            conflictingRoute: r1,
-            reason: `Potential route conflict: ${r2.method} ${r2.path} overlaps with ${r1.method} ${r1.path}`,
-            isShadowing: false,
-            severity: 'warning',
-          });
+  // 4. Compare wildcard routes against other buckets of same framework and method
+  for (const [globalKey, wildcards] of globalWildcardBuckets.entries()) {
+    for (const [key, bucket] of buckets.entries()) {
+      if (key.startsWith(globalKey) && !key.endsWith(':*')) {
+        for (const w of wildcards) {
+          for (const b of bucket) {
+            testPair(w, b);
+          }
         }
       }
     }

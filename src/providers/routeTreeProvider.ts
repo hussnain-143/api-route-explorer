@@ -53,7 +53,7 @@ export function getMethodIcon(method: HttpMethod): vscode.ThemeIcon {
  */
 export function getFolderDisplayLabel(
   relativeFilePath: string,
-  allRelativeFilePaths?: string[]
+  allRelativeFilePaths?: string[] | Map<string, number>
 ): { label: string; description: string; tooltip: string } {
   const normalized = relativeFilePath.replace(/\\/g, '/');
   const parts = normalized.split('/').filter(Boolean);
@@ -85,19 +85,30 @@ export function getFolderDisplayLabel(
   // If multiple route files in the workspace share the same last folder (e.g. admin/booking vs booking),
   // disambiguate in the description with parent folder or filename.
   let contextHint = '';
-  if (allRelativeFilePaths && allRelativeFilePaths.length > 0) {
-    const sameFolderFiles = allRelativeFilePaths.filter((p) => {
-      const segs = p.replace(/\\/g, '/').split('/').filter(Boolean);
-      return segs.length > 1 && segs[segs.length - 2] === lastFolder;
-    });
+  let hasMultiple = false;
 
-    if (sameFolderFiles.length > 1) {
-      const parentFolder = parts.length >= 3 ? parts[parts.length - 3] : '';
-      if (parentFolder && !['src', 'modules', 'api', 'routes'].includes(parentFolder.toLowerCase())) {
-        contextHint = parentFolder;
-      } else {
-        contextHint = fileName;
+  if (allRelativeFilePaths instanceof Map) {
+    hasMultiple = (allRelativeFilePaths.get(lastFolder) || 0) > 1;
+  } else if (Array.isArray(allRelativeFilePaths) && allRelativeFilePaths.length > 0) {
+    let count = 0;
+    for (const p of allRelativeFilePaths) {
+      const segs = p.replace(/\\/g, '/').split('/').filter(Boolean);
+      if (segs.length > 1 && segs[segs.length - 2] === lastFolder) {
+        count++;
+        if (count > 1) {
+          hasMultiple = true;
+          break;
+        }
       }
+    }
+  }
+
+  if (hasMultiple) {
+    const parentFolder = parts.length >= 3 ? parts[parts.length - 3] : '';
+    if (parentFolder && !['src', 'modules', 'api', 'routes'].includes(parentFolder.toLowerCase())) {
+      contextHint = parentFolder;
+    } else {
+      contextHint = fileName;
     }
   }
 
@@ -116,7 +127,7 @@ export class RouteFileGroupItem extends vscode.TreeItem {
     public readonly filePath: string,
     public readonly relativeFilePath: string,
     public readonly routes: ApiRoute[],
-    allRelativeFilePaths?: string[]
+    allRelativeFilePaths?: string[] | Map<string, number>
   ) {
     const { label, description: contextHint, tooltip: fullPath } =
       getFolderDisplayLabel(relativeFilePath, allRelativeFilePaths);
@@ -521,6 +532,15 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
     }
 
     const allRelativePaths = Array.from(groupMap.keys()).map((p) => getRelativeFilePath(p));
+    const folderOccurrences = new Map<string, number>();
+    for (const relPath of allRelativePaths) {
+      const segs = relPath.replace(/\\/g, '/').split('/').filter(Boolean);
+      if (segs.length > 1) {
+        const f = segs[segs.length - 2];
+        folderOccurrences.set(f, (folderOccurrences.get(f) || 0) + 1);
+      }
+    }
+
     const groups: RouteFileGroupItem[] = [];
 
     for (const [filePath, fileRoutes] of groupMap.entries()) {
@@ -535,7 +555,7 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
         return a.method.localeCompare(b.method);
       });
 
-      groups.push(new RouteFileGroupItem(filePath, relativePath, fileRoutes, allRelativePaths));
+      groups.push(new RouteFileGroupItem(filePath, relativePath, fileRoutes, folderOccurrences));
     }
 
     // Sort file groups alphabetically by clean folder label

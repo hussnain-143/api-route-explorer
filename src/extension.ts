@@ -6,8 +6,13 @@ import {
   RouteTreeProvider,
 } from './providers/routeTreeProvider';
 import { RouteAnalysisProvider } from './providers/routeAnalysisProvider';
-import { createRouteFileWatcher } from './scanner/routeWatcher';
-import { scanWorkspaceDetailed } from './scanner/routeScanner';
+import { createRouteFileWatcher, RouteFileChangeEvent } from './scanner/routeWatcher';
+import {
+  scanWorkspaceDetailed,
+  scanSingleFile,
+  removeSingleFile,
+} from './scanner/routeScanner';
+import { RouteIndex } from './scanner/routeIndex';
 import { showRouteQuickPick } from './scanner/routeSearch';
 import {
   analyzeWorkspaceRoutes,
@@ -94,10 +99,13 @@ export function activate(context: vscode.ExtensionContext): void {
   statusBarItem.command = COMMANDS.STATUS_BAR_MENU;
   statusBarItem.tooltip = 'API Route Explorer: Click for route actions & search';
 
-  // Track scanning state and latest smart analysis result
+  // In-memory state tracking
   let isScanning = false;
   let scanPending = false;
+  let activeCts: vscode.CancellationTokenSource | undefined;
   let currentAnalysis: RouteAnalysisResult | undefined;
+  let currentRouteIndex = new RouteIndex();
+  let currentFileSources = new Map<string, string>();
 
   const updateStatusBar = (): void => {
     if (!currentAnalysis || currentAnalysis.routes.length === 0) {
@@ -117,9 +125,38 @@ export function activate(context: vscode.ExtensionContext): void {
     statusBarItem.show();
   };
 
+  const applyAnalysis = (analysis: RouteAnalysisResult): void => {
+    currentAnalysis = analysis;
+    console.log('Discovered routes with resolved prefixes:', analysis.routes);
+    routeTreeProvider.setRoutes(analysis.routes, analysis);
+    routeAnalysisProvider.setAnalysis(analysis);
+    diagnosticsManager.updateDiagnostics(
+      analysis.duplicates,
+      analysis.missingHandlers,
+      analysis.conflicts
+    );
+
+    routesTreeView.description = `${analysis.routes.length} routes (${analysis.statistics.totalFiles} files)`;
+    routesTreeView.badge = {
+      value: analysis.routes.length,
+      tooltip: `${analysis.routes.length} discovered API routes`,
+    };
+
+    const errorCount = analysis.statistics.errorCount;
+    const warningCount = analysis.statistics.warningCount;
+    analysisTreeView.description =
+      errorCount === 0 && warningCount === 0
+        ? `${analysis.statistics.healthyCount} Healthy • ${analysis.sharedPaths.length} shared`
+        : errorCount > 0
+        ? `❌ ${errorCount} error(s) • ⚠️ ${warningCount} warning(s)`
+        : `⚠️ ${warningCount} warning(s) • ${analysis.statistics.healthyCount} Healthy`;
+
+    updateStatusBar();
+  };
+
   /**
    * Scans the workspace, executes smart analysis (prefixes, duplicates, missing handlers, stats),
-   * and refreshes TreeView, diagnostics, and search state.
+   * and refreshes TreeView, diagnostics, and search state. Supports cancellation and progress reporting.
    */
   const executeScan = async (showFeedback: boolean = true): Promise<void> => {
     const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -127,6 +164,8 @@ export function activate(context: vscode.ExtensionContext): void {
       routeTreeProvider.clear();
       routeAnalysisProvider.clear();
       diagnosticsManager.clear();
+      currentRouteIndex.clear();
+      currentFileSources.clear();
       routesTreeView.description = undefined;
       routesTreeView.badge = undefined;
       analysisTreeView.description = undefined;
@@ -138,48 +177,71 @@ export function activate(context: vscode.ExtensionContext): void {
     }
 
     if (isScanning) {
+      activeCts?.cancel();
       scanPending = true;
       return;
     }
 
     isScanning = true;
+    activeCts = new vscode.CancellationTokenSource();
+    const cts = activeCts;
+
     try {
-      const { routes: rawRoutes, fileSources } = await scanWorkspaceDetailed();
-      const analysis = analyzeWorkspaceRoutes(rawRoutes, fileSources);
-      currentAnalysis = analysis;
-
-      console.log('Discovered routes with resolved prefixes:', analysis.routes);
-      routeTreeProvider.setRoutes(analysis.routes, analysis);
-      routeAnalysisProvider.setAnalysis(analysis);
-      diagnosticsManager.updateDiagnostics(
-        analysis.duplicates,
-        analysis.missingHandlers,
-        analysis.conflicts
-      );
-
-      routesTreeView.description = `${analysis.routes.length} routes (${analysis.statistics.totalFiles} files)`;
-      routesTreeView.badge = {
-        value: analysis.routes.length,
-        tooltip: `${analysis.routes.length} discovered API routes`,
-      };
-
-      const errorCount = analysis.statistics.errorCount;
-      const warningCount = analysis.statistics.warningCount;
-      analysisTreeView.description =
-        errorCount === 0 && warningCount === 0
-          ? `${analysis.statistics.healthyCount} Healthy • ${analysis.sharedPaths.length} shared`
-          : errorCount > 0
-          ? `❌ ${errorCount} error(s) • ⚠️ ${warningCount} warning(s)`
-          : `⚠️ ${warningCount} warning(s) • ${analysis.statistics.healthyCount} Healthy`;
-
-      updateStatusBar();
-
       if (showFeedback) {
-        if (analysis.routes.length === 0) {
-          vscode.window.showInformationMessage(MESSAGES.NO_ROUTES_FOUND);
-        } else {
-          vscode.window.showInformationMessage(`Discovered ${analysis.routes.length} API routes.`);
+        await vscode.window.withProgress(
+          {
+            location: vscode.ProgressLocation.Notification,
+            title: 'API Route Explorer',
+            cancellable: true,
+          },
+          async (progress, token) => {
+            token.onCancellationRequested(() => {
+              cts.cancel();
+            });
+
+            progress.report({ message: 'Scanning API routes...' });
+            const { routes: rawRoutes, fileSources, routeIndex, cancelled } =
+              await scanWorkspaceDetailed(cts.token, progress);
+
+            if (cancelled || cts.token.isCancellationRequested) {
+              return;
+            }
+
+            progress.report({ message: 'Analyzing API routes...' });
+            currentRouteIndex = routeIndex || new RouteIndex();
+            currentFileSources = fileSources;
+
+            const analysis = analyzeWorkspaceRoutes(rawRoutes, fileSources);
+            if (cts.token.isCancellationRequested) {
+              return;
+            }
+
+            applyAnalysis(analysis);
+
+            if (analysis.routes.length === 0) {
+              vscode.window.showInformationMessage(MESSAGES.NO_ROUTES_FOUND);
+            } else {
+              vscode.window.showInformationMessage(`Discovered ${analysis.routes.length} API routes.`);
+            }
+          }
+        );
+      } else {
+        const { routes: rawRoutes, fileSources, routeIndex, cancelled } =
+          await scanWorkspaceDetailed(cts.token);
+
+        if (cancelled || cts.token.isCancellationRequested) {
+          return;
         }
+
+        currentRouteIndex = routeIndex || new RouteIndex();
+        currentFileSources = fileSources;
+
+        const analysis = analyzeWorkspaceRoutes(rawRoutes, fileSources);
+        if (cts.token.isCancellationRequested) {
+          return;
+        }
+
+        applyAnalysis(analysis);
       }
     } catch (error) {
       console.error('[API Route Explorer] Route scan failed:', error);
@@ -188,12 +250,107 @@ export function activate(context: vscode.ExtensionContext): void {
       }
     } finally {
       isScanning = false;
+      cts.dispose();
+      if (activeCts === cts) {
+        activeCts = undefined;
+      }
       if (scanPending) {
         scanPending = false;
-        // Run queued background scan silently
         void executeScan(false);
       }
     }
+  };
+
+  /**
+   * Evaluates if a changed file is a top-level prefix mounting file (app.js, server.ts, etc.)
+   * where modifications may alter route prefixes globally across multiple router files.
+   */
+  const isPrefixAffectingFile = (filePath: string, content?: string): boolean => {
+    const base = filePath.toLowerCase();
+    if (
+      base.endsWith('app.js') ||
+      base.endsWith('app.ts') ||
+      base.endsWith('server.js') ||
+      base.endsWith('server.ts') ||
+      base.endsWith('main.ts') ||
+      base.endsWith('main.js') ||
+      base.endsWith('index.js') ||
+      base.endsWith('index.ts')
+    ) {
+      return true;
+    }
+    if (content) {
+      if (
+        content.includes('.use(') ||
+        content.includes('.register(') ||
+        content.includes('@Module(')
+      ) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  /**
+   * Incrementally updates routes and analysis for specific changed files without rescanning
+   * the entire workspace filesystem.
+   */
+  const executeIncrementalUpdate = async (events?: RouteFileChangeEvent[]): Promise<void> => {
+    if (!events || events.length === 0 || !routeTreeProvider.getHasScanned()) {
+      await executeScan(false);
+      return;
+    }
+
+    // Safety fallback: if large batch of files changed at once, run full scan
+    if (events.length > 20) {
+      await executeScan(false);
+      return;
+    }
+
+    const textDecoder = new TextDecoder('utf-8');
+    let requiresFullScan = false;
+    const contentsToApply = new Map<string, { type: 'change' | 'create' | 'delete'; content?: string }>();
+
+    for (const evt of events) {
+      if (evt.type === 'delete') {
+        if (isPrefixAffectingFile(evt.uri.fsPath)) {
+          requiresFullScan = true;
+          break;
+        }
+        contentsToApply.set(evt.uri.fsPath, { type: 'delete' });
+      } else {
+        try {
+          const fileBytes = await vscode.workspace.fs.readFile(evt.uri);
+          const content = textDecoder.decode(fileBytes);
+          if (isPrefixAffectingFile(evt.uri.fsPath, content)) {
+            requiresFullScan = true;
+            break;
+          }
+          contentsToApply.set(evt.uri.fsPath, { type: evt.type, content });
+        } catch {
+          requiresFullScan = true;
+          break;
+        }
+      }
+    }
+
+    if (requiresFullScan) {
+      await executeScan(false);
+      return;
+    }
+
+    // Apply incremental changes to in-memory RouteIndex and fileSources cache
+    for (const [filePath, data] of contentsToApply.entries()) {
+      if (data.type === 'delete') {
+        removeSingleFile(filePath, currentRouteIndex, currentFileSources);
+      } else if (data.content !== undefined) {
+        scanSingleFile(filePath, data.content, currentRouteIndex, currentFileSources);
+      }
+    }
+
+    // Re-run route analysis on updated route index
+    const analysis = analyzeWorkspaceRoutes(currentRouteIndex.getAllRoutes(), currentFileSources);
+    applyAnalysis(analysis);
   };
 
   // Active editor route awareness: safely highlight or expand matching route in TreeView
@@ -233,8 +390,8 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.window.onDidChangeActiveTextEditor(updateActiveEditorRoute),
     vscode.window.onDidChangeTextEditorSelection(updateActiveEditorRoute),
 
-    // Auto-refresh file watcher with debouncing (750ms)
-    createRouteFileWatcher(() => executeScan(false), 750),
+    // Auto-refresh file watcher with debouncing and incremental updates (750ms)
+    createRouteFileWatcher((events) => executeIncrementalUpdate(events), 750),
 
     // 1. Scan Routes command
     vscode.commands.registerCommand(COMMANDS.SCAN_ROUTES, async () => {
