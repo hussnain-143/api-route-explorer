@@ -17,6 +17,7 @@ export const COMMANDS = {
 export const VIEWS = {
   ROUTES: 'apiRouteExplorer.routesView',
   EXPLORER_ROUTES: 'apiRouteExplorer.explorerRoutesView',
+  ANALYSIS: 'apiRouteExplorer.analysisView',
 } as const;
 
 export const CONTEXT_VALUES = {

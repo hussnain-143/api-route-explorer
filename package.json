@@ -3,6 +3,12 @@
   "displayName": "API Route Explorer",
   "description": "Discover, organize, and navigate API routes directly inside VS Code.",
   "version": "0.4.0",
+  "publisher": "api-route-explorer",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/api-route-explorer/api-route-explorer"
+  },
   "icon": "resources/icons/icon.png",
   "engines": {
     "vscode": "^1.90.0"
@@ -27,6 +33,11 @@
         {
           "id": "apiRouteExplorer.routesView",
           "name": "API Routes",
+          "icon": "resources/icons/activity-bar.svg"
+        },
+        {
+          "id": "apiRouteExplorer.analysisView",
+          "name": "Route Analysis",
           "icon": "resources/icons/activity-bar.svg"
         }
       ],
@@ -155,7 +166,8 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
     "test:unit": "mocha --ui tdd out/test/routeParser.test.js",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "package": "vsce package --no-dependencies"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
