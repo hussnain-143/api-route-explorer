@@ -8,6 +8,8 @@ import {
 } from './duplicateDetector';
 import type { RouteAnalysisResult } from './routeAnalyzer';
 
+import type { RouteConflict, RouteRelationship } from './analysisTypes';
+
 /**
  * Metric breakdown across discovered routes.
  */
@@ -19,6 +21,11 @@ export interface RouteStatistics {
   sharedPathCount: number;
   framework: string;
   frameworkCounts?: Record<string, number>;
+  healthyCount: number;
+  warningCount: number;
+  errorCount: number;
+  potentialConflictCount: number;
+  middlewareReferenceCount: number;
 }
 
 /**
@@ -27,12 +34,16 @@ export interface RouteStatistics {
  * @param routes All discovered and analyzed API routes.
  * @param precomputedDuplicates Optional precomputed duplicate groups.
  * @param precomputedSharedPaths Optional precomputed shared path groups.
+ * @param precomputedConflicts Optional precomputed route conflicts.
+ * @param precomputedRelationships Optional precomputed route relationships.
  * @returns Complete RouteStatistics object.
  */
 export function calculateRouteStatistics(
   routes: ApiRoute[],
   precomputedDuplicates?: DuplicateRouteGroup[],
-  precomputedSharedPaths?: RoutePathGroup[]
+  precomputedSharedPaths?: RoutePathGroup[],
+  precomputedConflicts?: RouteConflict[],
+  precomputedRelationships?: Map<string, RouteRelationship>
 ): RouteStatistics {
   const duplicates = precomputedDuplicates ?? findDuplicateRoutes(routes);
   const sharedPaths = precomputedSharedPaths ?? findSharedPathGroups(routes);
@@ -81,6 +92,30 @@ export function calculateRouteStatistics(
     0
   );
 
+  let healthyCount = 0;
+  let warningCount = 0;
+  let errorCount = 0;
+  let middlewareReferenceCount = 0;
+
+  if (precomputedRelationships) {
+    for (const rel of precomputedRelationships.values()) {
+      if (rel.health === 'error') {
+        errorCount++;
+      } else if (rel.health === 'warning') {
+        warningCount++;
+      } else {
+        healthyCount++;
+      }
+      middlewareReferenceCount += rel.middleware.length;
+    }
+  } else {
+    errorCount = duplicateRouteInstances;
+    warningCount = precomputedConflicts ? precomputedConflicts.length : 0;
+    healthyCount = Math.max(0, routes.length - errorCount - warningCount);
+  }
+
+  const potentialConflictCount = precomputedConflicts ? precomputedConflicts.length : 0;
+
   return {
     totalRoutes: routes.length,
     totalFiles: uniqueFiles.size,
@@ -89,6 +124,11 @@ export function calculateRouteStatistics(
     sharedPathCount: sharedPaths.length,
     framework: frameworkLabel,
     frameworkCounts,
+    healthyCount,
+    warningCount,
+    errorCount,
+    potentialConflictCount,
+    middlewareReferenceCount,
   };
 }
 
@@ -102,6 +142,11 @@ export function formatRouteStatistics(stats: RouteStatistics): string {
     `Routes: ${stats.totalRoutes}`,
     `Files: ${stats.totalFiles}`,
     '',
+    'Health:',
+    `Healthy: ${stats.healthyCount}`,
+    `Warnings: ${stats.warningCount}`,
+    `Errors: ${stats.errorCount}`,
+    '',
     `GET: ${stats.methodCounts.GET}`,
     `POST: ${stats.methodCounts.POST}`,
     `PUT: ${stats.methodCounts.PUT}`,
@@ -110,6 +155,8 @@ export function formatRouteStatistics(stats: RouteStatistics): string {
     '',
     `Duplicate routes: ${stats.duplicateCount}`,
     `Shared paths: ${stats.sharedPathCount}`,
+    `Potential conflicts: ${stats.potentialConflictCount}`,
+    `Middleware references: ${stats.middlewareReferenceCount}`,
     `Framework: ${stats.framework}`,
   ].join('\n');
 }
@@ -133,7 +180,7 @@ export async function showRouteStatisticsModal(
   }
   const quickPick = vscode.window.createQuickPick();
   quickPick.title = 'API Route Explorer: Statistics';
-  quickPick.placeholder = `Total Routes: ${stats.totalRoutes} | Files: ${stats.totalFiles} | Duplicates: ${stats.duplicateCount} (Click any item to inspect)`;
+  quickPick.placeholder = `Total Routes: ${stats.totalRoutes} | Healthy: ${stats.healthyCount} | Warnings: ${stats.warningCount} | Errors: ${stats.errorCount}`;
 
   interface ActionItem extends vscodeTypes.QuickPickItem {
     actionType?: 'total' | 'method' | 'duplicates' | 'sharedPaths';
@@ -144,8 +191,13 @@ export async function showRouteStatisticsModal(
     {
       label: `$(symbol-event) Total Routes: ${stats.totalRoutes}`,
       description: `Across ${stats.totalFiles} source files • Click to search all`,
-      detail: `Framework: ${stats.framework}`,
+      detail: `Framework: ${stats.framework} • Healthy: ${stats.healthyCount}, Warnings: ${stats.warningCount}, Errors: ${stats.errorCount}`,
       actionType: 'total',
+    },
+    {
+      label: `$(heart) Route Health: ${stats.healthyCount} Healthy`,
+      description: `Warnings: ${stats.warningCount} • Errors: ${stats.errorCount}`,
+      detail: `${stats.potentialConflictCount} potential conflict(s) • ${stats.middlewareReferenceCount} middleware reference(s)`,
     },
     {
       label: `$(arrow-down) GET: ${stats.methodCounts.GET}`,

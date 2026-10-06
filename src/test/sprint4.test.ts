@@ -508,13 +508,16 @@ suite('API Route Explorer — Sprint 4 Smart Route Analysis Suite', () => {
     provider.setAnalysis(analysis);
     const rootItems = await provider.getChildren();
 
-    assert.strictEqual(rootItems.length, 5); // Overview, Shared Paths, Duplicates, Missing Handlers, Methods
-    assert.ok(rootItems[0].label!.toString().includes('Overview: 2 Routes'));
-    assert.ok(rootItems[1].label!.toString().includes('Shared Paths (1)'));
-    assert.ok(rootItems[2].label!.toString().includes('Duplicate Conflicts (0)'));
+    assert.ok(rootItems.length >= 5);
+    const overviewItem = rootItems.find((i) => i.label?.toString().includes('Overview: 2 Routes'));
+    const sharedItem = rootItems.find((i) => i.label?.toString().includes('Shared Paths (1)'));
+    const dupItem = rootItems.find((i) => i.label?.toString().includes('Duplicate Conflicts (0)'));
+    assert.ok(overviewItem);
+    assert.ok(sharedItem);
+    assert.ok(dupItem);
 
     // Test drill-down for shared paths
-    const sharedPathChildren = await provider.getChildren(rootItems[1]);
+    const sharedPathChildren = await provider.getChildren(sharedItem);
     assert.strictEqual(sharedPathChildren.length, 1);
     assert.strictEqual(sharedPathChildren[0].label, '/api/v1/users');
 

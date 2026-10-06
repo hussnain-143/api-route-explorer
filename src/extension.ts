@@ -151,7 +151,11 @@ export function activate(context: vscode.ExtensionContext): void {
       console.log('Discovered routes with resolved prefixes:', analysis.routes);
       routeTreeProvider.setRoutes(analysis.routes, analysis);
       routeAnalysisProvider.setAnalysis(analysis);
-      diagnosticsManager.updateDiagnostics(analysis.duplicates, analysis.missingHandlers);
+      diagnosticsManager.updateDiagnostics(
+        analysis.duplicates,
+        analysis.missingHandlers,
+        analysis.conflicts
+      );
 
       routesTreeView.description = `${analysis.routes.length} routes (${analysis.statistics.totalFiles} files)`;
       routesTreeView.badge = {
@@ -159,10 +163,14 @@ export function activate(context: vscode.ExtensionContext): void {
         tooltip: `${analysis.routes.length} discovered API routes`,
       };
 
+      const errorCount = analysis.statistics.errorCount;
+      const warningCount = analysis.statistics.warningCount;
       analysisTreeView.description =
-        analysis.duplicates.length === 0
-          ? `${analysis.sharedPaths.length} shared • Healthy`
-          : `⚠️ ${analysis.duplicates.length} duplicate conflict(s)`;
+        errorCount === 0 && warningCount === 0
+          ? `${analysis.statistics.healthyCount} Healthy • ${analysis.sharedPaths.length} shared`
+          : errorCount > 0
+          ? `❌ ${errorCount} error(s) • ⚠️ ${warningCount} warning(s)`
+          : `⚠️ ${warningCount} warning(s) • ${analysis.statistics.healthyCount} Healthy`;
 
       updateStatusBar();
 

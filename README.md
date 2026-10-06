@@ -57,25 +57,56 @@ Modern backend projects often grow into complex route matrices spread across rou
 
 ---
 
-## Current Status: Sprint 6 — Fastify + NestJS Support (v0.6.0)
+## Current Status: Sprint 7 — Advanced Route Intelligence (v0.7.0)
 
-The extension features an extensible pluggable framework architecture (`FrameworkAdapter`, `FrameworkRegistry`, `FrameworkDetector`), isolating framework discovery from agnostic analysis, search, diagnostics, and navigation.
+The extension provides comprehensive static route intelligence, moving beyond simple route discovery to analyze the health, relationships, potential conflicts, and middleware protection of every endpoint across Express, Next.js, Fastify, and NestJS.
 
 ### Capabilities Matrix
 ```text
 ✓ Multi-framework architecture (Express.js, Next.js, Fastify, NestJS)
-✓ Fastify standard methods & route({ method, url }) declarations
-✓ Fastify plugin prefix composition (fastify.register)
-✓ NestJS controller & HTTP method decorator parsing
-✓ NestJS controller prefix composition & exact decorator jump
-✓ Next.js App Router & Pages Router API discovery
-✓ Dynamic parameter & catch-all normalization
+✓ Route health analysis (Healthy, Info, Warning, Error)
+✓ Potential route conflict detection (Static vs Dynamic URL overlaps)
+✓ Possible route shadowing detection (Order-dependent route interception)
+✓ Route-level middleware extraction (Express, Fastify pre-handlers, NestJS guards/interceptors)
+✓ Framework-aware route relationships & middleware grouping
 ✓ Duplicate route detection (framework-scoped)
 ✓ Same-path/different-method awareness (shared paths)
-✓ Express router prefix resolution
-✓ Framework-aware route statistics across all 4 frameworks
-✓ Native diagnostics & code navigation
+✓ Express & Fastify prefix resolution
+✓ Rich VS Code diagnostics for duplicates, missing handlers, and conflicts
+✓ Enhanced route statistics & interactive analysis tree
+✓ 1-Click code navigation to handlers and conflicting endpoints
 ```
+
+---
+
+## Route Intelligence
+
+### 1. Route Health Evaluation
+Every endpoint receives a deterministic health status:
+- **Healthy**: No route conflicts, missing handlers, or duplicate declarations.
+- **Info**: Informational status (e.g., protected by middleware).
+- **Warning**: Potential route overlap or possible route shadowing that may intercept traffic depending on registration order.
+- **Error**: High-confidence issues requiring attention (duplicate route definitions or missing handlers).
+
+### 2. Route Conflict & Shadowing Detection
+Identifies routes that collide in URL matching space:
+- **Static vs Parameter Overlaps**: e.g. `GET /users/:id` and `GET /users/me`.
+- **Order-Sensitive Shadowing**: If `GET /users/:id` is declared before `GET /users/me` in the same file, the dynamic route captures requests meant for the specific endpoint. Flagged as `Possible route shadowing`.
+- **Catch-All Overlaps**: e.g. `/files/*path` and `/files/:id`.
+
+### 3. Middleware & Guard Analysis
+Extracts route-level middleware without runtime overhead:
+- **Express**: Extracts chained middleware identifiers (e.g. `router.get('/users', authenticate, authorize, handler)`).
+- **Fastify**: Detects route `preHandler` and `preValidation` configurations.
+- **NestJS**: Identifies `@UseGuards(AuthGuard)` and `@UseInterceptors(LoggingInterceptor)`.
+- **Middleware Grouping**: Visualizes all routes protected by each middleware in the Route Analysis view.
+
+### 4. Interactive Diagnostics
+Publishes concise, actionable warnings directly to VS Code's Problems panel:
+- `Duplicate route: GET /api/users` (Error)
+- `Possible route shadowing: GET /users/:id may capture GET /users/me` (Warning)
+- `Potential route conflict: GET /users/:id overlaps with GET /users/me` (Warning)
+- `Possible missing handler for GET /users` (Warning)
 
 ---
 
@@ -83,10 +114,10 @@ The extension features an extensible pluggable framework architecture (`Framewor
 
 | Framework | Status | Target Sprint |
 | :--- | :--- | :--- |
-| **Express (Node.js)** | ✅ Full Discovery, Navigation & Analysis | Sprint 1–4 |
-| **Next.js (App & Pages Router)** | ✅ Full Discovery, Navigation & Analysis | Sprint 5 |
-| **Fastify** | ✅ Full Discovery, Navigation & Analysis | Sprint 6 |
-| **NestJS** | ✅ Full Discovery, Navigation & Analysis | Sprint 6 |
+| **Express (Node.js)** | ✅ Full Discovery, Navigation & Intelligence | Sprint 1–4, 7 |
+| **Next.js (App & Pages Router)** | ✅ Full Discovery, Navigation & Intelligence | Sprint 5, 7 |
+| **Fastify** | ✅ Full Discovery, Navigation & Intelligence | Sprint 6, 7 |
+| **NestJS** | ✅ Full Discovery, Navigation & Intelligence | Sprint 6, 7 |
 
 ---
 
@@ -132,6 +163,11 @@ The extension features an extensible pluggable framework architecture (`Framewor
   - Fastify route detection (standard methods, `route()`, plugin prefixes)
   - NestJS controller detection, HTTP decorators (`@Get`, `@Post`, etc.)
   - NestJS controller prefix composition and exact source navigation
+- [x] **Sprint 7: Advanced Route Intelligence**
+  - Route health assessment (Healthy, Info, Warning, Error)
+  - Static route conflict and order-dependent shadowing detection
+  - Route-level middleware extraction and usage grouping
+  - Expanded diagnostics and Route Analysis tree
 
 ---
 
@@ -192,7 +228,7 @@ In VS Code:
 1. Open the **Extensions** view (`Cmd+Shift+X` / `Ctrl+Shift+X`).
 2. Click the `...` (More Actions) menu in the top-right of the Extensions view.
 3. Select **Install from VSIX...**.
-4. Choose `api-route-explorer-0.6.0.vsix`.
+4. Choose `api-route-explorer-0.7.0.vsix`.
 
 ---
 
@@ -209,6 +245,6 @@ In VS Code:
 
 ## Version
 
-- **Current Version**: `0.6.0` (Sprint 6 — Fastify + NestJS Support)
+- **Current Version**: `0.7.0` (Sprint 7 — Advanced Route Intelligence)
 - **Frameworks Supported**: Express.js, Next.js, Fastify, NestJS (JavaScript & TypeScript)
 - **License**: MIT

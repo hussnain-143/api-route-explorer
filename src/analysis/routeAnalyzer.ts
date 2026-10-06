@@ -14,6 +14,15 @@ import {
   calculateRouteStatistics,
   RouteStatistics,
 } from './routeStatistics';
+import { findRouteConflicts } from './conflictDetector';
+import {
+  buildRouteRelationships,
+} from './routeRelationshipAnalyzer';
+import {
+  RouteConflict,
+  RouteRelationship,
+  MiddlewareUsageGroup,
+} from './analysisTypes';
 
 /**
  * Complete result of the smart route analysis pipeline.
@@ -23,16 +32,21 @@ export interface RouteAnalysisResult {
   duplicates: DuplicateRouteGroup[];
   sharedPaths: RoutePathGroup[];
   missingHandlers: MissingHandlerWarning[];
+  conflicts: RouteConflict[];
+  relationships: Map<string, RouteRelationship>;
+  middlewareGroups: MiddlewareUsageGroup[];
   statistics: RouteStatistics;
 }
 
 /**
- * Runs the full Smart Route Analysis pipeline:
- * 1. Resolves Express router mount prefixes.
+ * Runs the full Smart Route Intelligence pipeline:
+ * 1. Resolves Express & Fastify router mount prefixes.
  * 2. Detects duplicate routes (colliding on method + normalized path).
  * 3. Identifies shared route paths with multiple HTTP methods.
  * 4. Detects possible missing handlers in route declarations.
- * 5. Calculates comprehensive route statistics.
+ * 5. Identifies potential route conflicts and shadowing patterns.
+ * 6. Extracts route middleware, builds relationships and health assessments.
+ * 7. Calculates comprehensive route statistics.
  *
  * @param rawRoutes Raw routes discovered by the route parser.
  * @param fileSources Map of filePath -> source code across inspected files.
@@ -54,14 +68,35 @@ export function analyzeWorkspaceRoutes(
   // 4. Missing handler analysis
   const missingHandlers = analyzeRouteHandlers(resolvedRoutes, fileSources);
 
-  // 5. Statistics calculation
-  const statistics = calculateRouteStatistics(resolvedRoutes, duplicates, sharedPaths);
+  // 5. Conflict & shadowing detection
+  const conflicts = findRouteConflicts(resolvedRoutes);
+
+  // 6. Middleware extraction and route relationships
+  const { relationships, middlewareGroups } = buildRouteRelationships(
+    resolvedRoutes,
+    duplicates,
+    conflicts,
+    missingHandlers,
+    fileSources
+  );
+
+  // 7. Statistics calculation
+  const statistics = calculateRouteStatistics(
+    resolvedRoutes,
+    duplicates,
+    sharedPaths,
+    conflicts,
+    relationships
+  );
 
   return {
     routes: resolvedRoutes,
     duplicates,
     sharedPaths,
     missingHandlers,
+    conflicts,
+    relationships,
+    middlewareGroups,
     statistics,
   };
 }

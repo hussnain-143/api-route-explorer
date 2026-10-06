@@ -2,6 +2,19 @@
 
 All notable changes to the "api-route-explorer" extension will be documented in this file.
 
+## [0.7.0] - Sprint 7: Advanced Route Intelligence
+
+### Added
+- Advanced route intelligence
+- Route health analysis
+- Potential route conflict detection
+- Potential route shadowing detection
+- Route-level middleware analysis
+- Framework-aware route relationships
+- Enhanced diagnostics
+- Enhanced route analysis statistics
+- Route health indicators
+
 ## [0.6.0] - Sprint 6: Fastify + NestJS Support
 
 ### Added
