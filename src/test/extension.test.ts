@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { RouteTreeProvider } from '../providers/routeTreeProvider';
 import { COMMANDS, MESSAGES } from '../utils/constants';
 
-suite('API Route Explorer — Sprint 0 Test Suite', () => {
+suite('API Route Explorer — Extension & Scanner Suite', () => {
   test('Commands are registered', async () => {
     const allCommands = await vscode.commands.getCommands(true);
 
@@ -21,8 +21,14 @@ suite('API Route Explorer — Sprint 0 Test Suite', () => {
     const provider = new RouteTreeProvider();
     const children = await provider.getChildren();
 
-    assert.strictEqual(children.length, 1, 'Expected 1 placeholder child in Sprint 0');
+    assert.strictEqual(children.length, 1, 'Expected 1 placeholder child');
     assert.strictEqual(children[0].label, MESSAGES.NO_ROUTES_TITLE);
     assert.strictEqual(children[0].description, MESSAGES.NO_ROUTES_DESCRIPTION);
+  });
+
+  test('Scan routes command executes cleanly without throwing', async () => {
+    await assert.doesNotReject(async () => {
+      await vscode.commands.executeCommand(COMMANDS.SCAN_ROUTES);
+    });
   });
 });

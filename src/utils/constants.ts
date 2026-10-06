@@ -10,6 +10,7 @@ export const COMMANDS = {
 
 export const VIEWS = {
   ROUTES: 'apiRouteExplorer.routesView',
+  EXPLORER_ROUTES: 'apiRouteExplorer.explorerRoutesView',
 } as const;
 
 export const BRAND_COLORS = {
@@ -27,7 +28,8 @@ export const BRAND_COLORS = {
 } as const;
 
 export const MESSAGES = {
-  SPRINT_0_SCAN_PLACEHOLDER: 'Route scanning will be available in Sprint 1.',
+  NO_WORKSPACE: 'No workspace is open.',
+  NO_ROUTES_DISCOVERED: 'No API routes discovered.',
   NO_ROUTES_TITLE: 'No routes discovered yet',
   NO_ROUTES_DESCRIPTION: 'Scan your workspace to discover API routes.',
 } as const;

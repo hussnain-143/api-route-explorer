@@ -13,11 +13,28 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "apiRouteExplorer",
+          "title": "API Route Explorer",
+          "icon": "resources/icons/activity-bar.svg"
+        }
+      ]
+    },
     "views": {
-      "explorer": [
+      "apiRouteExplorer": [
         {
           "id": "apiRouteExplorer.routesView",
-          "name": "API Routes"
+          "name": "API Routes",
+          "icon": "resources/icons/activity-bar.svg"
+        }
+      ],
+      "explorer": [
+        {
+          "id": "apiRouteExplorer.explorerRoutesView",
+          "name": "API Routes",
+          "icon": "resources/icons/activity-bar.svg"
         }
       ]
     },
@@ -38,12 +55,12 @@
       "view/title": [
         {
           "command": "apiRouteExplorer.refresh",
-          "when": "view == apiRouteExplorer.routesView",
+          "when": "view == apiRouteExplorer.routesView || view == apiRouteExplorer.explorerRoutesView",
           "group": "navigation@1"
         },
         {
           "command": "apiRouteExplorer.scan",
-          "when": "view == apiRouteExplorer.routesView",
+          "when": "view == apiRouteExplorer.routesView || view == apiRouteExplorer.explorerRoutesView",
           "group": "navigation@2"
         }
       ]
@@ -55,6 +72,7 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
+    "test:unit": "mocha --ui tdd out/test/routeParser.test.js",
     "test": "vscode-test"
   },
   "devDependencies": {
