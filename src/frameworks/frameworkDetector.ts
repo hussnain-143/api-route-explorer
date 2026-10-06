@@ -3,6 +3,8 @@ import { ApiFramework } from '../models/framework';
 export interface FrameworkDetectionResult {
   hasExpress: boolean;
   hasNextjs: boolean;
+  hasFastify: boolean;
+  hasNestjs: boolean;
   detectedFrameworks: ApiFramework[];
   evidence: Record<string, string[]>;
 }
@@ -18,6 +20,8 @@ export function detectFrameworks(
   const evidence: Record<string, string[]> = {
     express: [],
     nextjs: [],
+    fastify: [],
+    nestjs: [],
   };
 
   // 1. Analyze package.json dependencies
@@ -34,6 +38,13 @@ export function detectFrameworks(
       }
       if (allDeps.next) {
         evidence.nextjs.push(`package.json dependency (next@${allDeps.next})`);
+      }
+      if (allDeps.fastify) {
+        evidence.fastify.push(`package.json dependency (fastify@${allDeps.fastify})`);
+      }
+      if (allDeps['@nestjs/common'] || allDeps['@nestjs/core']) {
+        const nestVer = allDeps['@nestjs/common'] || allDeps['@nestjs/core'];
+        evidence.nestjs.push(`package.json dependency (@nestjs/core@${nestVer})`);
       }
     } catch {
       // Ignore malformed package.json
@@ -63,10 +74,17 @@ export function detectFrameworks(
     if (/(?:routes?|controllers?|endpoints?)\/.*\.[jt]sx?$/i.test(normalized)) {
       evidence.express.push(`Routes directory convention (${normalized})`);
     }
+
+    // NestJS typical conventions: *.controller.ts, *.module.ts
+    if (/\.controller\.[jt]s$/i.test(normalized)) {
+      evidence.nestjs.push(`NestJS controller convention (${normalized})`);
+    }
   }
 
   const hasExpress = evidence.express.length > 0;
   const hasNextjs = evidence.nextjs.length > 0;
+  const hasFastify = evidence.fastify.length > 0;
+  const hasNestjs = evidence.nestjs.length > 0;
   const detectedFrameworks: ApiFramework[] = [];
 
   if (hasExpress) {
@@ -75,10 +93,18 @@ export function detectFrameworks(
   if (hasNextjs) {
     detectedFrameworks.push('nextjs');
   }
+  if (hasFastify) {
+    detectedFrameworks.push('fastify');
+  }
+  if (hasNestjs) {
+    detectedFrameworks.push('nestjs');
+  }
 
   return {
     hasExpress,
     hasNextjs,
+    hasFastify,
+    hasNestjs,
     detectedFrameworks,
     evidence,
   };

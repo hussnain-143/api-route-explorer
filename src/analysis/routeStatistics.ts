@@ -56,7 +56,14 @@ export function calculateRouteStatistics(
     if (route.method in methodCounts) {
       methodCounts[route.method]++;
     }
-    const fw = route.framework === 'nextjs' || route.framework === 'next' ? 'Next.js' : 'Express';
+    let fw = 'Express';
+    if (route.framework === 'nextjs' || route.framework === 'next') {
+      fw = 'Next.js';
+    } else if (route.framework === 'fastify') {
+      fw = 'Fastify';
+    } else if (route.framework === 'nestjs') {
+      fw = 'NestJS';
+    }
     frameworkCounts[fw] = (frameworkCounts[fw] || 0) + 1;
   }
 

@@ -18,7 +18,7 @@ export interface MissingHandlerWarning {
  * e.g. router.get("/users") or app.post("/users", )
  */
 const SUSPICIOUS_NO_HANDLER_REGEX =
-  /\b(app|router)\s*\.\s*(get|post|put|patch|delete)\s*(?:<[^>]*>)?\s*\(\s*(?:'([^'\r\n]*)'|"([^"\r\n]*)"|`([^`\r\n]*)`)\s*(?:,\s*)?\)/gi;
+  /\b(app|router|fastify|server)\s*\.\s*(get|post|put|patch|delete|head|options)\s*(?:<[^>]*>)?\s*\(\s*(?:'([^'\r\n]*)'|"([^"\r\n]*)"|`([^`\r\n]*)`)\s*(?:,\s*)?\)/gi;
 
 /**
  * Analyzes source code for suspicious Express route declarations that appear to lack

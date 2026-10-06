@@ -2,6 +2,19 @@
 
 All notable changes to the "api-route-explorer" extension will be documented in this file.
 
+## [0.6.0] - Sprint 6: Fastify + NestJS Support
+
+### Added
+- Fastify route detection
+- Fastify route() support
+- Fastify prefix resolution
+- NestJS controller detection
+- NestJS HTTP decorator detection
+- NestJS controller prefix composition
+- Fastify/NestJS framework detection
+- Fastify/NestJS route search and analysis
+- Framework-aware duplicate detection
+
 ## [0.5.0] - Sprint 5: Multi-Framework Architecture + Next.js Support
 
 ### Added

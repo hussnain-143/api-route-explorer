@@ -17,7 +17,14 @@ export interface RouteQuickPickItem extends vscode.QuickPickItem {
  */
 export function createRouteQuickPickItem(route: ApiRoute): RouteQuickPickItem {
   const relativePath = getRelativeFilePath(route.filePath);
-  const fwName = route.framework === 'nextjs' || route.framework === 'next' ? 'Next.js' : 'Express';
+  let fwName = 'Express';
+  if (route.framework === 'nextjs' || route.framework === 'next') {
+    fwName = 'Next.js';
+  } else if (route.framework === 'fastify') {
+    fwName = 'Fastify';
+  } else if (route.framework === 'nestjs') {
+    fwName = 'NestJS';
+  }
   return {
     label: `${route.method} ${route.path}`,
     description: relativePath,

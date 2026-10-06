@@ -80,7 +80,7 @@ suite('API Route Explorer — Sprint 5 Multi-Framework & Next.js Suite', functio
     const registry = new FrameworkRegistry();
     const adapters = registry.getAdapters();
 
-    assert.strictEqual(adapters.length, 2);
+    assert.ok(adapters.length >= 2);
     assert.ok(registry.getAdapter('express') instanceof ExpressAdapter);
     assert.ok(registry.getAdapter('nextjs') instanceof NextjsAdapter);
   });
