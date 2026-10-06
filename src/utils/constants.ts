@@ -11,9 +11,15 @@ export const COMMANDS = {
   OPEN_FILE: 'apiRouteExplorer.openFile',
   COPY_ROUTE: 'apiRouteExplorer.copyRoute',
   COPY_ROUTE_PATH: 'apiRouteExplorer.copyRoutePath',
+  COPY_ROUTE_URL: 'apiRouteExplorer.copyRouteUrl',
+  COPY_ROUTE_DEFINITION: 'apiRouteExplorer.copyRouteDefinition',
   COPY_CURL: 'apiRouteExplorer.copyCurl',
   SHOW_STATISTICS: 'apiRouteExplorer.showStatistics',
   FILTER_BY_METHOD: 'apiRouteExplorer.filterByMethod',
+  FILTER_ROUTES: 'apiRouteExplorer.filterRoutes',
+  GROUP_BY: 'apiRouteExplorer.groupBy',
+  SEARCH_SIMILAR_ROUTES: 'apiRouteExplorer.searchSimilarRoutes',
+  EXPORT_ROUTES: 'apiRouteExplorer.exportRoutes',
   STATUS_BAR_MENU: 'apiRouteExplorer.statusBarMenu',
 } as const;
 
@@ -26,8 +32,13 @@ export const VIEWS = {
 export const CONTEXT_VALUES = {
   ROUTE: 'apiRouteExplorer.route',
   FILE_GROUP: 'apiRouteExplorer.fileGroup',
+  FRAMEWORK_GROUP: 'apiRouteExplorer.frameworkGroup',
+  METHOD_GROUP: 'apiRouteExplorer.methodGroup',
+  HEALTH_GROUP: 'apiRouteExplorer.healthGroup',
   PLACEHOLDER: 'apiRouteExplorer.placeholder',
 } as const;
+
+export type RouteGroupingMode = 'file' | 'framework' | 'method' | 'health';
 
 export const BRAND_COLORS = {
   PRIMARY_EMERALD: '#10B981',

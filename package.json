@@ -2,7 +2,7 @@
   "name": "api-route-explorer",
   "displayName": "API Route Explorer",
   "description": "Discover, analyze, search, and navigate API routes directly inside VS Code.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "publisher": "api-route-explorer",
   "license": "MIT",
   "repository": {
@@ -35,6 +35,46 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "API Route Explorer",
+      "properties": {
+        "apiRouteExplorer.defaultGrouping": {
+          "type": "string",
+          "enum": [
+            "file",
+            "framework",
+            "method",
+            "health"
+          ],
+          "enumDescriptions": [
+            "Group routes by source file and module folder (default)",
+            "Group routes by framework (Express, Next.js, Fastify, NestJS)",
+            "Group routes by HTTP method (GET, POST, PUT, DELETE...)",
+            "Group routes by health status (Healthy, Warnings, Errors)"
+          ],
+          "default": "file",
+          "description": "Default grouping mode for the API Route Explorer TreeView."
+        },
+        "apiRouteExplorer.baseUrl": {
+          "type": "string",
+          "default": "http://localhost:3000",
+          "description": "Base URL used when copying full route URLs (e.g. http://localhost:3000)."
+        },
+        "apiRouteExplorer.scan.exclude": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Additional folder or file patterns to exclude during workspace scanning (extends built-in exclusions)."
+        },
+        "apiRouteExplorer.autoRefresh": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically refresh and update route analysis when files are modified in the workspace."
+        }
+      }
+    },
     "viewsContainers": {
       "activitybar": [
         {
@@ -114,10 +154,46 @@
         "icon": "$(terminal)"
       },
       {
+        "command": "apiRouteExplorer.copyRouteUrl",
+        "title": "Copy Route URL",
+        "category": "API Route Explorer",
+        "icon": "$(link)"
+      },
+      {
+        "command": "apiRouteExplorer.copyRouteDefinition",
+        "title": "Copy Route Definition",
+        "category": "API Route Explorer",
+        "icon": "$(quote)"
+      },
+      {
         "command": "apiRouteExplorer.filterByMethod",
-        "title": "Filter Routes",
+        "title": "Filter Routes by Method",
         "category": "API Route Explorer",
         "icon": "$(filter)"
+      },
+      {
+        "command": "apiRouteExplorer.filterRoutes",
+        "title": "Filter Routes...",
+        "category": "API Route Explorer",
+        "icon": "$(filter)"
+      },
+      {
+        "command": "apiRouteExplorer.groupBy",
+        "title": "Group Routes By...",
+        "category": "API Route Explorer",
+        "icon": "$(list-tree)"
+      },
+      {
+        "command": "apiRouteExplorer.searchSimilarRoutes",
+        "title": "Search Similar Routes",
+        "category": "API Route Explorer",
+        "icon": "$(search)"
+      },
+      {
+        "command": "apiRouteExplorer.exportRoutes",
+        "title": "Export Routes...",
+        "category": "API Route Explorer",
+        "icon": "$(export)"
       },
       {
         "command": "apiRouteExplorer.statusBarMenu",
@@ -139,24 +215,29 @@
           "group": "navigation@1"
         },
         {
-          "command": "apiRouteExplorer.filterByMethod",
+          "command": "apiRouteExplorer.groupBy",
           "when": "view == apiRouteExplorer.routesView || view == apiRouteExplorer.explorerRoutesView",
           "group": "navigation@2"
         },
         {
-          "command": "apiRouteExplorer.refresh",
+          "command": "apiRouteExplorer.filterRoutes",
           "when": "view == apiRouteExplorer.routesView || view == apiRouteExplorer.explorerRoutesView",
           "group": "navigation@3"
         },
         {
-          "command": "apiRouteExplorer.scan",
+          "command": "apiRouteExplorer.refresh",
           "when": "view == apiRouteExplorer.routesView || view == apiRouteExplorer.explorerRoutesView",
           "group": "navigation@4"
         },
         {
-          "command": "apiRouteExplorer.showStatistics",
+          "command": "apiRouteExplorer.exportRoutes",
           "when": "view == apiRouteExplorer.routesView || view == apiRouteExplorer.explorerRoutesView",
           "group": "navigation@5"
+        },
+        {
+          "command": "apiRouteExplorer.showStatistics",
+          "when": "view == apiRouteExplorer.routesView || view == apiRouteExplorer.explorerRoutesView",
+          "group": "navigation@6"
         }
       ],
       "view/item/context": [
@@ -186,6 +267,11 @@
           "group": "navigation@2"
         },
         {
+          "command": "apiRouteExplorer.searchSimilarRoutes",
+          "when": "viewItem == apiRouteExplorer.route",
+          "group": "navigation@3"
+        },
+        {
           "command": "apiRouteExplorer.copyRoute",
           "when": "viewItem == apiRouteExplorer.route",
           "group": "copy@1"
@@ -196,9 +282,19 @@
           "group": "copy@2"
         },
         {
-          "command": "apiRouteExplorer.copyCurl",
+          "command": "apiRouteExplorer.copyRouteUrl",
           "when": "viewItem == apiRouteExplorer.route",
           "group": "copy@3"
+        },
+        {
+          "command": "apiRouteExplorer.copyRouteDefinition",
+          "when": "viewItem == apiRouteExplorer.route",
+          "group": "copy@4"
+        },
+        {
+          "command": "apiRouteExplorer.copyCurl",
+          "when": "viewItem == apiRouteExplorer.route",
+          "group": "copy@5"
         }
       ],
       "commandPalette": [
@@ -217,6 +313,18 @@
         {
           "command": "apiRouteExplorer.copyRoutePath",
           "when": "false"
+        },
+        {
+          "command": "apiRouteExplorer.copyRouteUrl",
+          "when": "false"
+        },
+        {
+          "command": "apiRouteExplorer.copyRouteDefinition",
+          "when": "false"
+        },
+        {
+          "command": "apiRouteExplorer.searchSimilarRoutes",
+          "when": "false"
         }
       ]
     }
@@ -229,7 +337,7 @@
     "lint": "eslint src",
     "test:unit": "mocha --ui tdd out/test/routeParser.test.js",
     "test": "vscode-test",
-    "package": "vsce package --no-dependencies"
+    "package": "npx @vscode/vsce package --no-dependencies"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",

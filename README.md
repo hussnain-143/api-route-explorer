@@ -94,82 +94,58 @@ VS Code UI (Sidebar TreeView / QuickPick Search / Diagnostics / Status Bar)
 
 ---
 
-## Route Explorer (Sidebar UI)
+## Route Explorer & Grouping
 
-The **API Routes** sidebar provides a clean two-level hierarchy:
-- **Level 1 (Module/File)**: Groups routes by source file, showing developer-friendly module folder names (e.g. `booking` or `admin/booking`) rather than long, repetitive file paths.
-- **Level 2 (Route Item)**: Displays each route with its HTTP method icon, public URL, declaration line number, and health indicator badge.
-- **Method Filtering**: Filter the TreeView dynamically to show only `GET`, `POST`, `PUT`, `DELETE`, `Shared`, or `Duplicate` endpoints.
+The **API Routes** sidebar provides flexible, multi-dimensional organization:
+- **Group by File (Default)**: Groups routes by source file, showing developer-friendly module folder names (e.g. `booking` or `admin/booking`) rather than long, repetitive file paths.
+- **Group by Framework**: Organizes routes cleanly into **Express**, **Next.js**, **Fastify**, and **NestJS** top-level categories.
+- **Group by HTTP Method**: Groups endpoints by HTTP verb (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`, etc.).
+- **Group by Route Health**: Groups routes by diagnostic health status (`Errors`, `Warnings`, `Info`, `Healthy`).
+- **Instant Grouping Switching**: Switch grouping dynamically from the view title menu (`apiRouteExplorer.groupBy`) without rescanning.
+
+---
+
+## Advanced Route Filtering
+
+Filter your route inventory entirely in-memory:
+- **By Framework**: Express, Next.js, Fastify, NestJS, or All.
+- **By HTTP Method**: GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD.
+- **By Health**: Healthy, Warnings, Errors, Info.
+- **By Route State**: Duplicates, Shared Paths, Conflicts, Shadowed routes, or Missing Handlers.
+- **By File / Folder**: Narrow down to specific submodules or filenames.
+- **Multi-Token Free Text**: Query routes using multi-token search patterns (e.g. `GET users`, `nestjs auth`).
+
+---
+
+## Route Inventory Export
+
+Export your entire API route catalog using native VS Code save workflows:
+- **Structured JSON (`api-routes.json`)**: Machine-readable array containing HTTP method, public path, framework, file path, line, column, health classification, detected issues, and middleware bindings.
+- **Markdown Documentation (`api-routes.md`)**: Beautifully formatted documentation grouped by framework with health badges, source links, parameter warnings, and middleware guards.
+
+Run `API Route Explorer: Export Routes...` from the title bar or Command Palette.
 
 ---
 
 ## Route Search
 
 Press `Cmd+Shift+P` / `Ctrl+Shift+P` and run **API Route Explorer: Search Routes**:
-- **Fuzzy Matching**: Matches against HTTP method, URL path, and filename.
+- **Multi-Token Matching**: Matches against HTTP method, URL path, framework, filename, folder path, and controller handler name.
 - **Instant Response**: Operates entirely in memory on the pre-indexed route cache without filesystem latency.
 - **Direct Jump**: Selecting any result opens the file and places your cursor directly at the route handler.
 
 ---
 
-## Route Intelligence & Diagnostics
+## Configuration Settings
 
-API Route Explorer evaluates every endpoint to ensure consistency and highlight potential issues:
+Configure extension behavior via VS Code Settings (`settings.json`):
 
-### 1. Duplicate vs. Shared Path Distinction
-- **Shared Paths (Valid API Design)**:
-  ```text
-  GET    /api/users
-  POST   /api/users
-  DELETE /api/users
-  ```
-  Recognized as a single endpoint supporting multiple HTTP methods (`Shared Paths: 1`, `Duplicates: 0`).
-- **Duplicate Conflicts (Real Collision)**:
-  ```text
-  GET /api/users
-  GET /api/users
-  ```
-  Flagged as a duplicate error in the Problems panel.
-- **Parameter Normalization**:
-  `/users/:id` and `/users/:userId` are recognized as the same endpoint pattern.
-
-### 2. Route Overlap & Shadowing Detection
-- **Static vs Parameter Overlaps**: e.g. `GET /users/me` and `GET /users/:id`.
-- **Order-Sensitive Shadowing**: If `GET /users/:id` is registered *before* `GET /users/me` in the same file, the dynamic route captures requests intended for `/users/me`. API Route Explorer detects this registration order and issues a `Possible route shadowing` warning.
-
-### 3. Middleware & Guard Analysis
-- Extracts protecting middleware and groups endpoints by middleware usage in the **Route Analysis** view.
-
-### 4. Route Health Classification
-- 🟢 **Healthy**: Well-configured endpoint with no conflicts or warnings.
-- 🔵 **Info**: Endpoint protected by middleware or shared path.
-- 🟡 **Warning**: Potential route conflict or possible route shadowing.
-- 🔴 **Error**: Exact duplicate route declaration or missing handler.
-
----
-
-## Performance & Scalability
-
-Built for large real-world codebases with thousands of routes:
-
-### Architectural Optimizations
-1. **In-Memory RouteIndex**: O(1) mutations and lookups across files, methods, frameworks, and path signatures.
-2. **Incremental Route Scanning**: Editing a file re-parses only the affected file, updating the index in ~30 ms without scanning the filesystem.
-3. **Scan Cancellation**: Background scans observe `vscode.CancellationToken`; rapid rescans cancel superseded scans instantly.
-4. **Precomputed Analysis**: Route segments and normalized paths are cached, reducing conflict detection overhead by over 60%.
-5. **Fast TreeView Updates**: Folder occurrence mapping precomputed in O(F) time, rendering thousands of routes in under 10ms.
-
-### Benchmarks
-
-| Project Size | Routes | Files | Scan Time | Analysis Time | TreeView Render | Total Time |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Small** | 96 | 12 | 18 ms | 24 ms | 1 ms | 45 ms |
-| **Medium** | 476 | 62 | 30 ms | 13 ms | 1 ms | 50 ms |
-| **Large** | 950 | 125 | 49 ms | 27 ms | 2 ms | 87 ms |
-| **Stress** | 4,750 | 625 | 258 ms | 554 ms | 37 ms | 887 ms |
-
-- **Incremental File Update**: ~30 ms (instant re-analysis without workspace scan).
-- **In-Memory Index Lookups**: ~845 ns per lookup.
+| Setting | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `apiRouteExplorer.defaultGrouping` | `string` | `"file"` | Default grouping mode for the TreeView (`"file"`, `"framework"`, `"method"`, `"health"`). |
+| `apiRouteExplorer.baseUrl` | `string` | `"http://localhost:3000"` | Base URL used when copying complete route URLs. |
+| `apiRouteExplorer.scan.exclude` | `array` | `[]` | Additional folder/file patterns to exclude during scanning (extends built-in safe defaults). |
+| `apiRouteExplorer.autoRefresh` | `boolean` | `true` | Automatically refresh and incrementally update routes when files change. |
 
 ---
 
@@ -179,14 +155,20 @@ Built for large real-world codebases with thousands of routes:
 | :--- | :--- | :--- |
 | **Scan Routes** | `apiRouteExplorer.scan` | Scans workspace and discovers API routes |
 | **Refresh Routes** | `apiRouteExplorer.refresh` | Re-scans and updates the sidebar |
-| **Search Routes** | `apiRouteExplorer.searchRoutes` | QuickPick search matching method, path, or file |
+| **Search Routes** | `apiRouteExplorer.searchRoutes` | QuickPick search matching method, path, framework, or file |
+| **Search Similar Routes** | `apiRouteExplorer.searchSimilarRoutes` | QuickPick pre-filled with the route's resource segment |
+| **Group Routes By...** | `apiRouteExplorer.groupBy` | Switch grouping between File, Framework, Method, and Health |
+| **Filter Routes...** | `apiRouteExplorer.filterRoutes` | Multi-criteria filter hub (framework, method, health, state) |
 | **Filter by HTTP Method** | `apiRouteExplorer.filterByMethod` | Filter sidebar routes by method or duplicate/shared condition |
-| **Quick Hub Menu** | `apiRouteExplorer.statusBarMenu` | Status bar quick actions for search, filters, and stats |
+| **Export Routes...** | `apiRouteExplorer.exportRoutes` | Export routes to JSON or Markdown documentation |
+| **Quick Hub Menu** | `apiRouteExplorer.statusBarMenu` | Status bar quick actions for search, filters, export, and stats |
 | **Show Route Statistics** | `apiRouteExplorer.showStatistics` | Interactive metrics modal with duplicate & shared path breakdown |
 | **Open Route** | `apiRouteExplorer.openRoute` | Jumps to the exact route definition line in code |
 | **Open File** | `apiRouteExplorer.openFile` | Opens the source file containing the route |
 | **Copy Route** | `apiRouteExplorer.copyRoute` | Copies route signature (e.g. `GET /api/users`) |
 | **Copy Route Path** | `apiRouteExplorer.copyRoutePath` | Copies route path only (e.g. `/api/users`) |
+| **Copy Route URL** | `apiRouteExplorer.copyRouteUrl` | Copies full local URL (e.g. `http://localhost:3000/api/users`) |
+| **Copy Route Definition** | `apiRouteExplorer.copyRouteDefinition` | Copies developer-readable format (e.g. `GET /users -> users.ts:42`) |
 | **Copy as cURL** | `apiRouteExplorer.copyCurl` | Copies reproducible curl command to clipboard |
 
 ---

@@ -7,8 +7,42 @@ import { RouteIndex } from './routeIndex';
  * File search patterns for source code discovery.
  */
 export const SCAN_INCLUDE_PATTERN = '**/*.{js,jsx,ts,tsx}';
+export const BASE_EXCLUDE_SEGMENTS = [
+  'node_modules',
+  '.git',
+  '.next',
+  'dist',
+  'build',
+  'coverage',
+  'out',
+];
+
 export const SCAN_EXCLUDE_PATTERN =
   '{**/node_modules/**,**/.git/**,**/.next/**,**/dist/**,**/build/**,**/coverage/**,**/out/**}';
+
+/**
+ * Computes the active exclusion glob pattern by merging built-in safe defaults
+ * with user-configured exclusions from `apiRouteExplorer.scan.exclude`.
+ */
+export function getScanExcludePattern(): string {
+  try {
+    const config = vscode.workspace.getConfiguration('apiRouteExplorer');
+    const userExcludes: string[] = config.get('scan.exclude') || [];
+
+    const allSegments = new Set<string>(BASE_EXCLUDE_SEGMENTS);
+    for (const item of userExcludes) {
+      const trimmed = item.trim().replace(/^[\/\*]+|[\/\*]+$/g, '');
+      if (trimmed) {
+        allSegments.add(trimmed);
+      }
+    }
+
+    const globList = Array.from(allSegments).map((s) => `**/${s}/**`);
+    return `{${globList.join(',')}}`;
+  } catch {
+    return SCAN_EXCLUDE_PATTERN;
+  }
+}
 
 /**
  * Raw scan data with source code mapping, route index, and cancellation flag.
@@ -133,7 +167,7 @@ export async function scanWorkspaceDetailed(
 
     const fileUris = await vscode.workspace.findFiles(
       SCAN_INCLUDE_PATTERN,
-      SCAN_EXCLUDE_PATTERN
+      getScanExcludePattern()
     );
 
     if (!fileUris || fileUris.length === 0) {

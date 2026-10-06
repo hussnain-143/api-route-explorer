@@ -1,9 +1,15 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { ApiRoute, HttpMethod } from '../models/route';
+import { ApiFramework, ApiRoute, HttpMethod } from '../models/route';
 import { RouteAnalysisResult } from '../analysis/routeAnalyzer';
+import {
+  RouteHealth,
+  RouteIssue,
+  RouteMiddleware,
+  RouteConflict,
+} from '../analysis/analysisTypes';
 import { getRouteKey } from '../analysis/routeRelationshipAnalyzer';
-import { COMMANDS, CONTEXT_VALUES, MESSAGES } from '../utils/constants';
+import { COMMANDS, CONTEXT_VALUES, MESSAGES, RouteGroupingMode } from '../utils/constants';
 
 /**
  * Computes a readable path relative to the workspace root.
@@ -142,12 +148,93 @@ export class RouteFileGroupItem extends vscode.TreeItem {
   }
 }
 
-import {
-  RouteHealth,
-  RouteIssue,
-  RouteMiddleware,
-  RouteConflict,
-} from '../analysis/analysisTypes';
+/**
+ * Level 1 TreeItem: Represents a framework grouping routes.
+ */
+export class RouteFrameworkGroupItem extends vscode.TreeItem {
+  constructor(
+    public readonly framework: ApiFramework,
+    public readonly routes: ApiRoute[]
+  ) {
+    let title = 'Express';
+    if (framework === 'nextjs' || framework === 'next') {
+      title = 'Next.js';
+    } else if (framework === 'fastify') {
+      title = 'Fastify';
+    } else if (framework === 'nestjs') {
+      title = 'NestJS';
+    }
+
+    super(title, vscode.TreeItemCollapsibleState.Expanded);
+
+    const countLabel = `${routes.length} route${routes.length === 1 ? '' : 's'}`;
+    this.description = countLabel;
+    this.iconPath = new vscode.ThemeIcon('server', new vscode.ThemeColor('charts.blue'));
+    this.tooltip = `${title} (${countLabel})`;
+    this.contextValue = CONTEXT_VALUES.FRAMEWORK_GROUP;
+  }
+}
+
+/**
+ * Level 1 TreeItem: Represents an HTTP method grouping routes.
+ */
+export class RouteMethodGroupItem extends vscode.TreeItem {
+  constructor(
+    public readonly method: HttpMethod,
+    public readonly routes: ApiRoute[]
+  ) {
+    super(method, vscode.TreeItemCollapsibleState.Expanded);
+
+    const countLabel = `${routes.length} route${routes.length === 1 ? '' : 's'}`;
+    this.description = countLabel;
+    this.iconPath = getMethodIcon(method);
+    this.tooltip = `${method} Endpoints (${countLabel})`;
+    this.contextValue = CONTEXT_VALUES.METHOD_GROUP;
+  }
+}
+
+/**
+ * Level 1 TreeItem: Represents a health status grouping routes.
+ */
+export class RouteHealthGroupItem extends vscode.TreeItem {
+  constructor(
+    public readonly health: RouteHealth,
+    public readonly routes: ApiRoute[]
+  ) {
+    let title = 'Healthy';
+    let icon = new vscode.ThemeIcon('pass', new vscode.ThemeColor('charts.green'));
+    if (health === 'error') {
+      title = 'Errors';
+      icon = new vscode.ThemeIcon('error', new vscode.ThemeColor('charts.red'));
+    } else if (health === 'warning') {
+      title = 'Warnings';
+      icon = new vscode.ThemeIcon('warning', new vscode.ThemeColor('charts.yellow'));
+    } else if (health === 'info') {
+      title = 'Info';
+      icon = new vscode.ThemeIcon('info', new vscode.ThemeColor('charts.blue'));
+    }
+
+    super(title, vscode.TreeItemCollapsibleState.Expanded);
+
+    const countLabel = `${routes.length} route${routes.length === 1 ? '' : 's'}`;
+    this.description = countLabel;
+    this.iconPath = icon;
+    this.tooltip = `${title} (${countLabel})`;
+    this.contextValue = CONTEXT_VALUES.HEALTH_GROUP;
+  }
+}
+
+/**
+ * Filter configuration for in-memory route filtering.
+ */
+export interface RouteFilterOptions {
+  framework?: ApiFramework | 'ALL';
+  method?: HttpMethod | 'ALL';
+  health?: RouteHealth | 'ALL';
+  state?: 'ALL' | 'DUPLICATES' | 'SHARED' | 'CONFLICTS' | 'SHADOWED' | 'MISSING_HANDLER';
+  filePath?: string;
+  query?: string;
+}
 
 /**
  * Contextual analysis flags for an individual route tree item.
@@ -170,32 +257,39 @@ export class RouteTreeItem extends vscode.TreeItem {
   constructor(
     public readonly route: ApiRoute,
     public readonly relativeFilePath: string,
-    public readonly analysisContext?: RouteAnalysisContext
+    public readonly analysisContext?: RouteAnalysisContext,
+    public readonly showFileInDescription: boolean = false
   ) {
     // METHOD + PATH compact display
     super(`${route.method} ${route.path}`, vscode.TreeItemCollapsibleState.None);
 
-    let desc = `Line ${route.line + 1}`;
+    let baseDesc = `Line ${route.line + 1}`;
     let icon = getMethodIcon(route.method);
 
     if (analysisContext?.isDuplicate) {
-      desc = `Line ${route.line + 1} • ⚠️ Duplicate`;
+      baseDesc = `Line ${route.line + 1} • ⚠️ Duplicate`;
       icon = new vscode.ThemeIcon('error', new vscode.ThemeColor('charts.red'));
     } else if (analysisContext?.isMissingHandler) {
-      desc = `Line ${route.line + 1} • ⚠️ Missing handler`;
+      baseDesc = `Line ${route.line + 1} • ⚠️ Missing handler`;
       icon = new vscode.ThemeIcon('warning', new vscode.ThemeColor('charts.yellow'));
     } else if (analysisContext?.conflicts && analysisContext.conflicts.length > 0) {
       const isShadow = analysisContext.conflicts.some((c) => c.isShadowing);
-      desc = `Line ${route.line + 1} • ${isShadow ? '⚠️ Shadowed' : '⚠️ Conflict'}`;
+      baseDesc = `Line ${route.line + 1} • ${isShadow ? '⚠️ Shadowed' : '⚠️ Conflict'}`;
       icon = new vscode.ThemeIcon('warning', new vscode.ThemeColor('charts.orange'));
     } else if (analysisContext?.health === 'warning') {
-      desc = `Line ${route.line + 1} • ⚠️ Warning`;
+      baseDesc = `Line ${route.line + 1} • ⚠️ Warning`;
       icon = new vscode.ThemeIcon('warning', new vscode.ThemeColor('charts.orange'));
     } else if (analysisContext?.isShared) {
-      desc = `Line ${route.line + 1} • Shared`;
+      baseDesc = `Line ${route.line + 1} • Shared`;
     }
 
-    this.description = desc;
+    if (showFileInDescription) {
+      const fileName = path.basename(route.filePath);
+      this.description = `${baseDesc} • ${fileName}`;
+    } else {
+      this.description = baseDesc;
+    }
+
     this.iconPath = icon;
     this.contextValue = CONTEXT_VALUES.ROUTE;
 
@@ -274,9 +368,8 @@ export class RoutePlaceholderItem extends vscode.TreeItem {
 }
 
 /**
- * TreeDataProvider implementing the 2-level API Route Explorer hierarchy:
- * Level 1: File Group (e.g. routes/userRoutes.js)
- * Level 2: Route Item (e.g. GET /users)
+ * TreeDataProvider implementing the API Route Explorer hierarchy:
+ * Supports dynamic grouping by File, Framework, Method, or Health.
  */
 export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
   private readonly _onDidChangeTreeData = new vscode.EventEmitter<vscode.TreeItem | undefined | void>();
@@ -284,7 +377,15 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
 
   private routes: ApiRoute[] = [];
   private hasScanned: boolean = false;
+  private groupingMode: RouteGroupingMode = 'file';
+  private filterOptions: RouteFilterOptions = {};
+  private activeMethodFilter?: HttpMethod | 'SHARED' | 'DUPLICATES';
+
   private fileGroups: RouteFileGroupItem[] = [];
+  private frameworkGroups: RouteFrameworkGroupItem[] = [];
+  private methodGroups: RouteMethodGroupItem[] = [];
+  private healthGroups: RouteHealthGroupItem[] = [];
+
   private analysis: RouteAnalysisResult | undefined;
   private duplicateKeys = new Set<string>();
   private sharedPathMap = new Map<string, HttpMethod[]>();
@@ -298,15 +399,62 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
   }
 
   /**
-   * Replaces current route collection, caches pre-sorted file groups, and triggers refresh.
+   * Replaces current route collection, caches pre-sorted groups, and triggers refresh.
    */
   public setRoutes(routes: ApiRoute[], analysis?: RouteAnalysisResult): void {
     this.hasScanned = true;
     this.routes = routes;
     this.analysis = analysis;
     this.indexAnalysis(analysis);
-    this.buildFileGroups();
+    this.rebuildGroups();
     this.refresh();
+  }
+
+  /**
+   * Sets grouping mode without rescanning the workspace.
+   */
+  public setGroupingMode(mode: RouteGroupingMode): void {
+    if (this.groupingMode !== mode) {
+      this.groupingMode = mode;
+      this.rebuildGroups();
+      this.refresh();
+    }
+  }
+
+  public getGroupingMode(): RouteGroupingMode {
+    return this.groupingMode;
+  }
+
+  /**
+   * Sets route filter options and updates TreeView in-memory.
+   */
+  public setFilterOptions(options: RouteFilterOptions): void {
+    this.filterOptions = options;
+    this.rebuildGroups();
+    this.refresh();
+  }
+
+  public getFilterOptions(): RouteFilterOptions {
+    return this.filterOptions;
+  }
+
+  public clearFilters(): void {
+    this.filterOptions = {};
+    this.activeMethodFilter = undefined;
+    this.rebuildGroups();
+    this.refresh();
+  }
+
+  public hasActiveFilter(): boolean {
+    return Boolean(
+      this.activeMethodFilter ||
+      (this.filterOptions.framework && this.filterOptions.framework !== 'ALL') ||
+      (this.filterOptions.method && this.filterOptions.method !== 'ALL') ||
+      (this.filterOptions.health && this.filterOptions.health !== 'ALL') ||
+      (this.filterOptions.state && this.filterOptions.state !== 'ALL') ||
+      this.filterOptions.filePath ||
+      this.filterOptions.query
+    );
   }
 
   /**
@@ -349,6 +497,9 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
     this.sharedPathMap.clear();
     this.missingHandlerKeys.clear();
     this.fileGroups = [];
+    this.frameworkGroups = [];
+    this.methodGroups = [];
+    this.healthGroups = [];
     this.refresh();
   }
 
@@ -368,37 +519,101 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
     return this.fileGroups;
   }
 
+  public getFrameworkGroups(): RouteFrameworkGroupItem[] {
+    return this.frameworkGroups;
+  }
+
+  public getMethodGroups(): RouteMethodGroupItem[] {
+    return this.methodGroups;
+  }
+
+  public getHealthGroups(): RouteHealthGroupItem[] {
+    return this.healthGroups;
+  }
+
+  public getRouteHealth(route: ApiRoute): RouteHealth {
+    const relKey = getRouteKey(route);
+    const rel = this.analysis?.relationships?.get(relKey);
+    return rel?.health ?? 'healthy';
+  }
+
+  public createRouteTreeItem(
+    route: ApiRoute,
+    relativeFilePath?: string,
+    showFileInDescription: boolean = false
+  ): RouteTreeItem {
+    const relPath = relativeFilePath ?? getRelativeFilePath(route.filePath);
+    const key = `${route.method}:${route.filePath}:${route.line}`;
+    const relKey = getRouteKey(route);
+    const rel = this.analysis?.relationships?.get(relKey);
+
+    const analysisContext: RouteAnalysisContext = {
+      isDuplicate: this.duplicateKeys.has(key),
+      isShared: this.sharedPathMap.has(key),
+      isMissingHandler: this.missingHandlerKeys.has(key),
+      sharedMethods: this.sharedPathMap.get(key),
+      health: rel?.health,
+      issues: rel?.issues,
+      middleware: rel?.middleware,
+      conflicts: rel?.conflicts,
+    };
+
+    return new RouteTreeItem(route, relPath, analysisContext, showFileInDescription);
+  }
+
   public getTreeItem(element: vscode.TreeItem): vscode.TreeItem {
     return element;
   }
 
   public getParent(element: vscode.TreeItem): vscode.ProviderResult<vscode.TreeItem> {
     if (element instanceof RouteTreeItem) {
-      return this.fileGroups.find((group) => group.filePath === element.route.filePath);
+      switch (this.groupingMode) {
+        case 'framework': {
+          const fw = element.route.framework === 'next' ? 'nextjs' : element.route.framework;
+          return this.frameworkGroups.find(
+            (g) => (g.framework === 'next' ? 'nextjs' : g.framework) === fw
+          );
+        }
+        case 'method':
+          return this.methodGroups.find((g) => g.method === element.route.method);
+        case 'health': {
+          const health = this.getRouteHealth(element.route);
+          return this.healthGroups.find((g) => g.health === health);
+        }
+        case 'file':
+        default:
+          return this.fileGroups.find((g) => g.filePath === element.route.filePath);
+      }
     }
     return undefined;
   }
 
   public getChildren(element?: vscode.TreeItem): Thenable<vscode.TreeItem[]> {
-    // Sub-children for File Groups
     if (element instanceof RouteFileGroupItem) {
-      const items = element.routes.map((route) => {
-        const key = `${route.method}:${route.filePath}:${route.line}`;
-        const relKey = getRouteKey(route);
-        const rel = this.analysis?.relationships?.get(relKey);
+      const items = element.routes.map((route) =>
+        this.createRouteTreeItem(route, element.relativeFilePath, false)
+      );
+      return Promise.resolve(items);
+    }
 
-        const analysisContext: RouteAnalysisContext = {
-          isDuplicate: this.duplicateKeys.has(key),
-          isShared: this.sharedPathMap.has(key),
-          isMissingHandler: this.missingHandlerKeys.has(key),
-          sharedMethods: this.sharedPathMap.get(key),
-          health: rel?.health,
-          issues: rel?.issues,
-          middleware: rel?.middleware,
-          conflicts: rel?.conflicts,
-        };
-        return new RouteTreeItem(route, element.relativeFilePath, analysisContext);
-      });
+    if (element instanceof RouteFrameworkGroupItem) {
+      const items = element.routes.map((route) =>
+        this.createRouteTreeItem(route, undefined, true)
+      );
+      return Promise.resolve(items);
+    }
+
+    if (element instanceof RouteMethodGroupItem) {
+      const items = element.routes.map((route) =>
+        this.createRouteTreeItem(route, undefined, true)
+      );
+      return Promise.resolve(items);
+    }
+
+    if (element instanceof RouteHealthGroupItem) {
+      const items = element.routes.map((route) =>
+        this.createRouteTreeItem(route, undefined, true)
+      );
       return Promise.resolve(items);
     }
 
@@ -428,19 +643,34 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
       ]);
     }
 
+    const currentGroups = this.getCurrentGroups();
+
     // Root level: Filter applied but 0 routes matched filter
-    if (this.fileGroups.length === 0 && this.activeMethodFilter) {
+    if (currentGroups.length === 0 && this.hasActiveFilter()) {
       return Promise.resolve([
         new RoutePlaceholderItem(
-          `No ${this.activeMethodFilter} routes found`,
-          'Click the filter icon in the view title bar to clear or change filter.',
+          'No routes match active filter',
+          'Run "API Route Explorer: Filter Routes" or click filter to clear.',
           'filter'
         ),
       ]);
     }
 
-    // Root level: Return pre-computed file groups
-    return Promise.resolve(this.fileGroups);
+    return Promise.resolve(currentGroups);
+  }
+
+  private getCurrentGroups(): vscode.TreeItem[] {
+    switch (this.groupingMode) {
+      case 'framework':
+        return this.frameworkGroups;
+      case 'method':
+        return this.methodGroups;
+      case 'health':
+        return this.healthGroups;
+      case 'file':
+      default:
+        return this.fileGroups;
+    }
   }
 
   /**
@@ -468,27 +698,18 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
     }
 
     if (closestRoute) {
-      const key = `${closestRoute.method}:${closestRoute.filePath}:${closestRoute.line}`;
-      const analysisContext: RouteAnalysisContext = {
-        isDuplicate: this.duplicateKeys.has(key),
-        isShared: this.sharedPathMap.has(key),
-        isMissingHandler: this.missingHandlerKeys.has(key),
-        sharedMethods: this.sharedPathMap.get(key),
-      };
       return {
         fileGroup: group,
-        routeItem: new RouteTreeItem(closestRoute, group.relativeFilePath, analysisContext),
+        routeItem: this.createRouteTreeItem(closestRoute, group.relativeFilePath, false),
       };
     }
 
     return undefined;
   }
 
-  private activeMethodFilter?: HttpMethod | 'SHARED' | 'DUPLICATES';
-
   public setMethodFilter(filter?: HttpMethod | 'SHARED' | 'DUPLICATES'): void {
     this.activeMethodFilter = filter;
-    this.buildFileGroups();
+    this.rebuildGroups();
     this.refresh();
   }
 
@@ -497,30 +718,126 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
   }
 
   /**
-   * Groups routes by source file, sorts routes by path then method,
-   * and sorts file groups alphabetically.
-   *
-   * Sorting strategy:
-   * 1. File groups: Alphabetical by clean folder label for predictable browsing.
-   * 2. Routes in file: Sorted primarily by path, then by HTTP method to group related endpoints.
+   * Filters cached routes in memory without workspace scanning.
    */
-  private buildFileGroups(): void {
-    const groupMap = new Map<string, ApiRoute[]>();
+  private getFilteredRoutes(): ApiRoute[] {
+    return this.routes.filter((route) => {
+      const key = `${route.method}:${route.filePath}:${route.line}`;
+      const relKey = getRouteKey(route);
+      const rel = this.analysis?.relationships?.get(relKey);
 
-    const targetRoutes = this.routes.filter((route) => {
-      if (!this.activeMethodFilter) {
-        return true;
+      // Legacy method filter compatibility
+      if (this.activeMethodFilter) {
+        if (this.activeMethodFilter === 'SHARED') {
+          if (!this.sharedPathMap.has(key)) {
+            return false;
+          }
+        } else if (this.activeMethodFilter === 'DUPLICATES') {
+          if (!this.duplicateKeys.has(key)) {
+            return false;
+          }
+        } else if (route.method !== this.activeMethodFilter) {
+          return false;
+        }
       }
-      if (this.activeMethodFilter === 'SHARED') {
-        const key = `${route.method}:${route.filePath}:${route.line}`;
-        return this.sharedPathMap.has(key);
+
+      // Framework filter
+      if (this.filterOptions.framework && this.filterOptions.framework !== 'ALL') {
+        const fw = route.framework === 'next' ? 'nextjs' : route.framework;
+        const targetFw = this.filterOptions.framework === 'next' ? 'nextjs' : this.filterOptions.framework;
+        if (fw !== targetFw) {
+          return false;
+        }
       }
-      if (this.activeMethodFilter === 'DUPLICATES') {
-        const key = `${route.method}:${route.filePath}:${route.line}`;
-        return this.duplicateKeys.has(key);
+
+      // Method filter
+      if (this.filterOptions.method && this.filterOptions.method !== 'ALL') {
+        if (route.method !== this.filterOptions.method) {
+          return false;
+        }
       }
-      return route.method === this.activeMethodFilter;
+
+      // Health filter
+      if (this.filterOptions.health && this.filterOptions.health !== 'ALL') {
+        const health = rel?.health ?? 'healthy';
+        if (health !== this.filterOptions.health) {
+          return false;
+        }
+      }
+
+      // State filter
+      if (this.filterOptions.state && this.filterOptions.state !== 'ALL') {
+        switch (this.filterOptions.state) {
+          case 'DUPLICATES':
+            if (!this.duplicateKeys.has(key)) {
+              return false;
+            }
+            break;
+          case 'SHARED':
+            if (!this.sharedPathMap.has(key)) {
+              return false;
+            }
+            break;
+          case 'MISSING_HANDLER':
+            if (!this.missingHandlerKeys.has(key)) {
+              return false;
+            }
+            break;
+          case 'CONFLICTS':
+            if (!rel?.conflicts || rel.conflicts.length === 0) {
+              return false;
+            }
+            break;
+          case 'SHADOWED':
+            if (!rel?.conflicts || !rel.conflicts.some((c) => c.isShadowing)) {
+              return false;
+            }
+            break;
+        }
+      }
+
+      // File/folder filter
+      if (this.filterOptions.filePath) {
+        const term = this.filterOptions.filePath.toLowerCase();
+        const relPath = getRelativeFilePath(route.filePath).toLowerCase();
+        const absPath = route.filePath.toLowerCase();
+        if (!relPath.includes(term) && !absPath.includes(term)) {
+          return false;
+        }
+      }
+
+      // Free text search query
+      if (this.filterOptions.query) {
+        const query = this.filterOptions.query.toLowerCase().trim();
+        const tokens = query.split(/\s+/).filter(Boolean);
+        const routeStr = `${route.method} ${route.path} ${route.filePath} ${route.framework} ${route.handlerName || ''}`.toLowerCase();
+        for (const token of tokens) {
+          if (!routeStr.includes(token)) {
+            return false;
+          }
+        }
+      }
+
+      return true;
     });
+  }
+
+  /**
+   * Rebuilds all grouping collections based on filtered routes.
+   */
+  private rebuildGroups(): void {
+    const filtered = this.getFilteredRoutes();
+    this.buildFileGroups(filtered);
+    this.buildFrameworkGroups(filtered);
+    this.buildMethodGroups(filtered);
+    this.buildHealthGroups(filtered);
+  }
+
+  /**
+   * Groups routes by source file.
+   */
+  private buildFileGroups(targetRoutes: ApiRoute[]): void {
+    const groupMap = new Map<string, ApiRoute[]>();
 
     for (const route of targetRoutes) {
       const existing = groupMap.get(route.filePath);
@@ -562,5 +879,116 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
     groups.sort((a, b) => a.label!.toString().localeCompare(b.label!.toString()));
     this.fileGroups = groups;
   }
-}
 
+  /**
+   * Groups routes by Framework (Express, Next.js, Fastify, NestJS).
+   */
+  private buildFrameworkGroups(targetRoutes: ApiRoute[]): void {
+    const fwMap = new Map<ApiFramework, ApiRoute[]>();
+
+    for (const route of targetRoutes) {
+      const fw: ApiFramework = (route.framework === 'next' ? 'nextjs' : route.framework) || 'express';
+      const list = fwMap.get(fw) || [];
+      list.push(route);
+      fwMap.set(fw, list);
+    }
+
+    const frameworkOrder: ApiFramework[] = ['express', 'nextjs', 'fastify', 'nestjs'];
+    const groups: RouteFrameworkGroupItem[] = [];
+
+    for (const fw of frameworkOrder) {
+      const list = fwMap.get(fw);
+      if (list && list.length > 0) {
+        list.sort((a, b) => {
+          const pathComp = a.path.localeCompare(b.path);
+          if (pathComp !== 0) {
+            return pathComp;
+          }
+          return a.method.localeCompare(b.method);
+        });
+        groups.push(new RouteFrameworkGroupItem(fw, list));
+      }
+    }
+
+    // Catch any remaining unexpected frameworks
+    for (const [fw, list] of fwMap.entries()) {
+      if (!frameworkOrder.includes(fw) && list.length > 0) {
+        groups.push(new RouteFrameworkGroupItem(fw, list));
+      }
+    }
+
+    this.frameworkGroups = groups;
+  }
+
+  /**
+   * Groups routes by HTTP Method (GET, POST, PUT, PATCH, DELETE, etc.).
+   */
+  private buildMethodGroups(targetRoutes: ApiRoute[]): void {
+    const methodMap = new Map<HttpMethod, ApiRoute[]>();
+
+    for (const route of targetRoutes) {
+      const list = methodMap.get(route.method) || [];
+      list.push(route);
+      methodMap.set(route.method, list);
+    }
+
+    const methodOrder: HttpMethod[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD', 'ANY'];
+    const groups: RouteMethodGroupItem[] = [];
+
+    for (const method of methodOrder) {
+      const list = methodMap.get(method);
+      if (list && list.length > 0) {
+        list.sort((a, b) => {
+          const pathComp = a.path.localeCompare(b.path);
+          if (pathComp !== 0) {
+            return pathComp;
+          }
+          return a.filePath.localeCompare(b.filePath);
+        });
+        groups.push(new RouteMethodGroupItem(method, list));
+      }
+    }
+
+    // Catch any other method types
+    for (const [method, list] of methodMap.entries()) {
+      if (!methodOrder.includes(method) && list.length > 0) {
+        groups.push(new RouteMethodGroupItem(method, list));
+      }
+    }
+
+    this.methodGroups = groups;
+  }
+
+  /**
+   * Groups routes by Health status (Errors, Warnings, Info, Healthy).
+   */
+  private buildHealthGroups(targetRoutes: ApiRoute[]): void {
+    const healthMap = new Map<RouteHealth, ApiRoute[]>();
+
+    for (const route of targetRoutes) {
+      const health = this.getRouteHealth(route);
+      const list = healthMap.get(health) || [];
+      list.push(route);
+      healthMap.set(health, list);
+    }
+
+    const healthOrder: RouteHealth[] = ['error', 'warning', 'info', 'healthy'];
+    const groups: RouteHealthGroupItem[] = [];
+
+    for (const health of healthOrder) {
+      const list = healthMap.get(health);
+      if (list && list.length > 0) {
+        list.sort((a, b) => {
+          const pathComp = a.path.localeCompare(b.path);
+          if (pathComp !== 0) {
+            return pathComp;
+          }
+          return a.method.localeCompare(b.method);
+        });
+        groups.push(new RouteHealthGroupItem(health, list));
+      }
+    }
+
+    this.healthGroups = groups;
+  }
+}

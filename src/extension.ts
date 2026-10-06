@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
-import { ApiRoute, HttpMethod } from './models/route';
+import { ApiFramework, ApiRoute, HttpMethod } from './models/route';
 import {
+  getRelativeFilePath,
   RouteFileGroupItem,
   RouteTreeItem,
   RouteTreeProvider,
@@ -20,7 +21,8 @@ import {
 } from './analysis/routeAnalyzer';
 import { RouteDiagnosticsManager } from './analysis/diagnostics';
 import { showRouteStatisticsModal } from './analysis/routeStatistics';
-import { COMMANDS, MESSAGES, VIEWS } from './utils/constants';
+import { showExportRoutesDialog } from './utils/routeExporter';
+import { COMMANDS, MESSAGES, RouteGroupingMode, VIEWS } from './utils/constants';
 import { openFile, openRoute } from './utils/navigation';
 
 /**
@@ -80,6 +82,12 @@ export function activate(context: vscode.ExtensionContext): void {
   const routeAnalysisProvider = new RouteAnalysisProvider();
   const diagnosticsManager = new RouteDiagnosticsManager();
 
+  // Initialize grouping mode from configuration
+  const initialGrouping = vscode.workspace
+    .getConfiguration('apiRouteExplorer')
+    .get<RouteGroupingMode>('defaultGrouping', 'file');
+  routeTreeProvider.setGroupingMode(initialGrouping);
+
   // Create dedicated TreeView instances for Activity Bar
   const routesTreeView = vscode.window.createTreeView(VIEWS.ROUTES, {
     treeDataProvider: routeTreeProvider,
@@ -106,6 +114,32 @@ export function activate(context: vscode.ExtensionContext): void {
   let currentAnalysis: RouteAnalysisResult | undefined;
   let currentRouteIndex = new RouteIndex();
   let currentFileSources = new Map<string, string>();
+
+  const updateTreeViewDescription = (): void => {
+    if (!currentAnalysis || currentAnalysis.routes.length === 0) {
+      routesTreeView.description = undefined;
+      return;
+    }
+    const mode = routeTreeProvider.getGroupingMode();
+    const modeLabel = mode === 'file' ? '' : ` [By ${mode.charAt(0).toUpperCase() + mode.slice(1)}]`;
+    const filter = routeTreeProvider.getMethodFilter();
+    const filterOpts = routeTreeProvider.getFilterOptions();
+
+    let activeFilterLabel = '';
+    if (filter) {
+      activeFilterLabel = ` [Filter: ${filter}]`;
+    } else if (filterOpts.framework && filterOpts.framework !== 'ALL') {
+      activeFilterLabel = ` [Filter: ${filterOpts.framework}]`;
+    } else if (filterOpts.method && filterOpts.method !== 'ALL') {
+      activeFilterLabel = ` [Filter: ${filterOpts.method}]`;
+    } else if (filterOpts.health && filterOpts.health !== 'ALL') {
+      activeFilterLabel = ` [Filter: ${filterOpts.health}]`;
+    } else if (filterOpts.state && filterOpts.state !== 'ALL') {
+      activeFilterLabel = ` [Filter: ${filterOpts.state}]`;
+    }
+
+    routesTreeView.description = `${currentAnalysis.routes.length} routes (${currentAnalysis.statistics.totalFiles} files)${modeLabel}${activeFilterLabel}`;
+  };
 
   const updateStatusBar = (): void => {
     if (!currentAnalysis || currentAnalysis.routes.length === 0) {
@@ -135,7 +169,7 @@ export function activate(context: vscode.ExtensionContext): void {
       analysis.conflicts
     );
 
-    routesTreeView.description = `${analysis.routes.length} routes (${analysis.statistics.totalFiles} files)`;
+    updateTreeViewDescription();
     routesTreeView.badge = {
       value: analysis.routes.length,
       tooltip: `${analysis.routes.length} discovered API routes`,
@@ -182,10 +216,50 @@ export function activate(context: vscode.ExtensionContext): void {
     }
 
     isScanning = true;
-    activeCts = new vscode.CancellationTokenSource();
-    const cts = activeCts;
+    const cts = new vscode.CancellationTokenSource();
+    activeCts = cts;
 
     try {
+      const scanPromise = async (
+        progress?: vscode.Progress<{ message?: string; increment?: number }>
+      ) => {
+        progress?.report({ message: 'Discovering routes...' });
+
+        const scanResult = await scanWorkspaceDetailed(
+          cts.token,
+          progress
+        );
+
+        if (cts.token.isCancellationRequested) {
+          return;
+        }
+
+        // Cache RouteIndex and fileSources in memory
+        currentRouteIndex = scanResult.routeIndex ?? new RouteIndex();
+        currentFileSources = scanResult.fileSources;
+
+        progress?.report({ message: 'Analyzing route relationships and health...' });
+        const analysis = analyzeWorkspaceRoutes(
+          currentRouteIndex.getAllRoutes(),
+          currentFileSources
+        );
+
+        if (cts.token.isCancellationRequested) {
+          return;
+        }
+
+        applyAnalysis(analysis);
+
+        if (showFeedback) {
+          const count = analysis.routes.length;
+          const msg =
+            count === 1
+              ? `Found ${count} API route.`
+              : `Found ${count} API routes.`;
+          vscode.window.showInformationMessage(msg);
+        }
+      };
+
       if (showFeedback) {
         await vscode.window.withProgress(
           {
@@ -197,55 +271,19 @@ export function activate(context: vscode.ExtensionContext): void {
             token.onCancellationRequested(() => {
               cts.cancel();
             });
-
-            progress.report({ message: 'Scanning API routes...' });
-            const { routes: rawRoutes, fileSources, routeIndex, cancelled } =
-              await scanWorkspaceDetailed(cts.token, progress);
-
-            if (cancelled || cts.token.isCancellationRequested) {
-              return;
-            }
-
-            progress.report({ message: 'Analyzing API routes...' });
-            currentRouteIndex = routeIndex || new RouteIndex();
-            currentFileSources = fileSources;
-
-            const analysis = analyzeWorkspaceRoutes(rawRoutes, fileSources);
-            if (cts.token.isCancellationRequested) {
-              return;
-            }
-
-            applyAnalysis(analysis);
-
-            if (analysis.routes.length === 0) {
-              vscode.window.showInformationMessage(MESSAGES.NO_ROUTES_FOUND);
-            } else {
-              vscode.window.showInformationMessage(`Discovered ${analysis.routes.length} API routes.`);
-            }
+            await scanPromise(progress);
           }
         );
       } else {
-        const { routes: rawRoutes, fileSources, routeIndex, cancelled } =
-          await scanWorkspaceDetailed(cts.token);
-
-        if (cancelled || cts.token.isCancellationRequested) {
-          return;
-        }
-
-        currentRouteIndex = routeIndex || new RouteIndex();
-        currentFileSources = fileSources;
-
-        const analysis = analyzeWorkspaceRoutes(rawRoutes, fileSources);
-        if (cts.token.isCancellationRequested) {
-          return;
-        }
-
-        applyAnalysis(analysis);
+        await scanPromise();
       }
     } catch (error) {
-      console.error('[API Route Explorer] Route scan failed:', error);
+      if (cts.token.isCancellationRequested) {
+        return;
+      }
+      console.error('[API Route Explorer] Scan failed:', error);
       if (showFeedback) {
-        vscode.window.showErrorMessage('Failed to scan API routes. See developer console for details.');
+        vscode.window.showErrorMessage('Failed to scan workspace routes.');
       }
     } finally {
       isScanning = false;
@@ -300,7 +338,6 @@ export function activate(context: vscode.ExtensionContext): void {
       return;
     }
 
-    // Safety fallback: if large batch of files changed at once, run full scan
     if (events.length > 20) {
       await executeScan(false);
       return;
@@ -389,8 +426,26 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.window.onDidChangeActiveTextEditor(updateActiveEditorRoute),
     vscode.window.onDidChangeTextEditorSelection(updateActiveEditorRoute),
 
+    // Workspace configuration change listener
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration('apiRouteExplorer.defaultGrouping')) {
+        const mode = vscode.workspace
+          .getConfiguration('apiRouteExplorer')
+          .get<RouteGroupingMode>('defaultGrouping', 'file');
+        routeTreeProvider.setGroupingMode(mode);
+        updateTreeViewDescription();
+      }
+    }),
+
     // Auto-refresh file watcher with debouncing and incremental updates (750ms)
-    createRouteFileWatcher((events) => executeIncrementalUpdate(events), 750),
+    createRouteFileWatcher((events) => {
+      const autoRefresh = vscode.workspace
+        .getConfiguration('apiRouteExplorer')
+        .get<boolean>('autoRefresh', true);
+      if (autoRefresh) {
+        void executeIncrementalUpdate(events);
+      }
+    }, 750),
 
     // 1. Scan Routes command
     vscode.commands.registerCommand(COMMANDS.SCAN_ROUTES, async () => {
@@ -448,7 +503,9 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand(COMMANDS.COPY_CURL, async (arg: unknown) => {
       const route = extractRouteFromArg(arg);
       if (route) {
-        let curlCmd = `curl -X ${route.method} "http://localhost:3000${route.path}"`;
+        const config = vscode.workspace.getConfiguration('apiRouteExplorer');
+        const baseUrl = config.get<string>('baseUrl', 'http://localhost:3000').replace(/\/+$/, '');
+        let curlCmd = `curl -X ${route.method} "${baseUrl}${route.path}"`;
         if (route.method === 'POST' || route.method === 'PUT' || route.method === 'PATCH') {
           curlCmd += ` -H "Content-Type: application/json" -d '{}'`;
         }
@@ -457,7 +514,98 @@ export function activate(context: vscode.ExtensionContext): void {
       }
     }),
 
-    // 9. Filter routes by HTTP method or analysis context
+    // 9. Copy Route URL command (e.g. "http://localhost:3000/api/users/:id")
+    vscode.commands.registerCommand(COMMANDS.COPY_ROUTE_URL, async (arg: unknown) => {
+      const route = extractRouteFromArg(arg);
+      if (route) {
+        const config = vscode.workspace.getConfiguration('apiRouteExplorer');
+        const baseUrl = config.get<string>('baseUrl', 'http://localhost:3000').replace(/\/+$/, '');
+        const cleanPath = route.path.startsWith('/') ? route.path : `/${route.path}`;
+        const url = `${baseUrl}${cleanPath}`;
+        await vscode.env.clipboard.writeText(url);
+        vscode.window.showInformationMessage(`Copied Route URL: ${url}`);
+      }
+    }),
+
+    // 10. Copy Route Definition command (e.g. "GET /users/:id -> routes.ts:42")
+    vscode.commands.registerCommand(COMMANDS.COPY_ROUTE_DEFINITION, async (arg: unknown) => {
+      const route = extractRouteFromArg(arg);
+      if (route) {
+        const relPath = getRelativeFilePath(route.filePath);
+        const def = `${route.method} ${route.path} -> ${relPath}:${route.line + 1}`;
+        await vscode.env.clipboard.writeText(def);
+        vscode.window.showInformationMessage(`Copied Route Definition: ${def}`);
+      }
+    }),
+
+    // 11. Group Routes By... command (File, Framework, Method, Health)
+    vscode.commands.registerCommand(COMMANDS.GROUP_BY, async () => {
+      interface GroupPickItem extends vscode.QuickPickItem {
+        mode: RouteGroupingMode;
+      }
+      const currentMode = routeTreeProvider.getGroupingMode();
+      const items: GroupPickItem[] = [
+        {
+          label: '$(file-code) Group by File',
+          description: 'Default view: organized by source files and modules',
+          detail: currentMode === 'file' ? '✓ Currently active' : undefined,
+          mode: 'file',
+        },
+        {
+          label: '$(server) Group by Framework',
+          description: 'Organize by Express, Next.js, Fastify, NestJS',
+          detail: currentMode === 'framework' ? '✓ Currently active' : undefined,
+          mode: 'framework',
+        },
+        {
+          label: '$(symbol-method) Group by HTTP Method',
+          description: 'Organize by GET, POST, PUT, DELETE, etc.',
+          detail: currentMode === 'method' ? '✓ Currently active' : undefined,
+          mode: 'method',
+        },
+        {
+          label: '$(heart) Group by Route Health',
+          description: 'Organize by Errors, Warnings, Info, and Healthy',
+          detail: currentMode === 'health' ? '✓ Currently active' : undefined,
+          mode: 'health',
+        },
+      ];
+
+      const pick = await vscode.window.showQuickPick(items, {
+        title: 'API Route Explorer: Group Routes',
+        placeHolder: 'Select how routes should be grouped in the tree view',
+      });
+
+      if (pick) {
+        routeTreeProvider.setGroupingMode(pick.mode);
+        updateTreeViewDescription();
+      }
+    }),
+
+    // 12. Search Similar Routes command
+    vscode.commands.registerCommand(COMMANDS.SEARCH_SIMILAR_ROUTES, async (arg: unknown) => {
+      const route = extractRouteFromArg(arg);
+      const allRoutes = routeTreeProvider.getRoutes();
+      if (route) {
+        const segments = route.path.split('/').filter(Boolean);
+        const query = segments.length > 0 ? segments[0] : route.path;
+        await showRouteQuickPick(allRoutes, true, query);
+      } else {
+        await showRouteQuickPick(allRoutes, routeTreeProvider.getHasScanned());
+      }
+    }),
+
+    // 13. Export Routes command (JSON & Markdown)
+    vscode.commands.registerCommand(COMMANDS.EXPORT_ROUTES, async () => {
+      const routes = routeTreeProvider.getRoutes();
+      if (routes.length === 0) {
+        vscode.window.showInformationMessage(MESSAGES.NO_ROUTES_FOUND);
+        return;
+      }
+      await showExportRoutesDialog(routes, routeTreeProvider.getAnalysis());
+    }),
+
+    // 14. Filter routes by HTTP method
     vscode.commands.registerCommand(COMMANDS.FILTER_BY_METHOD, async () => {
       const allRoutes = routeTreeProvider.getRoutes();
       if (allRoutes.length === 0) {
@@ -530,18 +678,128 @@ export function activate(context: vscode.ExtensionContext): void {
 
       if (pick !== undefined) {
         routeTreeProvider.setMethodFilter(pick.filterValue);
-        if (pick.filterValue) {
-          routesTreeView.description = `[Filter: ${pick.filterValue}]`;
-        } else if (currentAnalysis) {
-          routesTreeView.description = `${currentAnalysis.routes.length} routes (${currentAnalysis.statistics.totalFiles} files)`;
-        } else {
-          routesTreeView.description = undefined;
-        }
+        updateTreeViewDescription();
         updateStatusBar();
       }
     }),
 
-    // 10. Status Bar Quick Menu
+    // 15. Advanced Filter Routes Hub
+    vscode.commands.registerCommand(COMMANDS.FILTER_ROUTES, async () => {
+      const allRoutes = routeTreeProvider.getRoutes();
+      if (allRoutes.length === 0) {
+        vscode.window.showInformationMessage(MESSAGES.SEARCH_NO_SCAN);
+        return;
+      }
+
+      interface FilterActionItem extends vscode.QuickPickItem {
+        action: () => Promise<void> | void;
+      }
+
+      const items: FilterActionItem[] = [
+        {
+          label: '$(clear-all) Clear All Filters',
+          description: 'Reset all filters and display all routes',
+          action: () => {
+            routeTreeProvider.clearFilters();
+            updateTreeViewDescription();
+            updateStatusBar();
+          },
+        },
+        {
+          label: '$(server) Filter by Framework...',
+          description: 'Express, Next.js, Fastify, NestJS',
+          action: async () => {
+            const fwPick = await vscode.window.showQuickPick(
+              [
+                { label: 'All Frameworks', value: 'ALL' },
+                { label: 'Express', value: 'express' },
+                { label: 'Next.js', value: 'nextjs' },
+                { label: 'Fastify', value: 'fastify' },
+                { label: 'NestJS', value: 'nestjs' },
+              ],
+              { title: 'Filter Routes by Framework' }
+            );
+            if (fwPick) {
+              const current = routeTreeProvider.getFilterOptions();
+              routeTreeProvider.setFilterOptions({
+                ...current,
+                framework: fwPick.value as ApiFramework | 'ALL',
+              });
+              updateTreeViewDescription();
+              updateStatusBar();
+            }
+          },
+        },
+        {
+          label: '$(symbol-method) Filter by HTTP Method...',
+          description: 'GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD',
+          action: async () => {
+            await vscode.commands.executeCommand(COMMANDS.FILTER_BY_METHOD);
+          },
+        },
+        {
+          label: '$(heart) Filter by Health...',
+          description: 'Healthy, Warnings, Errors, Info',
+          action: async () => {
+            const healthPick = await vscode.window.showQuickPick(
+              [
+                { label: 'All Health Statuses', value: 'ALL' },
+                { label: '$(pass) Healthy', value: 'healthy' },
+                { label: '$(warning) Warnings', value: 'warning' },
+                { label: '$(error) Errors', value: 'error' },
+                { label: '$(info) Info', value: 'info' },
+              ],
+              { title: 'Filter Routes by Health' }
+            );
+            if (healthPick) {
+              const current = routeTreeProvider.getFilterOptions();
+              routeTreeProvider.setFilterOptions({
+                ...current,
+                health: healthPick.value as any,
+              });
+              updateTreeViewDescription();
+              updateStatusBar();
+            }
+          },
+        },
+        {
+          label: '$(issues) Filter by Route State...',
+          description: 'Duplicates, Shared Paths, Conflicts, Shadowed, Missing Handler',
+          action: async () => {
+            const statePick = await vscode.window.showQuickPick(
+              [
+                { label: 'All States', value: 'ALL' },
+                { label: 'Duplicate Routes', value: 'DUPLICATES' },
+                { label: 'Shared Path Endpoints', value: 'SHARED' },
+                { label: 'Potential Route Conflicts', value: 'CONFLICTS' },
+                { label: 'Shadowed Routes', value: 'SHADOWED' },
+                { label: 'Missing Handlers', value: 'MISSING_HANDLER' },
+              ],
+              { title: 'Filter Routes by State' }
+            );
+            if (statePick) {
+              const current = routeTreeProvider.getFilterOptions();
+              routeTreeProvider.setFilterOptions({
+                ...current,
+                state: statePick.value as any,
+              });
+              updateTreeViewDescription();
+              updateStatusBar();
+            }
+          },
+        },
+      ];
+
+      const selected = await vscode.window.showQuickPick(items, {
+        title: 'API Route Explorer: Filter Routes',
+        placeHolder: 'Select a filter category',
+      });
+      if (selected) {
+        await selected.action();
+      }
+    }),
+
+    // 16. Status Bar Quick Menu
     vscode.commands.registerCommand(COMMANDS.STATUS_BAR_MENU, async () => {
       const totalRoutes = routeTreeProvider.getRoutes().length;
       const filter = routeTreeProvider.getMethodFilter();
@@ -555,17 +813,33 @@ export function activate(context: vscode.ExtensionContext): void {
         {
           label: '$(search) Search Routes...',
           description: `${totalRoutes} routes available`,
-          detail: 'Fuzzy search by path, HTTP method, or file name',
+          detail: 'Fuzzy search by path, HTTP method, framework, or file name',
           action: async () => {
             await vscode.commands.executeCommand(COMMANDS.SEARCH_ROUTES);
           },
         },
         {
-          label: `$(filter) Filter by HTTP Method...${filterLabel}`,
-          description: filter ? `Active: ${filter}` : 'All methods shown',
-          detail: 'Show only GET, POST, PUT, DELETE, Duplicates, or Shared endpoints',
+          label: '$(list-tree) Group Routes By...',
+          description: `Current: ${routeTreeProvider.getGroupingMode()}`,
+          detail: 'Switch between File, Framework, Method, and Health grouping',
           action: async () => {
-            await vscode.commands.executeCommand(COMMANDS.FILTER_BY_METHOD);
+            await vscode.commands.executeCommand(COMMANDS.GROUP_BY);
+          },
+        },
+        {
+          label: `$(filter) Filter Routes...${filterLabel}`,
+          description: filter ? `Active: ${filter}` : 'Filter by framework, method, health, or state',
+          detail: 'Filter route collection in-memory',
+          action: async () => {
+            await vscode.commands.executeCommand(COMMANDS.FILTER_ROUTES);
+          },
+        },
+        {
+          label: '$(export) Export Routes...',
+          description: 'Export routes as JSON or Markdown documentation',
+          detail: 'Save route inventory with health and middleware details',
+          action: async () => {
+            await vscode.commands.executeCommand(COMMANDS.EXPORT_ROUTES);
           },
         },
         {
@@ -588,7 +862,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
       const pick = await vscode.window.showQuickPick(items, {
         title: 'API Route Explorer — Quick Hub',
-        placeHolder: 'Select an action to inspect or navigate API routes',
+        placeHolder: 'Select an action to inspect, filter, or export API routes',
       });
 
       if (pick) {
@@ -596,7 +870,7 @@ export function activate(context: vscode.ExtensionContext): void {
       }
     }),
 
-    // 11. Show Route Statistics command (Sprint 4: modal breakdown of routes, methods, duplicates, shared paths)
+    // 17. Show Route Statistics command
     vscode.commands.registerCommand(COMMANDS.SHOW_STATISTICS, async () => {
       if (!routeTreeProvider.getHasScanned() || !currentAnalysis) {
         await executeScan(false);
