@@ -77,18 +77,19 @@ export function findDuplicateRoutes(routes: ApiRoute[]): DuplicateRouteGroup[] {
   const signatureMap = new Map<string, ApiRoute[]>();
 
   for (const route of routes) {
-    const signature = getDuplicateSignature(route);
-    const existing = signatureMap.get(signature);
+    const fw = route.framework || 'express';
+    const key = `${fw}:${getDuplicateSignature(route)}`;
+    const existing = signatureMap.get(key);
     if (existing) {
       existing.push(route);
     } else {
-      signatureMap.set(signature, [route]);
+      signatureMap.set(key, [route]);
     }
   }
 
   const duplicates: DuplicateRouteGroup[] = [];
 
-  for (const [signature, groupRoutes] of signatureMap.entries()) {
+  for (const [, groupRoutes] of signatureMap.entries()) {
     if (groupRoutes.length > 1) {
       const firstRoute = groupRoutes[0];
       const method = firstRoute.method;
@@ -96,7 +97,7 @@ export function findDuplicateRoutes(routes: ApiRoute[]): DuplicateRouteGroup[] {
       duplicates.push({
         method,
         normalizedPath,
-        signature,
+        signature: getDuplicateSignature(firstRoute),
         routes: groupRoutes,
       });
     }

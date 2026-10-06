@@ -19,18 +19,45 @@ Modern backend projects often grow into complex route matrices spread across rou
 
 ---
 
-## Current Status: Sprint 4 — Smart Route Analysis (v0.4.0)
+## Supported Frameworks
 
-The project is currently in **Sprint 4**. API Route Explorer introduces an intelligent static analysis layer that understands Express route relationships, mounts, duplicates, and health diagnostics without heavy AST overhead:
+### 1. Express.js
+- Full support for `app.get()`, `app.post()`, `router.put()`, `router.delete()`, etc.
+- Router prefix composition via `app.use('/prefix', router)` and nested sub-router chaining.
+- Dynamic route parameters (`:id`, `:userId`) and middleware chain inspection.
 
-### Smart Route Analysis
+### 2. Next.js
+> **Next.js support includes App Router and Pages Router API route discovery.**
+
+- **Next.js App Router**:
+  - Route handler files: `app/**/route.{ts,js,tsx,jsx}` and `src/app/**/route.{ts,js,tsx,jsx}`.
+  - Named HTTP method exports: `export async function GET()`, `POST()`, `PUT()`, `PATCH()`, `DELETE()`, `HEAD()`, `OPTIONS()`.
+  - Dynamic route parameters: `[id]` → `:id`.
+  - Catch-all route parameters: `[...slug]` and `[[...slug]]` → `*slug`.
+  - Route groups: `app/(dashboard)/api/users/route.ts` → `/api/users` (route groups in parentheses are omitted from public URLs).
+  - Source navigation: Jumps directly to the specific HTTP method export declaration line.
+- **Next.js Pages Router**:
+  - API routes under `pages/api/**` and `src/pages/api/**`.
+  - Dynamic routes: `pages/api/users/[id].ts` → `/api/users/:id`.
+  - Runtime method checks (`req.method === 'GET'`) or fallback generic `ANY` endpoint.
+
+---
+
+## Current Status: Sprint 5 — Multi-Framework Architecture + Next.js (v0.5.0)
+
+The extension features a pluggable framework architecture (`FrameworkAdapter`, `FrameworkRegistry`, `FrameworkDetector`), isolating framework discovery from agnostic analysis, search, diagnostics, and navigation.
+
+### Capabilities Matrix
 ```text
-✓ Duplicate route detection
+✓ Multi-framework architecture (Express.js + Next.js)
+✓ Next.js App Router & Pages Router API discovery
+✓ Dynamic parameter & catch-all normalization
+✓ Route group path resolution
+✓ Duplicate route detection (framework-scoped)
 ✓ Same-path/different-method awareness
 ✓ Express router prefix resolution
-✓ Possible missing handler detection
-✓ Route statistics
-✓ Route diagnostics
+✓ Framework-aware route statistics
+✓ Native diagnostics & code navigation
 ```
 
 #### 1. Express Router Prefix Composition
