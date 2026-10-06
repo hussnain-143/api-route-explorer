@@ -6,6 +6,7 @@ import {
   DuplicateRouteGroup,
   RoutePathGroup,
 } from './duplicateDetector';
+import type { RouteAnalysisResult } from './routeAnalyzer';
 
 /**
  * Metric breakdown across discovered routes.
@@ -92,11 +93,16 @@ export function formatRouteStatistics(stats: RouteStatistics): string {
 }
 
 /**
- * Displays statistics in a native VS Code QuickPick modal with individual item breakdown.
+ * Displays statistics in an interactive native VS Code QuickPick modal.
+ * Clicking items enables interactive drill-downs and code jumps.
  *
  * @param stats Calculated RouteStatistics.
+ * @param fullAnalysis Optional full analysis result for interactive drill-downs.
  */
-export async function showRouteStatisticsModal(stats: RouteStatistics): Promise<void> {
+export async function showRouteStatisticsModal(
+  stats: RouteStatistics,
+  fullAnalysis?: RouteAnalysisResult
+): Promise<void> {
   let vscode: typeof vscodeTypes;
   try {
     vscode = require('vscode');
@@ -105,49 +111,146 @@ export async function showRouteStatisticsModal(stats: RouteStatistics): Promise<
   }
   const quickPick = vscode.window.createQuickPick();
   quickPick.title = 'API Route Explorer: Statistics';
-  quickPick.placeholder = `Total Routes: ${stats.totalRoutes} | Files: ${stats.totalFiles} | Duplicates: ${stats.duplicateCount}`;
+  quickPick.placeholder = `Total Routes: ${stats.totalRoutes} | Files: ${stats.totalFiles} | Duplicates: ${stats.duplicateCount} (Click any item to inspect)`;
 
-  quickPick.items = [
+  interface ActionItem extends vscodeTypes.QuickPickItem {
+    actionType?: 'total' | 'method' | 'duplicates' | 'sharedPaths';
+    targetMethod?: string;
+  }
+
+  const items: ActionItem[] = [
     {
       label: `$(symbol-event) Total Routes: ${stats.totalRoutes}`,
-      description: `Across ${stats.totalFiles} source files`,
+      description: `Across ${stats.totalFiles} source files • Click to search all`,
       detail: `Framework: ${stats.framework}`,
+      actionType: 'total',
     },
     {
       label: `$(arrow-down) GET: ${stats.methodCounts.GET}`,
-      description: 'Read / Fetch endpoints',
+      description: 'Read / Fetch endpoints • Click to search GET',
+      actionType: 'method',
+      targetMethod: 'GET',
     },
     {
       label: `$(add) POST: ${stats.methodCounts.POST}`,
-      description: 'Create / Submission endpoints',
+      description: 'Create / Submission endpoints • Click to search POST',
+      actionType: 'method',
+      targetMethod: 'POST',
     },
     {
       label: `$(edit) PUT: ${stats.methodCounts.PUT}`,
-      description: 'Full update endpoints',
+      description: 'Full update endpoints • Click to search PUT',
+      actionType: 'method',
+      targetMethod: 'PUT',
     },
     {
       label: `$(diff-modified) PATCH: ${stats.methodCounts.PATCH}`,
-      description: 'Partial update endpoints',
+      description: 'Partial update endpoints • Click to search PATCH',
+      actionType: 'method',
+      targetMethod: 'PATCH',
     },
     {
       label: `$(trash) DELETE: ${stats.methodCounts.DELETE}`,
-      description: 'Removal endpoints',
+      description: 'Removal endpoints • Click to search DELETE',
+      actionType: 'method',
+      targetMethod: 'DELETE',
     },
     {
       label: `$(warning) Duplicate Conflicts: ${stats.duplicateCount}`,
       description:
         stats.duplicateCount === 0
-          ? 'No method & path collisions detected'
-          : `${stats.duplicateCount} duplicate signature(s) detected`,
+          ? '✓ No collisions detected'
+          : `${stats.duplicateCount} duplicate signature(s) • Click to inspect`,
+      actionType: 'duplicates',
     },
     {
       label: `$(split-horizontal) Shared Route Paths: ${stats.sharedPathCount}`,
-      description: `${stats.sharedPathCount} path(s) supporting multiple HTTP methods`,
+      description: `${stats.sharedPathCount} path(s) supporting multiple HTTP methods • Click to inspect`,
+      actionType: 'sharedPaths',
     },
   ];
 
-  quickPick.onDidAccept(() => {
+  quickPick.items = items;
+
+  quickPick.onDidAccept(async () => {
+    const selected = quickPick.selectedItems[0] as ActionItem | undefined;
     quickPick.dispose();
+
+    if (!selected || !selected.actionType) {
+      return;
+    }
+
+    if (selected.actionType === 'total') {
+      await vscode.commands.executeCommand('apiRouteExplorer.searchRoutes');
+      return;
+    }
+
+    if (selected.actionType === 'method' && selected.targetMethod) {
+      await vscode.commands.executeCommand('apiRouteExplorer.searchRoutes', selected.targetMethod);
+      return;
+    }
+
+    if (selected.actionType === 'duplicates') {
+      if (!fullAnalysis || fullAnalysis.duplicates.length === 0) {
+        vscode.window.showInformationMessage('No duplicate route conflicts detected in this workspace.');
+        return;
+      }
+
+      const dupItems = fullAnalysis.duplicates.flatMap((group) =>
+        group.routes.map((route) => ({
+          label: `${route.method} ${route.path}`,
+          description: `Line ${route.line + 1}`,
+          detail: route.filePath,
+          route,
+        }))
+      );
+
+      const picked = await vscode.window.showQuickPick(dupItems, {
+        title: 'Duplicate Route Conflicts (Select to Jump)',
+        placeHolder: 'Select a duplicate route to jump to its source code',
+      });
+
+      if (picked) {
+        await vscode.commands.executeCommand('apiRouteExplorer.openRoute', picked.route);
+      }
+      return;
+    }
+
+    if (selected.actionType === 'sharedPaths') {
+      if (!fullAnalysis || fullAnalysis.sharedPaths.length === 0) {
+        vscode.window.showInformationMessage('No shared route paths discovered.');
+        return;
+      }
+
+      const sharedPickItems = fullAnalysis.sharedPaths.map((group) => ({
+        label: `$(split-horizontal) ${group.normalizedPath}`,
+        description: `Methods: ${group.methods.join(', ')} (${group.routes.length} routes)`,
+        group,
+      }));
+
+      const pickedShared = await vscode.window.showQuickPick(sharedPickItems, {
+        title: 'Shared Route Paths (Multiple HTTP Methods)',
+        placeHolder: 'Select a shared path to inspect its endpoint routes',
+      });
+
+      if (pickedShared) {
+        const routeItems = pickedShared.group.routes.map((route) => ({
+          label: `${route.method} ${route.path}`,
+          description: `Line ${route.line + 1}`,
+          detail: route.filePath,
+          route,
+        }));
+
+        const pickedRoute = await vscode.window.showQuickPick(routeItems, {
+          title: `Routes for ${pickedShared.group.normalizedPath}`,
+          placeHolder: 'Select a route to jump to code',
+        });
+
+        if (pickedRoute) {
+          await vscode.commands.executeCommand('apiRouteExplorer.openRoute', pickedRoute.route);
+        }
+      }
+    }
   });
 
   quickPick.onDidHide(() => {

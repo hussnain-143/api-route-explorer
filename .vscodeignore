@@ -1,6 +1,7 @@
 .vscode/**
 .vscode-test/**
 src/**
+out/test/**
 .gitignore
 .yarnrc
 **/tsconfig.json
@@ -8,4 +9,12 @@ src/**
 **/*.map
 **/*.ts
 **/.vscode-test.*
+*.vsix
+index.html
+BRAND_GUIDELINES.md
+assets
+assets/**
+resources/branding
 resources/branding/**
+
+

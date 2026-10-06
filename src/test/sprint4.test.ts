@@ -21,6 +21,8 @@ import {
 } from '../analysis/routeStatistics';
 import { RouteDiagnosticsManager } from '../analysis/diagnostics';
 import { analyzeWorkspaceRoutes } from '../analysis/routeAnalyzer';
+import { RouteAnalysisProvider } from '../providers/routeAnalysisProvider';
+import { RouteTreeItem } from '../providers/routeTreeProvider';
 
 suite('API Route Explorer — Sprint 4 Smart Route Analysis Suite', () => {
   // =========================================================================
@@ -485,4 +487,77 @@ suite('API Route Explorer — Sprint 4 Smart Route Analysis Suite', () => {
       manager.dispose();
     });
   });
+
+  test('RouteAnalysisProvider correctly structures and displays analysis overview and drilldowns', async () => {
+    const provider = new RouteAnalysisProvider();
+
+    // 1. Unscanned state
+    const unscanned = await provider.getChildren();
+    assert.strictEqual(unscanned.length, 1);
+    assert.strictEqual(unscanned[0].label, 'No analysis available');
+
+    // 2. Populated analysis
+    const rawRoutes: ApiRoute[] = [
+      { method: 'GET', path: '/api/v1/users', filePath: '/src/routes.js', line: 10, column: 0, framework: 'express' },
+      { method: 'POST', path: '/api/v1/users', filePath: '/src/routes.js', line: 20, column: 0, framework: 'express' },
+    ];
+    const analysis = analyzeWorkspaceRoutes(rawRoutes, {
+      '/src/routes.js': 'router.get("/api/v1/users"); router.post("/api/v1/users");',
+    });
+
+    provider.setAnalysis(analysis);
+    const rootItems = await provider.getChildren();
+
+    assert.strictEqual(rootItems.length, 5); // Overview, Shared Paths, Duplicates, Missing Handlers, Methods
+    assert.ok(rootItems[0].label!.toString().includes('Overview: 2 Routes'));
+    assert.ok(rootItems[1].label!.toString().includes('Shared Paths (1)'));
+    assert.ok(rootItems[2].label!.toString().includes('Duplicate Conflicts (0)'));
+
+    // Test drill-down for shared paths
+    const sharedPathChildren = await provider.getChildren(rootItems[1]);
+    assert.strictEqual(sharedPathChildren.length, 1);
+    assert.strictEqual(sharedPathChildren[0].label, '/api/v1/users');
+
+    const routeLeaves = await provider.getChildren(sharedPathChildren[0]);
+    assert.strictEqual(routeLeaves.length, 2);
+
+    // Test clear
+    provider.clear();
+    const cleared = await provider.getChildren();
+    assert.strictEqual(cleared[0].label, 'No analysis available');
+  });
+
+  test('RouteTreeItem visually decorates items based on analysis context flags', () => {
+    const route: ApiRoute = {
+      method: 'GET',
+      path: '/api/users',
+      filePath: '/routes.js',
+      line: 14,
+      column: 0,
+      framework: 'express',
+    };
+
+    // Shared path
+    const sharedItem = new RouteTreeItem(route, 'routes.js', { isShared: true, sharedMethods: ['GET', 'POST'] });
+    assert.strictEqual(sharedItem.description, 'Line 15 • Shared');
+    assert.ok(sharedItem.tooltip instanceof vscode.MarkdownString);
+    assert.ok(sharedItem.tooltip.value.includes('Shared Route Path'));
+
+    // Duplicate
+    const dupItem = new RouteTreeItem(route, 'routes.js', { isDuplicate: true });
+    assert.strictEqual(dupItem.description, 'Line 15 • ⚠️ Duplicate');
+    assert.ok(dupItem.tooltip instanceof vscode.MarkdownString);
+    assert.ok(dupItem.tooltip.value.includes('Duplicate Route'));
+
+    // Missing handler
+    const missingItem = new RouteTreeItem(route, 'routes.js', { isMissingHandler: true });
+    assert.strictEqual(missingItem.description, 'Line 15 • ⚠️ Missing handler');
+    assert.ok(missingItem.tooltip instanceof vscode.MarkdownString);
+    assert.ok(missingItem.tooltip.value.includes('Possible Missing Handler'));
+
+    // Default without analysis
+    const defaultItem = new RouteTreeItem(route, 'routes.js');
+    assert.strictEqual(defaultItem.description, 'Line 15');
+  });
 });
+

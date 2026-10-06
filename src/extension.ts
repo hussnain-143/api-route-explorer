@@ -5,6 +5,7 @@ import {
   RouteTreeItem,
   RouteTreeProvider,
 } from './providers/routeTreeProvider';
+import { RouteAnalysisProvider } from './providers/routeAnalysisProvider';
 import { createRouteFileWatcher } from './scanner/routeWatcher';
 import { scanWorkspaceDetailed } from './scanner/routeScanner';
 import { showRouteQuickPick } from './scanner/routeSearch';
@@ -71,11 +72,17 @@ export function extractFilePathFromArg(arg: unknown): string | undefined {
  */
 export function activate(context: vscode.ExtensionContext): void {
   const routeTreeProvider = new RouteTreeProvider();
+  const routeAnalysisProvider = new RouteAnalysisProvider();
   const diagnosticsManager = new RouteDiagnosticsManager();
 
-  // Create dedicated TreeView instance for Activity Bar to enable reveal & selection
+  // Create dedicated TreeView instances for Activity Bar
   const routesTreeView = vscode.window.createTreeView(VIEWS.ROUTES, {
     treeDataProvider: routeTreeProvider,
+    showCollapseAll: true,
+  });
+
+  const analysisTreeView = vscode.window.createTreeView(VIEWS.ANALYSIS, {
+    treeDataProvider: routeAnalysisProvider,
     showCollapseAll: true,
   });
 
@@ -91,7 +98,12 @@ export function activate(context: vscode.ExtensionContext): void {
   const executeScan = async (showFeedback: boolean = true): Promise<void> => {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders || workspaceFolders.length === 0) {
+      routeTreeProvider.clear();
+      routeAnalysisProvider.clear();
       diagnosticsManager.clear();
+      routesTreeView.description = undefined;
+      routesTreeView.badge = undefined;
+      analysisTreeView.description = undefined;
       if (showFeedback) {
         vscode.window.showWarningMessage(MESSAGES.NO_WORKSPACE);
       }
@@ -110,8 +122,20 @@ export function activate(context: vscode.ExtensionContext): void {
       currentAnalysis = analysis;
 
       console.log('Discovered routes with resolved prefixes:', analysis.routes);
-      routeTreeProvider.setRoutes(analysis.routes);
+      routeTreeProvider.setRoutes(analysis.routes, analysis);
+      routeAnalysisProvider.setAnalysis(analysis);
       diagnosticsManager.updateDiagnostics(analysis.duplicates, analysis.missingHandlers);
+
+      routesTreeView.description = `${analysis.routes.length} routes (${analysis.statistics.totalFiles} files)`;
+      routesTreeView.badge = {
+        value: analysis.routes.length,
+        tooltip: `${analysis.routes.length} discovered API routes`,
+      };
+
+      analysisTreeView.description =
+        analysis.duplicates.length === 0
+          ? `${analysis.sharedPaths.length} shared • Healthy`
+          : `⚠️ ${analysis.duplicates.length} duplicate conflict(s)`;
 
       if (showFeedback) {
         if (analysis.routes.length === 0) {
@@ -161,6 +185,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(
     routesTreeView,
+    analysisTreeView,
     diagnosticsManager,
 
     // File Explorer sidebar section
@@ -236,7 +261,7 @@ export function activate(context: vscode.ExtensionContext): void {
         return;
       }
 
-      await showRouteStatisticsModal(currentAnalysis.statistics);
+      await showRouteStatisticsModal(currentAnalysis.statistics, currentAnalysis);
     })
   );
 }

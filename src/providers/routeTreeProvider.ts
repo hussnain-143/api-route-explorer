@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ApiRoute, HttpMethod } from '../models/route';
+import { RouteAnalysisResult } from '../analysis/routeAnalyzer';
 import { COMMANDS, CONTEXT_VALUES, MESSAGES } from '../utils/constants';
 
 /**
@@ -62,19 +63,42 @@ export class RouteFileGroupItem extends vscode.TreeItem {
 }
 
 /**
+ * Contextual analysis flags for an individual route tree item.
+ */
+export interface RouteAnalysisContext {
+  isDuplicate?: boolean;
+  isShared?: boolean;
+  isMissingHandler?: boolean;
+  sharedMethods?: HttpMethod[];
+}
+
+/**
  * Level 2 TreeItem: Represents an individual HTTP API route.
  */
 export class RouteTreeItem extends vscode.TreeItem {
   constructor(
     public readonly route: ApiRoute,
-    public readonly relativeFilePath: string
+    public readonly relativeFilePath: string,
+    public readonly analysisContext?: RouteAnalysisContext
   ) {
     // METHOD + PATH compact display
     super(`${route.method} ${route.path}`, vscode.TreeItemCollapsibleState.None);
 
-    // Display 1-based line number for developer readability
-    this.description = `Line ${route.line + 1}`;
-    this.iconPath = getMethodIcon(route.method);
+    let desc = `Line ${route.line + 1}`;
+    let icon = getMethodIcon(route.method);
+
+    if (analysisContext?.isDuplicate) {
+      desc = `Line ${route.line + 1} • ⚠️ Duplicate`;
+      icon = new vscode.ThemeIcon('warning', new vscode.ThemeColor('charts.orange'));
+    } else if (analysisContext?.isMissingHandler) {
+      desc = `Line ${route.line + 1} • ⚠️ Missing handler`;
+      icon = new vscode.ThemeIcon('warning', new vscode.ThemeColor('charts.yellow'));
+    } else if (analysisContext?.isShared) {
+      desc = `Line ${route.line + 1} • Shared`;
+    }
+
+    this.description = desc;
+    this.iconPath = icon;
     this.contextValue = CONTEXT_VALUES.ROUTE;
 
     // Rich Markdown tooltip
@@ -83,6 +107,16 @@ export class RouteTreeItem extends vscode.TreeItem {
     tooltip.appendMarkdown(`- **File**: \`${relativeFilePath}\`\n`);
     tooltip.appendMarkdown(`- **Location**: Line ${route.line + 1}, Column ${route.column + 1}\n`);
     tooltip.appendMarkdown(`- **Framework**: Express\n`);
+
+    if (analysisContext?.isDuplicate) {
+      tooltip.appendMarkdown(`\n\n> ⚠️ **Duplicate Route**: Another route with method \`${route.method}\` and identical normalized path exists.`);
+    } else if (analysisContext?.isMissingHandler) {
+      tooltip.appendMarkdown(`\n\n> ⚠️ **Possible Missing Handler**: No controller or middleware appears to be supplied.`);
+    } else if (analysisContext?.isShared) {
+      const methodsStr = analysisContext.sharedMethods ? analysisContext.sharedMethods.join(', ') : 'multiple HTTP methods';
+      tooltip.appendMarkdown(`\n\n> 🔄 **Shared Route Path**: Endpoint mounted with ${methodsStr}.`);
+    }
+
     this.tooltip = tooltip;
 
     // Click command to navigate directly to code line/column
@@ -119,6 +153,10 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
   private routes: ApiRoute[] = [];
   private hasScanned: boolean = false;
   private fileGroups: RouteFileGroupItem[] = [];
+  private analysis: RouteAnalysisResult | undefined;
+  private duplicateKeys = new Set<string>();
+  private sharedPathMap = new Map<string, HttpMethod[]>();
+  private missingHandlerKeys = new Set<string>();
 
   /**
    * Refreshes the TreeView without altering route data.
@@ -130,11 +168,42 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
   /**
    * Replaces current route collection, caches pre-sorted file groups, and triggers refresh.
    */
-  public setRoutes(routes: ApiRoute[]): void {
+  public setRoutes(routes: ApiRoute[], analysis?: RouteAnalysisResult): void {
     this.hasScanned = true;
     this.routes = routes;
+    this.analysis = analysis;
+    this.indexAnalysis(analysis);
     this.buildFileGroups();
     this.refresh();
+  }
+
+  /**
+   * Indexes analysis findings for O(1) route lookup in the TreeView.
+   */
+  private indexAnalysis(analysis?: RouteAnalysisResult): void {
+    this.duplicateKeys.clear();
+    this.sharedPathMap.clear();
+    this.missingHandlerKeys.clear();
+
+    if (!analysis) {
+      return;
+    }
+
+    for (const group of analysis.duplicates) {
+      for (const r of group.routes) {
+        this.duplicateKeys.add(`${r.method}:${r.filePath}:${r.line}`);
+      }
+    }
+
+    for (const group of analysis.sharedPaths) {
+      for (const r of group.routes) {
+        this.sharedPathMap.set(`${r.method}:${r.filePath}:${r.line}`, group.methods);
+      }
+    }
+
+    for (const warning of analysis.missingHandlers) {
+      this.missingHandlerKeys.add(`${warning.method}:${warning.filePath}:${warning.line}`);
+    }
   }
 
   /**
@@ -143,12 +212,20 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
   public clear(): void {
     this.hasScanned = false;
     this.routes = [];
+    this.analysis = undefined;
+    this.duplicateKeys.clear();
+    this.sharedPathMap.clear();
+    this.missingHandlerKeys.clear();
     this.fileGroups = [];
     this.refresh();
   }
 
   public getRoutes(): ApiRoute[] {
     return this.routes;
+  }
+
+  public getAnalysis(): RouteAnalysisResult | undefined {
+    return this.analysis;
   }
 
   public getHasScanned(): boolean {
@@ -173,9 +250,16 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
   public getChildren(element?: vscode.TreeItem): Thenable<vscode.TreeItem[]> {
     // Sub-children for File Groups
     if (element instanceof RouteFileGroupItem) {
-      const items = element.routes.map(
-        (route) => new RouteTreeItem(route, element.relativeFilePath)
-      );
+      const items = element.routes.map((route) => {
+        const key = `${route.method}:${route.filePath}:${route.line}`;
+        const analysisContext: RouteAnalysisContext = {
+          isDuplicate: this.duplicateKeys.has(key),
+          isShared: this.sharedPathMap.has(key),
+          isMissingHandler: this.missingHandlerKeys.has(key),
+          sharedMethods: this.sharedPathMap.get(key),
+        };
+        return new RouteTreeItem(route, element.relativeFilePath, analysisContext);
+      });
       return Promise.resolve(items);
     }
 
@@ -234,9 +318,16 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeIte
     }
 
     if (closestRoute) {
+      const key = `${closestRoute.method}:${closestRoute.filePath}:${closestRoute.line}`;
+      const analysisContext: RouteAnalysisContext = {
+        isDuplicate: this.duplicateKeys.has(key),
+        isShared: this.sharedPathMap.has(key),
+        isMissingHandler: this.missingHandlerKeys.has(key),
+        sharedMethods: this.sharedPathMap.get(key),
+      };
       return {
         fileGroup: group,
-        routeItem: new RouteTreeItem(closestRoute, group.relativeFilePath),
+        routeItem: new RouteTreeItem(closestRoute, group.relativeFilePath, analysisContext),
       };
     }
 

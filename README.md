@@ -165,6 +165,7 @@ npm run compile
 | **API Route Explorer: Scan Routes** | `apiRouteExplorer.scan` | Scans workspace files and discovers Express routes |
 | **API Route Explorer: Refresh Routes** | `apiRouteExplorer.refresh` | Re-scans and refreshes the API Routes sidebar |
 | **API Route Explorer: Search Routes** | `apiRouteExplorer.searchRoutes` | QuickPick search matching method, path, or filename |
+| **API Route Explorer: Show Route Statistics** | `apiRouteExplorer.showStatistics` | Interactive metrics modal with duplicate & shared path drilldowns |
 | **Open Route** | `apiRouteExplorer.openRoute` | Jumps to the exact route definition line in code |
 | **Open File** | `apiRouteExplorer.openFile` | Opens the source file containing the route |
 | **Copy Route** | `apiRouteExplorer.copyRoute` | Copies complete route signature (e.g. `GET /api/users`) |
@@ -172,7 +173,38 @@ npm run compile
 
 ---
 
+## Installation
+
+### For Development
+```bash
+git clone <repository-url>
+cd api-route-explorer
+npm install
+npm run compile
+```
+
+### From VSIX Package
+In VS Code:
+1. Open the **Extensions** view (`Cmd+Shift+X` / `Ctrl+Shift+X`).
+2. Click the `...` (More Actions) menu in the top-right of the Extensions view.
+3. Select **Install from VSIX...**.
+4. Choose `api-route-explorer-0.4.0.vsix`.
+
+---
+
+## Usage Workflow
+
+1. Open any Node.js backend workspace using Express.js in VS Code.
+2. Click the **API Route Explorer** icon in the Activity Bar.
+3. Click **Scan Routes** (or press `Cmd+Shift+P` and execute `API Route Explorer: Scan Routes`).
+4. Browse endpoints organized by file in **API Routes** and inspect health in **Route Analysis**.
+5. Press `Cmd+Shift+P` and run `API Route Explorer: Search Routes` to instantly find any endpoint.
+6. Click any route item to jump straight to its source code definition.
+
+---
+
 ## Version
 
-- **Current Version**: `0.3.0` (Sprint 3 — Developer Navigation & Route UX)
+- **Current Version**: `0.4.0` (Sprint 4 & 4.5 — Smart Route Analysis & Release Hardening)
+- **Framework Supported**: Express.js (JavaScript & TypeScript)
 - **License**: MIT
