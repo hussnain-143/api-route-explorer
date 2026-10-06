@@ -2,7 +2,7 @@
   "name": "api-route-explorer",
   "displayName": "API Route Explorer",
   "description": "Discover, organize, and navigate API routes directly inside VS Code.",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "icon": "resources/icons/icon.png",
   "engines": {
     "vscode": "^1.90.0"
@@ -75,6 +75,12 @@
         "command": "apiRouteExplorer.copyRoutePath",
         "title": "Copy Route Path",
         "category": "API Route Explorer"
+      },
+      {
+        "command": "apiRouteExplorer.showStatistics",
+        "title": "Show Route Statistics",
+        "category": "API Route Explorer",
+        "icon": "$(graph)"
       }
     ],
     "menus": {
@@ -93,6 +99,11 @@
           "command": "apiRouteExplorer.scan",
           "when": "view == apiRouteExplorer.routesView || view == apiRouteExplorer.explorerRoutesView",
           "group": "navigation@3"
+        },
+        {
+          "command": "apiRouteExplorer.showStatistics",
+          "when": "view == apiRouteExplorer.routesView || view == apiRouteExplorer.explorerRoutesView",
+          "group": "navigation@4"
         }
       ],
       "view/item/context": [
