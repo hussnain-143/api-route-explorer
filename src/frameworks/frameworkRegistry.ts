@@ -1,10 +1,12 @@
 import { ApiFramework, FrameworkAdapter } from '../models/framework';
 import { ExpressAdapter } from './express/expressAdapter';
 import { NextjsAdapter } from './nextjs/nextjsAdapter';
+import { FastifyAdapter } from './fastify/fastifyAdapter';
+import { NestjsAdapter } from './nestjs/nestjsAdapter';
 
 /**
  * Central registry managing available framework adapters.
- * Enables modular expansion for future frameworks (Fastify, NestJS) without scanner rewrites.
+ * Enables modular expansion for future frameworks without scanner rewrites.
  */
 export class FrameworkRegistry {
   private readonly adapters = new Map<ApiFramework, FrameworkAdapter>();
@@ -12,6 +14,8 @@ export class FrameworkRegistry {
   constructor() {
     this.registerAdapter(new ExpressAdapter());
     this.registerAdapter(new NextjsAdapter());
+    this.registerAdapter(new FastifyAdapter());
+    this.registerAdapter(new NestjsAdapter());
   }
 
   /**

@@ -41,69 +41,41 @@ Modern backend projects often grow into complex route matrices spread across rou
   - Dynamic routes: `pages/api/users/[id].ts` → `/api/users/:id`.
   - Runtime method checks (`req.method === 'GET'`) or fallback generic `ANY` endpoint.
 
+### 3. Fastify
+- Standard HTTP methods: `fastify.get()`, `post()`, `put()`, `patch()`, `delete()`, `head()`, `options()`.
+- Instance variations: `fastify.*`, `app.*`, `server.*`, `api.*`.
+- Multi-method route definitions: `fastify.route({ method: ['GET', 'POST'], url: '/users', handler })`.
+- Dynamic parameters: `/users/:id` with parameter normalization.
+- Static plugin prefix resolution: `fastify.register(plugin, { prefix: '/api/v1' })`.
+
+### 4. NestJS
+- Controller decorator detection: `@Controller('users')`, `@Controller()`, `@Controller('/api/users')`.
+- HTTP method decorators: `@Get()`, `@Post()`, `@Put()`, `@Patch()`, `@Delete()`, `@Head()`, `@Options()`.
+- Controller prefix composition: `@Controller('users')` + `@Get(':id')` → `GET /users/:id`.
+- Exact decorator navigation: Clicking jumps directly to `@Get(':id')` line and column.
+- False positive immunity: Non-HTTP decorators like `@Injectable()` and `@Module()` are cleanly ignored.
+
 ---
 
-## Current Status: Sprint 5 — Multi-Framework Architecture + Next.js (v0.5.0)
+## Current Status: Sprint 6 — Fastify + NestJS Support (v0.6.0)
 
-The extension features a pluggable framework architecture (`FrameworkAdapter`, `FrameworkRegistry`, `FrameworkDetector`), isolating framework discovery from agnostic analysis, search, diagnostics, and navigation.
+The extension features an extensible pluggable framework architecture (`FrameworkAdapter`, `FrameworkRegistry`, `FrameworkDetector`), isolating framework discovery from agnostic analysis, search, diagnostics, and navigation.
 
 ### Capabilities Matrix
 ```text
-✓ Multi-framework architecture (Express.js + Next.js)
+✓ Multi-framework architecture (Express.js, Next.js, Fastify, NestJS)
+✓ Fastify standard methods & route({ method, url }) declarations
+✓ Fastify plugin prefix composition (fastify.register)
+✓ NestJS controller & HTTP method decorator parsing
+✓ NestJS controller prefix composition & exact decorator jump
 ✓ Next.js App Router & Pages Router API discovery
 ✓ Dynamic parameter & catch-all normalization
-✓ Route group path resolution
 ✓ Duplicate route detection (framework-scoped)
-✓ Same-path/different-method awareness
+✓ Same-path/different-method awareness (shared paths)
 ✓ Express router prefix resolution
-✓ Framework-aware route statistics
+✓ Framework-aware route statistics across all 4 frameworks
 ✓ Native diagnostics & code navigation
 ```
-
-#### 1. Express Router Prefix Composition
-Resolves nested prefix mounts across files and within the same file (e.g. `app.use('/api/v1', router)` + `router.get('/users', ...)` resolves to `GET /api/v1/users`).
-- Searches and matches work directly against the fully resolved route path while source navigation jumps straight to the original handler definition.
-- Chained sub-routers (e.g. `app.use('/api', v1Router)` -> `v1Router.use('/users', userRouter)`) are statically traced.
-
-#### 2. Duplicate Route Detection vs Shared Paths
-A route is considered a duplicate only when **both** the HTTP method and normalized route path match:
-```text
-${method}:${normalizedPath}
-```
-
-- **Valid Shared Path (NOT a duplicate):**
-  ```text
-  GET    /api/users
-  POST   /api/users
-  PUT    /api/users
-  DELETE /api/users
-  ```
-  These share the same endpoint path but represent distinct HTTP operations. They are grouped as a shared route path and **not** flagged as duplicate warnings.
-
-- **Duplicate Route (DETECTED):**
-  ```text
-  GET /api/users
-  GET /api/users
-  ```
-  Even if declared in different files (e.g., `userRoutes.ts` and `adminRoutes.ts`), this conflict is flagged with a diagnostic warning. Parameter names are also normalized (e.g., `GET /api/users/:id` and `GET /api/users/:userId` are detected as conflicting patterns).
-
-#### 3. Possible Missing Handler Detection
-Flags suspicious route declarations missing middleware or route handlers (e.g., `router.get('/users')`), using conservative detection to avoid false positives on valid middleware chains.
-
-#### 4. Route Statistics Command
-Run `API Route Explorer: Show Route Statistics` (`apiRouteExplorer.showStatistics`) via the Command Palette or the sidebar header icon to view comprehensive workspace route metrics:
-- Total routes & unique files
-- Breakdown by HTTP method (GET, POST, PUT, PATCH, DELETE)
-- Duplicate route count
-- Shared route path count
-- Detected backend framework
-
-#### 5. Native VS Code Diagnostics
-Provides non-intrusive warnings directly in the Problems panel:
-- `Duplicate route detected: GET /api/users`
-- `Possible missing handler for GET /api/users`
-
-Diagnostics are automatically synchronized on file changes, saves, deletions, or manual scans, and cleanly disposed.
 
 ---
 
@@ -112,9 +84,9 @@ Diagnostics are automatically synchronized on file changes, saves, deletions, or
 | Framework | Status | Target Sprint |
 | :--- | :--- | :--- |
 | **Express (Node.js)** | ✅ Full Discovery, Navigation & Analysis | Sprint 1–4 |
-| **Next.js (App & Pages Router)** | 📋 Planned | Sprint 5 |
-| **Fastify** | 📋 Planned | Future |
-| **NestJS** | 📋 Planned | Future |
+| **Next.js (App & Pages Router)** | ✅ Full Discovery, Navigation & Analysis | Sprint 5 |
+| **Fastify** | ✅ Full Discovery, Navigation & Analysis | Sprint 6 |
+| **NestJS** | ✅ Full Discovery, Navigation & Analysis | Sprint 6 |
 
 ---
 
@@ -153,8 +125,13 @@ Diagnostics are automatically synchronized on file changes, saves, deletions, or
   - Conservative possible missing handler analysis
   - Route statistics calculation and modal reporting
   - Integrated VS Code Diagnostics collection lifecycle
-- [ ] **Sprint 5: Multi-Framework Expansion**
+- [x] **Sprint 5: Multi-Framework Expansion**
   - Next.js App Router and Pages Router route detection
+  - Framework adapter architecture and registry
+- [x] **Sprint 6: Fastify + NestJS Support**
+  - Fastify route detection (standard methods, `route()`, plugin prefixes)
+  - NestJS controller detection, HTTP decorators (`@Get`, `@Post`, etc.)
+  - NestJS controller prefix composition and exact source navigation
 
 ---
 
@@ -215,13 +192,13 @@ In VS Code:
 1. Open the **Extensions** view (`Cmd+Shift+X` / `Ctrl+Shift+X`).
 2. Click the `...` (More Actions) menu in the top-right of the Extensions view.
 3. Select **Install from VSIX...**.
-4. Choose `api-route-explorer-0.4.0.vsix`.
+4. Choose `api-route-explorer-0.6.0.vsix`.
 
 ---
 
 ## Usage Workflow
 
-1. Open any Node.js backend workspace using Express.js in VS Code.
+1. Open any Node.js backend workspace using Express, Next.js, Fastify, or NestJS in VS Code.
 2. Click the **API Route Explorer** icon in the Activity Bar.
 3. Click **Scan Routes** (or press `Cmd+Shift+P` and execute `API Route Explorer: Scan Routes`).
 4. Browse endpoints organized by file in **API Routes** and inspect health in **Route Analysis**.
@@ -232,6 +209,6 @@ In VS Code:
 
 ## Version
 
-- **Current Version**: `0.4.0` (Sprint 4 & 4.5 — Smart Route Analysis & Release Hardening)
-- **Framework Supported**: Express.js (JavaScript & TypeScript)
+- **Current Version**: `0.6.0` (Sprint 6 — Fastify + NestJS Support)
+- **Frameworks Supported**: Express.js, Next.js, Fastify, NestJS (JavaScript & TypeScript)
 - **License**: MIT

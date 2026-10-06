@@ -173,7 +173,14 @@ export class RouteTreeItem extends vscode.TreeItem {
     const tooltip = new vscode.MarkdownString();
     tooltip.appendMarkdown(`### \`${route.method}\` ${route.path}\n\n`);
     tooltip.appendMarkdown(`- **File**: \`${relativeFilePath}\`\n`);
-    const fwName = route.framework === 'nextjs' || route.framework === 'next' ? 'Next.js' : 'Express';
+    let fwName = 'Express';
+    if (route.framework === 'nextjs' || route.framework === 'next') {
+      fwName = 'Next.js';
+    } else if (route.framework === 'fastify') {
+      fwName = 'Fastify';
+    } else if (route.framework === 'nestjs') {
+      fwName = 'NestJS';
+    }
     tooltip.appendMarkdown(`- **Location**: Line ${route.line + 1}, Column ${route.column + 1}\n`);
     tooltip.appendMarkdown(`- **Framework**: ${fwName}\n`);
 
