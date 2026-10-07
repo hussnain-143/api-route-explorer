@@ -146,6 +146,7 @@ Configure extension behavior via VS Code Settings (`settings.json`):
 | `apiRouteExplorer.baseUrl` | `string` | `"http://localhost:3000"` | Base URL used when copying complete route URLs. |
 | `apiRouteExplorer.scan.exclude` | `array` | `[]` | Additional folder/file patterns to exclude during scanning (extends built-in safe defaults). |
 | `apiRouteExplorer.autoRefresh` | `boolean` | `true` | Automatically refresh and incrementally update routes when files change. |
+| `apiRouteExplorer.httpClient.timeout` | `number` | `10000` | Timeout in milliseconds for HTTP Client requests (default: 10000ms / 10s). |
 
 ---
 
@@ -170,6 +171,7 @@ Configure extension behavior via VS Code Settings (`settings.json`):
 | **Copy Route URL** | `apiRouteExplorer.copyRouteUrl` | Copies full local URL (e.g. `http://localhost:3000/api/users`) |
 | **Copy Route Definition** | `apiRouteExplorer.copyRouteDefinition` | Copies developer-readable format (e.g. `GET /users -> users.ts:42`) |
 | **Copy as cURL** | `apiRouteExplorer.copyCurl` | Copies reproducible curl command to clipboard |
+| **Open HTTP Client** | `apiRouteExplorer.openHttpClient` | Opens dedicated HTTP Client webview for testing the route |
 
 ---
 
@@ -245,6 +247,43 @@ To ensure contracts are reliable and truthful:
 1. Open the **API Route Explorer** sidebar or Command Palette (`Cmd+Shift+P` / `Ctrl+Shift+P`).
 2. Run `API Route Explorer: Export OpenAPI Specification...` (or export directly to YAML / JSON).
 3. Select your desired route scope (Filtered Routes or All Routes) and file destination.
+
+---
+
+## Interactive HTTP Client Webview
+
+API Route Explorer features a lightweight, developer-focused **HTTP Client Webview** built directly inside VS Code. Rather than switching to heavy external API clients like Postman or Insomnia, test any discovered endpoint immediately in your current editor layout.
+
+```text
+Discover Route  →  Select Route  →  Open HTTP Client  →  Configure & Send  →  Inspect Response
+```
+
+### Opening the HTTP Client
+- **Route Item Action**: Right-click any route in the sidebar TreeView and select **Open HTTP Client** (or click the inline `$(send)` icon on hover).
+- **Command Palette**: Run `API Route Explorer: Open HTTP Client` to select from any discovered route.
+- **Quick Hub Menu**: Select `Open HTTP Client...` from the Status Bar menu.
+
+### Request Configuration
+- **Pre-filled Route State**: Automatically populates the route's HTTP method, converted path syntax (`{id}`), and configured `apiRouteExplorer.baseUrl`.
+- **Path Parameters**: Detects all path parameters (e.g. `{id}`, `{slug}`) and provides dedicated input fields. Required parameters are validated before sending.
+- **Query Parameters**: Interactive key-value editor with enable/disable toggles, add/remove controls, and safe URL encoding.
+- **Request Headers**: Easily configure request headers. Mutating methods (`POST`, `PUT`, `PATCH`) automatically include `Content-Type: application/json`.
+- **JSON Request Body**: Clean editor for `POST`, `PUT`, `PATCH`, and `DELETE` requests with automatic JSON syntax validation before dispatch and a **Format JSON** beautifier.
+- **Copy as cURL**: Generate and copy a fully resolved, reproducible cURL command reflecting your active parameters, headers, and body.
+- **Reset**: Instantly restore request inputs to the endpoint's pristine discovered state.
+
+### Response Inspector
+- **Status & Badges**: Color-coded status pills (`200 OK`, `201 Created`, `400 Bad Request`, `404 Not Found`, `500 Server Error`).
+- **Timing & Metrics**: Millisecond-accurate request duration and response payload size calculation.
+- **Pretty-Printed Body**: Automatically formats JSON responses while safely rendering plain text, HTML, and other payloads.
+- **Response Headers**: Tabular view of all incoming response headers.
+- **One-Click Copy**: Copy the response body directly to your clipboard.
+
+### Security & Privacy Boundaries
+- **Strict Content Security Policy (CSP)**: Nonce-based script execution with zero unsafe evaluation.
+- **Untrusted UI Isolation**: All webview messages undergo strict structural validation. Network execution occurs safely in the Extension Host.
+- **Zero Secret Exposure**: Never scans `.env` files, never accesses workspace secrets, never logs sensitive `Authorization` headers, and never persists user credentials or tokens.
+- **Timeout Protection**: Configurable request timeout (`apiRouteExplorer.httpClient.timeout`, default 10s) guarantees no hanging requests.
 
 ---
 

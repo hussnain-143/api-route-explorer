@@ -23,6 +23,7 @@ export const COMMANDS = {
   EXPORT_OPENAPI: 'apiRouteExplorer.exportOpenApi',
   EXPORT_OPENAPI_JSON: 'apiRouteExplorer.exportOpenApiJson',
   EXPORT_OPENAPI_YAML: 'apiRouteExplorer.exportOpenApiYaml',
+  OPEN_HTTP_CLIENT: 'apiRouteExplorer.openHttpClient',
   STATUS_BAR_MENU: 'apiRouteExplorer.statusBarMenu',
 } as const;
 

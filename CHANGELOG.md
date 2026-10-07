@@ -2,6 +2,32 @@
 
 All notable changes to the "api-route-explorer" extension will be documented in this file.
 
+## [1.3.0] - Sprint 13: Interactive HTTP Client Webview
+
+### Added
+- **Interactive HTTP Client Webview (`apiRouteExplorer.openHttpClient`)**:
+  - Direct endpoint testing from the TreeView sidebar without external clients or context switching.
+  - Automatic pre-fill of HTTP method, converted path parameter syntax (`{id}`), and configured base URL.
+  - Editable URL bar with real-time method selector (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`, `OPTIONS`).
+  - Path parameter detection and dedicated editable parameter inputs with validation against missing required parameters.
+  - Query parameter table with active checkboxes, key/value editing, safe URL encoding, and row management.
+  - Request headers table with add/remove controls, default JSON content-type insertion, and active toggles.
+  - JSON request body editor for mutating methods with automatic syntax verification and one-click JSON formatting.
+  - Reproducible **Copy as cURL** command generator reflecting active parameters, headers, and body payloads.
+  - **Reset** button to restore request parameters back to the pristine discovered route state.
+- **Response Inspector & Developer Metrics**:
+  - Status pill with HTTP status code and text color-coded by response severity (2xx, 3xx, 4xx, 5xx).
+  - High-precision request duration timing (`timeMs`) and payload size measurement (`sizeBytes`).
+  - Automatic pretty-printing for JSON responses with safe fallback rendering for plain text and HTML.
+  - Tabular response header viewer and one-click copy response body button.
+  - Clear user-facing error reporting for connection refused (`ECONNREFUSED`), host not found (`ENOTFOUND`), timeouts, and invalid URLs.
+- **Enterprise Security & VS Code Native Theming**:
+  - Untrusted UI model with strict schema validation for all webview messages.
+  - Strict Content Security Policy (CSP) with cryptographic nonces and zero unsafe scripts.
+  - Extension Host network execution: zero `.env` scanning, zero secret exposure, and zero logging or persistence of sensitive credentials.
+  - Seamless adaptation to VS Code Light, Dark, and High Contrast themes using native CSS variables.
+  - Configurable request timeout setting: `apiRouteExplorer.httpClient.timeout` (default 10,000 ms).
+
 ## [1.2.0] - Sprint 12: Advanced API Intelligence — OpenAPI / Swagger Specification Generation
 
 ### Added
