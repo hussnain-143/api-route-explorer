@@ -130,10 +130,21 @@ export class HttpClientPanel {
         break;
       }
 
+      case 'cancelRequest': {
+        this._requestService.cancel();
+        break;
+      }
+
       case 'copyCurl': {
         const curlCmd = buildCurlFromConfig(message.payload);
         await vscode.env.clipboard.writeText(curlCmd);
         vscode.window.showInformationMessage('cURL command copied to clipboard.');
+        break;
+      }
+
+      case 'copyText': {
+        await vscode.env.clipboard.writeText(message.payload.text);
+        vscode.window.showInformationMessage(`${message.payload.label} copied to clipboard.`);
         break;
       }
 
@@ -166,6 +177,8 @@ export class HttpClientPanel {
         payload: {
           message: result.error,
           code: result.code,
+          url: result.url,
+          possibleCauses: result.possibleCauses,
         },
       });
     }
@@ -234,7 +247,7 @@ export class HttpClientPanel {
     }
 
     .container {
-      max-width: 900px;
+      max-width: 920px;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
@@ -333,6 +346,14 @@ export class HttpClientPanel {
       background: var(--btn-sec-hover);
     }
 
+    .btn-cancel {
+      background: #EF4444;
+      color: #ffffff;
+    }
+    .btn-cancel:hover {
+      background: #DC2626;
+    }
+
     .btn-sm {
       padding: 4px 8px;
       font-size: 11px;
@@ -392,11 +413,24 @@ export class HttpClientPanel {
       padding: 12px;
     }
 
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.8;
+      margin-bottom: 8px;
+    }
+
     .param-row {
       display: flex;
       align-items: center;
       gap: 8px;
       margin-bottom: 8px;
+    }
+
+    .param-row:last-child {
+      margin-bottom: 0;
     }
 
     .param-label {
@@ -418,6 +452,11 @@ export class HttpClientPanel {
       border-radius: 4px;
       font-family: var(--code-font);
       font-size: 12px;
+    }
+
+    .param-input.invalid {
+      border-color: #EF4444;
+      outline: 1px solid #EF4444;
     }
 
     .table-container {
@@ -494,6 +533,20 @@ export class HttpClientPanel {
       opacity: 0.7;
     }
 
+    .curl-preview {
+      background: var(--input-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 4px;
+      padding: 12px;
+      font-family: var(--code-font);
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: var(--fg);
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
     /* Response section */
     .response-section {
       margin-top: 8px;
@@ -513,7 +566,7 @@ export class HttpClientPanel {
     .response-meta {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
     }
 
     .status-badge {
@@ -565,11 +618,67 @@ export class HttpClientPanel {
       color: #EF4444;
     }
 
-    .alert-info {
-      background: rgba(59, 130, 246, 0.1);
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      color: var(--fg);
+    .error-card {
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      background: rgba(239, 68, 68, 0.08);
+      border-radius: 6px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .error-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #EF4444;
+    }
+
+    .error-card-url-title {
+      font-size: 11px;
+      opacity: 0.8;
+      margin-top: 2px;
+    }
+
+    .error-card-url {
+      font-family: var(--code-font);
+      font-size: 12px;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 5px 8px;
+      border-radius: 4px;
+      word-break: break-all;
+    }
+
+    .error-card-causes-title {
+      font-size: 11px;
+      font-weight: 600;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+
+    .error-card-causes {
+      list-style-type: none;
+      padding-left: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .error-card-causes li {
+      font-size: 12px;
       opacity: 0.85;
+    }
+
+    .error-card-code-wrap {
+      margin-top: 4px;
+      font-size: 11px;
+      opacity: 0.8;
+    }
+
+    .error-card-code {
+      font-family: var(--code-font);
+      font-weight: 600;
+      color: #EF4444;
     }
 
     .spinner {
@@ -588,7 +697,7 @@ export class HttpClientPanel {
 
     .empty-state {
       text-align: center;
-      padding: 32px 16px;
+      padding: 24px 16px;
       opacity: 0.6;
       font-size: 12px;
     }
@@ -615,15 +724,19 @@ export class HttpClientPanel {
         <option value="OPTIONS">OPTIONS</option>
       </select>
 
-      <input type="text" id="url-input" class="url-input" placeholder="http://localhost:3000/api/v1/..." />
+      <input type="text" id="url-input" class="url-input" placeholder="http://localhost:5000/api/v1/..." />
+
+      <button id="btn-copy-url" class="btn btn-secondary btn-sm" title="Copy Request URL">
+        Copy URL
+      </button>
 
       <button id="btn-send" class="btn btn-primary">
         <span id="send-spinner" style="display:none;" class="spinner"></span>
         <span id="send-label">Send</span>
       </button>
 
-      <button id="btn-curl" class="btn btn-secondary" title="Copy request as cURL command">
-        Copy cURL
+      <button id="btn-cancel" class="btn btn-cancel" style="display:none;" title="Cancel running request">
+        Cancel Request
       </button>
 
       <button id="btn-reset" class="btn btn-secondary" title="Reset to route default">
@@ -634,13 +747,10 @@ export class HttpClientPanel {
     <!-- Client Error Display -->
     <div id="validation-error" class="alert alert-error" style="display: none;"></div>
 
-    <!-- Request Sub-Tabs -->
+    <!-- Request Sub-Tabs: Params, Headers, Body, cURL -->
     <div class="tab-bar">
       <button class="tab-btn active" data-tab="tab-params">
-        Path Parameters <span id="badge-params" class="tab-badge" style="display:none;">0</span>
-      </button>
-      <button class="tab-btn" data-tab="tab-query">
-        Query Params <span id="badge-query" class="tab-badge" style="display:none;">0</span>
+        Params <span id="badge-params" class="tab-badge" style="display:none;">0</span>
       </button>
       <button class="tab-btn" data-tab="tab-headers">
         Headers <span id="badge-headers" class="tab-badge" style="display:none;">0</span>
@@ -648,17 +758,21 @@ export class HttpClientPanel {
       <button class="tab-btn" data-tab="tab-body">
         Body
       </button>
+      <button class="tab-btn" data-tab="tab-curl">
+        cURL
+      </button>
     </div>
 
-    <!-- Tab 1: Path Params -->
+    <!-- Tab 1: Params (Path Parameters + Query Parameters) -->
     <div id="tab-params" class="tab-content active">
-      <div id="path-params-list" class="card">
-        <div class="empty-state">No path parameters detected for this route.</div>
+      <div id="path-params-wrapper" style="margin-bottom: 14px;">
+        <div class="section-title">Path Parameters</div>
+        <div id="path-params-list" class="card">
+          <div class="empty-state">No path parameters detected for this route.</div>
+        </div>
       </div>
-    </div>
 
-    <!-- Tab 2: Query Params -->
-    <div id="tab-query" class="tab-content">
+      <div class="section-title">Query Parameters</div>
       <div class="card">
         <table class="kv-table">
           <thead>
@@ -672,12 +786,12 @@ export class HttpClientPanel {
           <tbody id="query-table-body"></tbody>
         </table>
         <div style="margin-top: 8px;">
-          <button id="btn-add-query" class="btn btn-secondary btn-sm">+ Add Query Param</button>
+          <button id="btn-add-query" class="btn btn-secondary btn-sm">+ Add Parameter</button>
         </div>
       </div>
     </div>
 
-    <!-- Tab 3: Headers -->
+    <!-- Tab 2: Headers -->
     <div id="tab-headers" class="tab-content">
       <div class="card">
         <table class="kv-table">
@@ -697,7 +811,7 @@ export class HttpClientPanel {
       </div>
     </div>
 
-    <!-- Tab 4: Body -->
+    <!-- Tab 3: Body -->
     <div id="tab-body" class="tab-content">
       <div class="card">
         <textarea id="body-input" class="body-editor" placeholder='{\n  "key": "value"\n}'></textarea>
@@ -705,6 +819,17 @@ export class HttpClientPanel {
           <span>JSON syntax is validated before sending.</span>
           <button id="btn-format-json" class="btn btn-secondary btn-sm">Format JSON</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Tab 4: cURL -->
+    <div id="tab-curl" class="tab-content">
+      <div class="card" style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 11px; opacity: 0.7;">Reproducible command generated from current request settings</span>
+          <button id="btn-copy-curl" class="btn btn-secondary btn-sm">Copy cURL</button>
+        </div>
+        <pre id="curl-preview" class="curl-preview"></pre>
       </div>
     </div>
 
@@ -717,6 +842,7 @@ export class HttpClientPanel {
           <span id="response-time" class="metric-item"></span>
           <span id="response-size" class="metric-item"></span>
           <button id="btn-copy-response" class="btn btn-secondary btn-sm">Copy Body</button>
+          <button id="btn-copy-res-headers" class="btn btn-secondary btn-sm">Copy Headers</button>
         </div>
       </div>
 
@@ -724,7 +850,8 @@ export class HttpClientPanel {
         Send a request to inspect response status, headers, and body.
       </div>
 
-      <div id="response-error-card" class="alert alert-error" style="display: none;"></div>
+      <!-- Developer-facing Error Card -->
+      <div id="response-error-card" class="error-card" style="display: none;"></div>
 
       <div id="response-tabs" style="display: none;">
         <div class="tab-bar">
@@ -764,28 +891,32 @@ export class HttpClientPanel {
     let queryParams = [];
     let headers = [];
     let isSending = false;
+    let lastResponseHeaders = {};
 
     // Elements
     const methodSelect = document.getElementById('method-select');
     const urlInput = document.getElementById('url-input');
+    const btnCopyUrl = document.getElementById('btn-copy-url');
     const btnSend = document.getElementById('btn-send');
+    const btnCancel = document.getElementById('btn-cancel');
     const sendSpinner = document.getElementById('send-spinner');
     const sendLabel = document.getElementById('send-label');
-    const btnCurl = document.getElementById('btn-curl');
     const btnReset = document.getElementById('btn-reset');
     const bodyInput = document.getElementById('body-input');
     const btnFormatJson = document.getElementById('btn-format-json');
     const validationError = document.getElementById('validation-error');
     const headerMeta = document.getElementById('header-meta');
 
+    const pathParamsWrapper = document.getElementById('path-params-wrapper');
     const pathParamsList = document.getElementById('path-params-list');
     const queryTableBody = document.getElementById('query-table-body');
     const headersTableBody = document.getElementById('headers-table-body');
     const btnAddQuery = document.getElementById('btn-add-query');
     const btnAddHeader = document.getElementById('btn-add-header');
+    const curlPreview = document.getElementById('curl-preview');
+    const btnCopyCurl = document.getElementById('btn-copy-curl');
 
     const badgeParams = document.getElementById('badge-params');
-    const badgeQuery = document.getElementById('badge-query');
     const badgeHeaders = document.getElementById('badge-headers');
 
     const responseMeta = document.getElementById('response-meta');
@@ -799,10 +930,21 @@ export class HttpClientPanel {
     const resHeadersTableBody = document.getElementById('res-headers-table-body');
     const resBadgeHeaders = document.getElementById('res-badge-headers');
     const btnCopyResponse = document.getElementById('btn-copy-response');
+    const btnCopyResHeaders = document.getElementById('btn-copy-res-headers');
 
     // Method change style
     methodSelect.addEventListener('change', () => {
       methodSelect.setAttribute('data-method', methodSelect.value);
+      updateCurlPreview();
+    });
+
+    urlInput.addEventListener('input', () => {
+      hideValidationError();
+      updateCurlPreview();
+    });
+
+    bodyInput.addEventListener('input', () => {
+      updateCurlPreview();
     });
 
     // Sub-tab switching (Request)
@@ -815,6 +957,9 @@ export class HttpClientPanel {
         const target = document.getElementById(targetId);
         if (target) {
           target.classList.add('active');
+        }
+        if (targetId === 'tab-curl') {
+          updateCurlPreview();
         }
       });
     });
@@ -837,11 +982,13 @@ export class HttpClientPanel {
     btnAddQuery.addEventListener('click', () => {
       queryParams.push({ id: 'q_' + Date.now(), key: '', value: '', enabled: true });
       renderQueryParams();
+      updateCurlPreview();
     });
 
     btnAddHeader.addEventListener('click', () => {
       headers.push({ id: 'h_' + Date.now(), key: '', value: '', enabled: true });
       renderHeaders();
+      updateCurlPreview();
     });
 
     btnFormatJson.addEventListener('click', () => {
@@ -851,14 +998,30 @@ export class HttpClientPanel {
         const parsed = JSON.parse(raw);
         bodyInput.value = JSON.stringify(parsed, null, 2);
         hideValidationError();
+        updateCurlPreview();
       } catch (e) {
         showValidationError('Request body contains invalid JSON.');
       }
     });
 
+    btnCopyUrl.addEventListener('click', () => {
+      const url = urlInput.value.trim();
+      vscode.postMessage({ type: 'copyText', payload: { text: url, label: 'Request URL' } });
+    });
+
     btnCopyResponse.addEventListener('click', () => {
       const text = responseBody.textContent || '';
-      navigator.clipboard.writeText(text);
+      vscode.postMessage({ type: 'copyText', payload: { text, label: 'Response body' } });
+    });
+
+    btnCopyResHeaders.addEventListener('click', () => {
+      const lines = Object.entries(lastResponseHeaders).map(([k, v]) => k + ': ' + v).join('\\n');
+      vscode.postMessage({ type: 'copyText', payload: { text: lines, label: 'Response headers' } });
+    });
+
+    btnCopyCurl.addEventListener('click', () => {
+      const text = curlPreview.textContent || '';
+      vscode.postMessage({ type: 'copyText', payload: { text, label: 'cURL command' } });
     });
 
     btnSend.addEventListener('click', () => {
@@ -866,9 +1029,9 @@ export class HttpClientPanel {
       sendRequest();
     });
 
-    btnCurl.addEventListener('click', () => {
-      const config = collectRequestConfig();
-      vscode.postMessage({ type: 'copyCurl', payload: config });
+    btnCancel.addEventListener('click', () => {
+      if (!isSending) return;
+      vscode.postMessage({ type: 'cancelRequest' });
     });
 
     btnReset.addEventListener('click', () => {
@@ -883,10 +1046,10 @@ export class HttpClientPanel {
     function hideValidationError() {
       validationError.style.display = 'none';
       validationError.textContent = '';
+      document.querySelectorAll('.param-input.invalid').forEach((el) => el.classList.remove('invalid'));
     }
 
     function collectRequestConfig() {
-      // Gather path parameter values from DOM
       const currentPathParams = pathParams.map((p) => {
         const input = document.getElementById('param-input-' + p.name);
         return {
@@ -905,11 +1068,80 @@ export class HttpClientPanel {
       };
     }
 
+    function updateCurlPreview() {
+      const config = collectRequestConfig();
+      let resolvedUrl = config.url;
+
+      // Replace path params
+      for (const p of config.pathParams) {
+        if (p.value) {
+          resolvedUrl = resolvedUrl.replace(new RegExp('\\\\{' + p.name + '\\\\}', 'g'), encodeURIComponent(p.value.trim()));
+        }
+      }
+
+      // Append query params
+      const activeQueries = config.queryParams
+        .filter((q) => q.enabled && q.key && q.key.trim() !== '')
+        .map((q) => encodeURIComponent(q.key.trim()) + '=' + encodeURIComponent(q.value))
+        .join('&');
+
+      if (activeQueries) {
+        resolvedUrl += (resolvedUrl.includes('?') ? '&' : '?') + activeQueries;
+      }
+
+      let cmd = 'curl -X ' + config.method + ' "' + resolvedUrl + '"';
+
+      for (const h of config.headers) {
+        if (h.enabled && h.key && h.key.trim() !== '') {
+          cmd += ' \\\\\\n  -H "' + h.key.trim() + ': ' + h.value + '"';
+        }
+      }
+
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(config.method) && config.body && config.body.trim()) {
+        cmd += ' \\\\\\n  -d \\'' + config.body.replace(/'/g, "'\\\\''") + '\\'';
+      }
+
+      curlPreview.textContent = cmd;
+    }
+
     function sendRequest() {
       hideValidationError();
       const config = collectRequestConfig();
 
-      // Client-side quick check on JSON body
+      // Validate URL
+      if (!config.url || (!config.url.startsWith('http://') && !config.url.startsWith('https://'))) {
+        showValidationError('Invalid request URL. Scheme must be http:// or https://.');
+        return;
+      }
+
+      // Dynamic path parameter validation: detect all {param} in URL
+      const placeholderRegex = /\\{([^}]+)\\}/g;
+      const paramMap = new Map();
+      for (const p of config.pathParams) {
+        paramMap.set(p.name, p.value);
+      }
+
+      let match;
+      while ((match = placeholderRegex.exec(config.url)) !== null) {
+        const paramName = match[1];
+        const val = paramMap.get(paramName);
+        if (!val || val.trim() === '') {
+          const input = document.getElementById('param-input-' + paramName);
+          if (input) {
+            input.classList.add('invalid');
+            input.focus();
+          }
+          // Switch to Params tab if not active
+          const paramsTabBtn = document.querySelector('.tab-btn[data-tab="tab-params"]');
+          if (paramsTabBtn) {
+            paramsTabBtn.click();
+          }
+          showValidationError('Required path parameter "' + paramName + '" is missing.');
+          return;
+        }
+      }
+
+      // Quick JSON syntax check
       const method = config.method;
       if (['POST', 'PUT', 'PATCH'].includes(method) && config.body.trim()) {
         try {
@@ -953,7 +1185,9 @@ export class HttpClientPanel {
 
         input.addEventListener('input', () => {
           param.value = input.value;
+          input.classList.remove('invalid');
           hideValidationError();
+          updateCurlPreview();
         });
 
         row.appendChild(label);
@@ -965,14 +1199,6 @@ export class HttpClientPanel {
     // Render Query parameters
     function renderQueryParams() {
       queryTableBody.innerHTML = '';
-      const enabledCount = queryParams.filter((q) => q.enabled && q.key).length;
-      if (enabledCount > 0) {
-        badgeQuery.textContent = enabledCount;
-        badgeQuery.style.display = 'inline-block';
-      } else {
-        badgeQuery.style.display = 'none';
-      }
-
       queryParams.forEach((param, index) => {
         const tr = document.createElement('tr');
 
@@ -985,6 +1211,7 @@ export class HttpClientPanel {
         check.addEventListener('change', () => {
           param.enabled = check.checked;
           renderQueryParams();
+          updateCurlPreview();
         });
         tdCheck.appendChild(check);
 
@@ -995,7 +1222,10 @@ export class HttpClientPanel {
         inputKey.className = 'kv-input';
         inputKey.value = param.key;
         inputKey.placeholder = 'Parameter name';
-        inputKey.addEventListener('input', () => { param.key = inputKey.value; });
+        inputKey.addEventListener('input', () => {
+          param.key = inputKey.value;
+          updateCurlPreview();
+        });
         tdKey.appendChild(inputKey);
 
         // Value
@@ -1005,7 +1235,10 @@ export class HttpClientPanel {
         inputVal.className = 'kv-input';
         inputVal.value = param.value;
         inputVal.placeholder = 'Value';
-        inputVal.addEventListener('input', () => { param.value = inputVal.value; });
+        inputVal.addEventListener('input', () => {
+          param.value = inputVal.value;
+          updateCurlPreview();
+        });
         tdVal.appendChild(inputVal);
 
         // Delete
@@ -1017,6 +1250,7 @@ export class HttpClientPanel {
         btnDel.addEventListener('click', () => {
           queryParams.splice(index, 1);
           renderQueryParams();
+          updateCurlPreview();
         });
         tdDel.appendChild(btnDel);
 
@@ -1051,6 +1285,7 @@ export class HttpClientPanel {
         check.addEventListener('change', () => {
           h.enabled = check.checked;
           renderHeaders();
+          updateCurlPreview();
         });
         tdCheck.appendChild(check);
 
@@ -1061,7 +1296,10 @@ export class HttpClientPanel {
         inputKey.className = 'kv-input';
         inputKey.value = h.key;
         inputKey.placeholder = 'Header name';
-        inputKey.addEventListener('input', () => { h.key = inputKey.value; });
+        inputKey.addEventListener('input', () => {
+          h.key = inputKey.value;
+          updateCurlPreview();
+        });
         tdKey.appendChild(inputKey);
 
         // Value
@@ -1071,7 +1309,10 @@ export class HttpClientPanel {
         inputVal.className = 'kv-input';
         inputVal.value = h.value;
         inputVal.placeholder = 'Value';
-        inputVal.addEventListener('input', () => { h.value = inputVal.value; });
+        inputVal.addEventListener('input', () => {
+          h.value = inputVal.value;
+          updateCurlPreview();
+        });
         tdVal.appendChild(inputVal);
 
         // Delete
@@ -1083,6 +1324,7 @@ export class HttpClientPanel {
         btnDel.addEventListener('click', () => {
           headers.splice(index, 1);
           renderHeaders();
+          updateCurlPreview();
         });
         tdDel.appendChild(btnDel);
 
@@ -1114,6 +1356,7 @@ export class HttpClientPanel {
           renderPathParams();
           renderQueryParams();
           renderHeaders();
+          updateCurlPreview();
           hideValidationError();
 
           headerMeta.textContent = currentInitialState.framework
@@ -1132,7 +1375,8 @@ export class HttpClientPanel {
           isSending = true;
           sendSpinner.style.display = 'inline-block';
           sendLabel.textContent = 'Sending...';
-          btnSend.disabled = true;
+          btnSend.style.display = 'none';
+          btnCancel.style.display = 'inline-flex';
           responseEmpty.style.display = 'none';
           responseErrorCard.style.display = 'none';
           responseTabs.style.display = 'none';
@@ -1144,9 +1388,12 @@ export class HttpClientPanel {
           isSending = false;
           sendSpinner.style.display = 'none';
           sendLabel.textContent = 'Send';
+          btnSend.style.display = 'inline-flex';
           btnSend.disabled = false;
+          btnCancel.style.display = 'none';
 
           const data = msg.payload;
+          lastResponseHeaders = data.headers || {};
           responseEmpty.style.display = 'none';
           responseErrorCard.style.display = 'none';
           responseTabs.style.display = 'block';
@@ -1170,12 +1417,17 @@ export class HttpClientPanel {
           const sizeKb = (data.sizeBytes / 1024).toFixed(1);
           responseSize.textContent = data.sizeBytes > 1024 ? sizeKb + ' KB' : data.sizeBytes + ' B';
 
-          // Body
-          responseBody.textContent = data.body || '(empty response body)';
+          // Body (large response protection: limit pre render if > 250,000 chars)
+          const rawBody = data.body || '';
+          if (rawBody.length > 250000) {
+            responseBody.textContent = rawBody.slice(0, 250000) + '\\n\\n... [Response body truncated for rendering performance. Total size: ' + responseSize.textContent + ']';
+          } else {
+            responseBody.textContent = rawBody || '(empty response body)';
+          }
 
           // Headers
           resHeadersTableBody.innerHTML = '';
-          const headerEntries = Object.entries(data.headers || {});
+          const headerEntries = Object.entries(lastResponseHeaders);
           resBadgeHeaders.textContent = headerEntries.length;
           headerEntries.forEach(([key, val]) => {
             const tr = document.createElement('tr');
@@ -1197,18 +1449,54 @@ export class HttpClientPanel {
           isSending = false;
           sendSpinner.style.display = 'none';
           sendLabel.textContent = 'Send';
+          btnSend.style.display = 'inline-flex';
           btnSend.disabled = false;
+          btnCancel.style.display = 'none';
 
           responseEmpty.style.display = 'none';
           responseTabs.style.display = 'none';
           responseMeta.style.display = 'none';
 
-          responseErrorCard.style.display = 'block';
-          responseErrorCard.innerHTML = '<strong>Request Failed</strong><div>' + (msg.payload.message || 'Unknown network error') + '</div>';
+          const err = msg.payload;
+          responseErrorCard.style.display = 'flex';
+
+          let causesHtml = '';
+          if (err.possibleCauses && err.possibleCauses.length > 0) {
+            causesHtml = '<div class="error-card-causes-title">Possible causes:</div><ul class="error-card-causes">' +
+              err.possibleCauses.map((c) => '<li>• ' + escapeHtml(c) + '</li>').join('') +
+              '</ul>';
+          }
+
+          let urlHtml = '';
+          if (err.url) {
+            urlHtml = '<div class="error-card-url-title">Unable to connect to:</div><div class="error-card-url">' + escapeHtml(err.url) + '</div>';
+          }
+
+          let codeHtml = '';
+          if (err.code) {
+            codeHtml = '<div class="error-card-code-wrap">Error: <span class="error-card-code">' + escapeHtml(err.code) + '</span></div>';
+          }
+
+          responseErrorCard.innerHTML =
+            '<div class="error-card-title">Request Failed</div>' +
+            urlHtml +
+            '<div style="font-size: 12px; margin-top: 4px;">' + escapeHtml(err.message || 'An error occurred during request execution.') + '</div>' +
+            causesHtml +
+            codeHtml;
           break;
         }
       }
     });
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
 
     // Notify extension host that UI is ready
     vscode.postMessage({ type: 'ready' });

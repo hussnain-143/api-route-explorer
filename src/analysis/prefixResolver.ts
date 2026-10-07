@@ -26,7 +26,73 @@ export function joinRoutePaths(prefix: string, routePath: string): string {
   }
 
   const normalizedPath = cleanPath.startsWith('/') ? cleanPath : `/${cleanPath}`;
-  return `${normalizedPrefix}${normalizedPath}`;
+
+  // If normalizedPath already equals or starts with normalizedPrefix, avoid duplication
+  if (normalizedPath === normalizedPrefix) {
+    return normalizedPrefix;
+  }
+  if (normalizedPath.startsWith(normalizedPrefix + '/')) {
+    return normalizedPath;
+  }
+
+  // Extract path segments for overlap detection
+  const prefixSegs = normalizedPrefix.split('/').filter(Boolean);
+  const pathSegs = normalizedPath.split('/').filter(Boolean);
+
+  let overlap = 0;
+  const maxOverlap = Math.min(prefixSegs.length, pathSegs.length);
+  for (let len = maxOverlap; len > 0; len--) {
+    const prefixTail = prefixSegs.slice(-len).join('/').toLowerCase();
+    const pathHead = pathSegs.slice(0, len).join('/').toLowerCase();
+    if (prefixTail === pathHead) {
+      overlap = len;
+      break;
+    }
+  }
+
+  let finalSegs: string[];
+  if (overlap > 0) {
+    finalSegs = [...prefixSegs, ...pathSegs.slice(overlap)];
+  } else {
+    finalSegs = [...prefixSegs, ...pathSegs];
+  }
+
+  // Collapse accidental consecutive repeating blocks (e.g. /api/v1/api/v1)
+  finalSegs = collapseRepeatingSegments(finalSegs);
+
+  return `/${finalSegs.join('/')}`;
+}
+
+/**
+ * Collapses consecutive duplicate segment sequences of length >= 1.
+ * e.g. ['api', 'v1', 'admin', 'auth', 'api', 'v1', 'admin', 'auth', 'signin']
+ * -> ['api', 'v1', 'admin', 'auth', 'signin']
+ */
+export function collapseRepeatingSegments(segments: string[]): string[] {
+  let result = [...segments];
+  let changed = true;
+
+  while (changed) {
+    changed = false;
+    const n = result.length;
+    for (let len = Math.floor(n / 2); len >= 1; len--) {
+      for (let i = 0; i <= n - 2 * len; i++) {
+        const block1 = result.slice(i, i + len);
+        const block2 = result.slice(i + len, i + 2 * len);
+        const isMatch = block1.every((seg, idx) => seg.toLowerCase() === block2[idx].toLowerCase());
+        if (isMatch) {
+          result.splice(i + len, len);
+          changed = true;
+          break;
+        }
+      }
+      if (changed) {
+        break;
+      }
+    }
+  }
+
+  return result;
 }
 
 /**

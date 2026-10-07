@@ -2,6 +2,39 @@
 
 All notable changes to the "api-route-explorer" extension will be documented in this file.
 
+## [1.4.0] - Sprint 14: HTTP Client Hardening & UX
+
+### Fixed & Hardened
+- **URL & Base-Path Resolution Architecture**:
+  - Resolved base URL + route duplication bugs (e.g. `/api/v1/api/v1/health` or `/api/v1/admin/auth/api/v1/admin/auth/signin`).
+  - Added segment-level suffix-prefix overlap deduplication in `resolveFullUrl` and `joinRoutePaths`.
+  - Added repeating consecutive segment block collapsing (`collapseRepeatingSegments`) across URL construction and request validation.
+  - Safe leading and trailing slash normalization for arbitrary API prefixes.
+- **Dynamic Path Parameter UX (`{parameter}`)**:
+  - Real-time parameter extraction for all dynamic parameters in route URLs.
+  - Interactive parameter input cards with inline `{param}` labels.
+  - Validation before dispatch: detects empty or missing required dynamic parameters and displays developer-friendly warning `Required path parameter "id" is missing.`.
+  - Visual validation state highlighting missing inputs in red with automatic focus.
+  - Safe URI encoding for parameter values containing special characters or spaces.
+  - Query parameters and search strings are safely preserved during dynamic replacement.
+- **Request Configuration UI Restructuring**:
+  - Streamlined 4-tab request configuration: `Params`, `Headers`, `Body`, and `cURL`.
+  - Live syntax-highlighted cURL preview updating in real-time as method, URL, parameters, headers, or payload change.
+- **Response Presentation & Performance**:
+  - Response metrics display: Status badge (`200 OK`, `401 Unauthorized`, `404 Not Found`, etc.), duration (`ms`), and payload size (`KB`/`B`).
+  - Sub-tabs for formatted Response Body and structured Response Headers table.
+  - Large payload safety safeguards: truncated view (>250 KB) preventing webview freezing.
+- **Developer-Centric Error UX**:
+  - Replaced raw Node.js error codes (`ECONNREFUSED`, `ETIMEDOUT`, `ENOTFOUND`) with formatted cards detailing target URL, possible causes, and technical error code.
+- **Request Cancellation**:
+  - Added `[ Cancel Request ]` button in request bar while requests are in flight.
+  - Clean socket teardown, listener cleanup, and memory leak prevention via `HttpRequestService.cancel()`.
+  - Cancellation yields `CANCELLED` status and resets UI state safely without rendering stale responses.
+- **Native Clipboard Copy Actions**:
+  - One-click copy actions for Request URL, Response Body, Response Headers, and generated cURL command using native VS Code clipboard APIs.
+- **Regression Suite Expansion**:
+  - Test suite expanded from 213 to **243 passing tests** (100% pass rate).
+
 ## [1.3.0] - Sprint 13: Interactive HTTP Client Webview
 
 ### Added

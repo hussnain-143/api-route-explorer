@@ -1,6 +1,7 @@
 import * as http from 'http';
 import * as https from 'https';
 import { URL } from 'url';
+import { collapseRepeatingSegments } from '../analysis/prefixResolver';
 import {
   HttpClientMethod,
   HttpRequestConfig,
@@ -16,6 +17,8 @@ export interface ValidationSuccess {
 export interface ValidationFailure {
   ok: false;
   error: string;
+  code?: string;
+  possibleCauses?: string[];
 }
 
 export type ValidationResult = ValidationSuccess | ValidationFailure;
@@ -29,6 +32,8 @@ export interface ExecutionFailure {
   ok: false;
   error: string;
   code?: string;
+  url?: string;
+  possibleCauses?: string[];
 }
 
 export type ExecutionResult = ExecutionSuccess | ExecutionFailure;
@@ -43,16 +48,25 @@ const MAX_REDIRECTS = 5;
 export function validateAndResolveRequest(config: HttpRequestConfig): ValidationResult {
   // 1. Basic URL validation
   if (!config.url || typeof config.url !== 'string' || !config.url.trim()) {
-    return { ok: false, error: 'Invalid request URL.' };
+    return {
+      ok: false,
+      error: 'Invalid request URL.',
+      code: 'ERR_INVALID_URL',
+      possibleCauses: ['The URL field cannot be empty', 'Specify a valid HTTP or HTTPS endpoint'],
+    };
   }
 
   let urlString = config.url.trim();
   if (!urlString.startsWith('http://') && !urlString.startsWith('https://')) {
-    return { ok: false, error: 'Invalid request URL. Scheme must be http:// or https://.' };
+    return {
+      ok: false,
+      error: 'Invalid request URL. Scheme must be http:// or https://.',
+      code: 'ERR_INVALID_URL',
+      possibleCauses: ['Add http:// or https:// to the start of the URL'],
+    };
   }
 
   // 2. Path parameter substitution and validation
-  // Extract all {param} tokens from the URL
   const placeholderRegex = /\{([^}]+)\}/g;
   const pathParamMap = new Map<string, string>();
   for (const p of config.pathParams) {
@@ -72,14 +86,30 @@ export function validateAndResolveRequest(config: HttpRequestConfig): Validation
   });
 
   if (missingParam) {
-    return { ok: false, error: `Required path parameter "${missingParam}" is missing.` };
+    return {
+      ok: false,
+      error: `Required path parameter "${missingParam}" is missing.`,
+      code: 'MISSING_PATH_PARAM',
+      possibleCauses: [
+        `Specify a value for "${missingParam}" in the Path Parameters section`,
+        'All path parameter placeholders must be replaced before sending',
+      ],
+    };
   }
 
   // Double check if any placeholder was missed
   const remainingPlaceholder = urlString.match(placeholderRegex);
   if (remainingPlaceholder && remainingPlaceholder.length > 0) {
     const name = remainingPlaceholder[0].slice(1, -1);
-    return { ok: false, error: `Required path parameter "${name}" is missing.` };
+    return {
+      ok: false,
+      error: `Required path parameter "${name}" is missing.`,
+      code: 'MISSING_PATH_PARAM',
+      possibleCauses: [
+        `Specify a value for "${name}" in the Path Parameters section`,
+        'All path parameter placeholders must be replaced before sending',
+      ],
+    };
   }
 
   // 3. Parse URL object
@@ -87,8 +117,19 @@ export function validateAndResolveRequest(config: HttpRequestConfig): Validation
   try {
     parsedUrl = new URL(urlString);
   } catch {
-    return { ok: false, error: 'Invalid request URL.' };
+    return {
+      ok: false,
+      error: 'Invalid request URL.',
+      code: 'ERR_INVALID_URL',
+      possibleCauses: ['Ensure the URL is well-formed with valid hostname and path'],
+    };
   }
+
+  // Normalize path segments to collapse any repeating blocks (e.g. /api/v1/api/v1)
+  const segments = parsedUrl.pathname.split('/').filter(Boolean);
+  const collapsed = collapseRepeatingSegments(segments);
+  const trailingSlash = parsedUrl.pathname.endsWith('/') && collapsed.length > 0 ? '/' : '';
+  parsedUrl.pathname = (collapsed.length > 0 ? '/' + collapsed.join('/') : '/') + trailingSlash;
 
   // 4. Query parameter processing
   if (config.queryParams && Array.isArray(config.queryParams)) {
@@ -126,7 +167,15 @@ export function validateAndResolveRequest(config: HttpRequestConfig): Validation
       try {
         JSON.parse(rawBody);
       } catch {
-        return { ok: false, error: 'Request body contains invalid JSON.' };
+        return {
+          ok: false,
+          error: 'Request body contains invalid JSON.',
+          code: 'MALFORMED_JSON',
+          possibleCauses: [
+            'Check for syntax errors, missing quotes, or trailing commas',
+            'Use the "Format JSON" button to validate and beautify JSON',
+          ],
+        };
       }
       if (!contentTypeKey) {
         headers['Content-Type'] = 'application/json';
@@ -158,6 +207,13 @@ export function buildCurlFromConfig(config: HttpRequestConfig): string {
   if (!validation.ok) {
     // If validation fails (e.g. missing param), build best-effort cURL
     let fallbackUrl = config.url;
+    if (config.pathParams) {
+      for (const p of config.pathParams) {
+        if (p.value) {
+          fallbackUrl = fallbackUrl.replace(new RegExp(`\\{${p.name}\\}`, 'g'), encodeURIComponent(p.value));
+        }
+      }
+    }
     if (config.queryParams && config.queryParams.length > 0) {
       const activeQueries = config.queryParams
         .filter((q) => q.enabled && q.key)
@@ -209,16 +265,47 @@ export function buildCurlFromConfig(config: HttpRequestConfig): string {
  * Service that executes HTTP requests via Node core modules.
  */
 export class HttpRequestService {
+  private readonly _activeRequests: Map<string, { req: http.ClientRequest; res?: http.IncomingMessage }> = new Map();
+
+  /**
+   * Cancels any active in-flight request for the given identifier.
+   */
+  public cancel(requestId: string = 'default'): boolean {
+    const active = this._activeRequests.get(requestId);
+    if (!active) {
+      return false;
+    }
+    this._activeRequests.delete(requestId);
+    try {
+      active.req.destroy(new Error('Request was cancelled by user.'));
+      if (active.res) {
+        active.res.destroy();
+      }
+    } catch {
+      // Ignore cleanup errors on cancelled request
+    }
+    return true;
+  }
+
   /**
    * Executes an HTTP request based on the provided configuration.
    */
-  public async execute(config: HttpRequestConfig): Promise<ExecutionResult> {
+  public async execute(config: HttpRequestConfig, requestId: string = 'default'): Promise<ExecutionResult> {
+    // Cancel any previous request running under the same id
+    this.cancel(requestId);
+
     const validation = validateAndResolveRequest(config);
     if (!validation.ok) {
-      return { ok: false, error: validation.error };
+      return {
+        ok: false,
+        error: validation.error,
+        code: validation.code,
+        url: config.url,
+        possibleCauses: validation.possibleCauses,
+      };
     }
 
-    return this.executeResolved(validation.resolved, 0);
+    return this.executeResolved(validation.resolved, 0, requestId);
   }
 
   /**
@@ -226,17 +313,33 @@ export class HttpRequestService {
    */
   private async executeResolved(
     req: ResolvedHttpRequest,
-    redirectCount: number
+    redirectCount: number,
+    requestId: string = 'default'
   ): Promise<ExecutionResult> {
     if (redirectCount > MAX_REDIRECTS) {
-      return { ok: false, error: 'Too many redirects.' };
+      return {
+        ok: false,
+        error: 'Too many redirects.',
+        code: 'MAX_REDIRECTS',
+        url: req.resolvedUrl,
+        possibleCauses: [
+          'Endpoint is stuck in a circular redirect loop',
+          `Exceeded maximum limit of ${MAX_REDIRECTS} redirects`,
+        ],
+      };
     }
 
     let parsedUrl: URL;
     try {
       parsedUrl = new URL(req.resolvedUrl);
     } catch {
-      return { ok: false, error: 'Invalid request URL.' };
+      return {
+        ok: false,
+        error: 'Invalid request URL.',
+        code: 'ERR_INVALID_URL',
+        url: req.resolvedUrl,
+        possibleCauses: ['Ensure the URL is well-formed with valid protocol and host'],
+      };
     }
 
     const isHttps = parsedUrl.protocol === 'https:';
@@ -252,9 +355,14 @@ export class HttpRequestService {
     return new Promise<ExecutionResult>((resolve) => {
       let isSettled = false;
 
+      const cleanup = (): void => {
+        this._activeRequests.delete(requestId);
+      };
+
       const safeResolve = (result: ExecutionResult): void => {
         if (!isSettled) {
           isSettled = true;
+          cleanup();
           resolve(result);
         }
       };
@@ -270,6 +378,11 @@ export class HttpRequestService {
       };
 
       const clientReq = requester.request(requestOptions, (res) => {
+        const active = this._activeRequests.get(requestId);
+        if (active) {
+          active.res = res;
+        }
+
         const statusCode = res.statusCode ?? 0;
         const statusMessage = res.statusMessage ?? (http.STATUS_CODES[statusCode] || '');
 
@@ -296,7 +409,8 @@ export class HttpRequestService {
             timeoutMs: req.timeoutMs,
           };
 
-          this.executeResolved(redirectReq, redirectCount + 1).then(safeResolve);
+          cleanup();
+          this.executeResolved(redirectReq, redirectCount + 1, requestId).then(safeResolve);
           return;
         }
 
@@ -348,9 +462,11 @@ export class HttpRequestService {
         });
 
         res.on('error', (err) => {
-          safeResolve(this.mapError(err));
+          safeResolve(this.mapError(err, req.resolvedUrl));
         });
       });
+
+      this._activeRequests.set(requestId, { req: clientReq });
 
       clientReq.on('timeout', () => {
         clientReq.destroy();
@@ -358,11 +474,17 @@ export class HttpRequestService {
           ok: false,
           error: 'Request timed out.',
           code: 'ETIMEDOUT',
+          url: req.resolvedUrl,
+          possibleCauses: [
+            'Server took too long to respond',
+            `Timeout limit of ${req.timeoutMs} ms was reached`,
+            'Network delay or dropped connection',
+          ],
         });
       });
 
       clientReq.on('error', (err: NodeJS.ErrnoException) => {
-        safeResolve(this.mapError(err));
+        safeResolve(this.mapError(err, req.resolvedUrl));
       });
 
       if (req.body) {
@@ -376,41 +498,92 @@ export class HttpRequestService {
   /**
    * Maps system/network errors to clear developer messages.
    */
-  private mapError(err: NodeJS.ErrnoException): ExecutionFailure {
+  private mapError(err: NodeJS.ErrnoException, targetUrl?: string): ExecutionFailure {
     const code = err.code || '';
     if (code === 'ECONNREFUSED') {
       return {
         ok: false,
         error: 'Unable to connect to the API server.',
-        code,
+        code: 'ECONNREFUSED',
+        url: targetUrl,
+        possibleCauses: [
+          'Backend is not running',
+          'Incorrect host or port',
+          'Server refused the connection',
+        ],
       };
     }
     if (code === 'ETIMEDOUT' || err.message.includes('timed out')) {
       return {
         ok: false,
-        error: 'Request timed out.',
+        error: `Request timed out connecting to: ${targetUrl || 'the server'}`,
         code: 'ETIMEDOUT',
+        url: targetUrl,
+        possibleCauses: [
+          'Server took too long to respond',
+          'Timeout limit was reached',
+          'Network delay or dropped connection',
+        ],
       };
     }
     if (code === 'ENOTFOUND') {
+      let host = 'host';
+      if (targetUrl) {
+        try {
+          host = new URL(targetUrl).hostname;
+        } catch {
+          host = targetUrl;
+        }
+      }
       return {
         ok: false,
-        error: `Unable to resolve host: ${err.syscall || 'DNS lookup failed'}.`,
-        code,
+        error: `Unable to resolve host: ${host}`,
+        code: 'ENOTFOUND',
+        url: targetUrl,
+        possibleCauses: [
+          'Backend hostname does not exist',
+          'DNS lookup failed',
+          'Typo in the hostname or domain',
+        ],
+      };
+    }
+    if (
+      code === 'ABORT_ERR' ||
+      code === 'ECONNABORTED' ||
+      err.message.includes('cancelled') ||
+      err.message.includes('aborted')
+    ) {
+      return {
+        ok: false,
+        error: 'Request was cancelled by user.',
+        code: 'CANCELLED',
+        url: targetUrl,
+        possibleCauses: [
+          'User cancelled the active request',
+          'Underlying connection and socket were closed cleanly',
+        ],
       };
     }
     if (code === 'ERR_INVALID_URL') {
       return {
         ok: false,
         error: 'Invalid request URL.',
-        code,
+        code: 'ERR_INVALID_URL',
+        url: targetUrl,
+        possibleCauses: [
+          'Malformed URL structure',
+          'Missing protocol (http:// or https://)',
+          'Invalid characters in URL',
+        ],
       };
     }
 
     return {
       ok: false,
       error: err.message || 'An error occurred during request execution.',
-      code,
+      code: code || 'REQUEST_FAILED',
+      url: targetUrl,
+      possibleCauses: ['Unexpected network or connection issue'],
     };
   }
 }
