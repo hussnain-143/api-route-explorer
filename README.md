@@ -1,332 +1,177 @@
 # API Route Explorer
 
-> **“See every API route. Jump straight to the code.”**
+> **Discover → Analyze → Test → Response → Document API routes directly inside VS Code.**
 
-A developer-focused Visual Studio Code extension that discovers, analyzes, searches, and navigates API routes directly inside VS Code.
+[![Version](https://img.shields.io/badge/version-1.5.0-emerald.svg)](https://github.com/api-route-explorer/api-route-explorer/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-teal.svg)](LICENSE)
+[![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.90.0-cyan.svg)](https://marketplace.visualstudio.com/items?itemName=api-route-explorer.api-route-explorer)
+[![Tests: 250 passing](https://img.shields.io/badge/tests-250%20passing-success.svg)](https://github.com/api-route-explorer/api-route-explorer)
+[![Dependencies: 0](https://img.shields.io/badge/dependencies-0-success.svg)](package.json)
+
+**API Route Explorer** is a developer-focused VS Code extension that automatically discovers, analyzes, tests, and documents backend API routes directly from your editor. Stop context switching between code, terminal windows, Postman, and Swagger docs.
 
 ---
 
-## Overview
+## What It Does
 
-Modern backend projects often grow into complex route matrices spread across routers, controllers, and middleware files. **API Route Explorer** bridges the gap between API routes and the code defining them by scanning project files, assembling an interactive route hierarchy in the VS Code Activity Bar, and enabling instant 1-click navigation directly to route handlers.
+```text
+Open Project ──▶ Discover Routes ──▶ Analyze Health ──▶ Test in HTTP Client ──▶ Inspect Response ──▶ Export OpenAPI
+```
 
-### Key Capabilities
-- 🧭 **Interactive Route Explorer**: Discovers and groups API endpoints by module, folder, and resource.
-- ⚡ **1-Click Code Navigation**: Click any route to jump directly to its controller definition line.
-- 🏷️ **HTTP Method Icons**: Visual recognition for GET, POST, PUT, PATCH, DELETE, and ANY endpoints.
-- 🔍 **Instant In-Memory Search**: Fuzzy search by route path, HTTP method, or filename.
-- 🩺 **Route Intelligence & Health**: Automatic detection of duplicate endpoints, route shadowing, and parameter collisions.
-- 🛡️ **Middleware & Guard Analysis**: Framework-aware extraction of middleware chains, Fastify pre-handlers, and NestJS guards.
-- 📊 **Route Statistics & Diagnostics**: Integrated Problems panel diagnostics and metrics modal.
-- ⚡ **High Scalability & Incremental Scanning**: Sub-second performance on workspaces with 5,000+ routes with instant incremental file updates.
+1. **Discover**: Scans your workspace using offline AST parsing and organizes every API endpoint into an interactive Activity Bar tree.
+2. **Analyze**: Evaluates route health, finds duplicate endpoints, highlights shadowed paths, and inspects middleware/guards.
+3. **Test**: Opens a native, secure HTTP Client pre-populated with method, base URL, path parameters, and headers.
+4. **Response**: Measures millisecond timing, status codes, payload sizes, and inspects formatted response bodies and headers.
+5. **Document**: Generates deterministic OpenAPI 3.0.3 specifications with single-click YAML or JSON export.
+
+---
+
+## Features
+
+### 🧭 1. Route Discovery & Navigation
+- **Offline AST Parsing**: Fast, non-executing static analysis of routes without running user code.
+- **1-Click Jump to Code**: Click any route in the tree to jump directly to its controller definition line.
+- **Smart Grouping**: Switch between **Group by File**, **Group by Framework**, **Group by HTTP Method**, or **Group by Health**.
+- **Instant Search & Filter**: Real-time fuzzy filtering by route path, HTTP method, status, or handler name.
+- **Sub-Second Scalability**: Discovers 4,700+ routes in under 100ms with debounced incremental file watchers.
+
+### 🩺 2. Route Intelligence & Analysis
+- **Health Ratings**: Automated categorization into `Healthy`, `Warning`, or `Error`.
+- **Conflict & Shadowing Detection**: Flags parameterized routes that shadow static endpoints (e.g. `/users/:id` shadowing `/users/me`).
+- **Duplicate Prevention**: Identifies duplicate HTTP method + normalized path collisions across different files.
+- **Middleware & Guard Extraction**: Displays active middleware stacks, Fastify pre-handlers, and NestJS guards.
+- **VS Code Diagnostics**: Integrated problems panel reporting for syntax and mounting errors.
+
+### ⚡ 3. Native HTTP Client
+- **Seamless Route Integration**: Click **Test API** on any discovered route to open the HTTP Client with all route context preserved.
+- **Route Context Banner**: Displays the framework badge, route signature, and clickable source file link.
+- **Dynamic Path Parameters**: Automatically detects `{id}` or `{slug}` and provides validated input fields.
+- **Request Configuration**: Dedicated tabs for **Params**, **Headers**, **Body**, and **cURL**.
+- **Formatted Response Inspector**: Color-coded status pills, millisecond duration, byte size, pretty-printed JSON, and header tables.
+- **Request Cancellation**: Cancel in-flight requests safely with clean socket teardown.
+- **Reproducible cURL**: Generates accurate, copyable cURL commands matching your active configuration.
+
+### 📄 4. OpenAPI 3.0.3 Specification Generation
+- **Automated Spec Builder**: Compiles an OpenAPI 3.0.3 specification from discovered routes without annotations.
+- **Operation-Level Preview**: Click **View OpenAPI** to inspect a single route's YAML operation definition beside your code.
+- **Deterministic Export**: Export full workspace specifications as standard JSON or YAML with zero machine path leaks.
+- **Path Parameter & Body Mapping**: Automatically derives path parameter schemas and request body envelopes.
+
+### 🎨 5. Developer UX & Theming
+- **Native VS Code Integration**: Seamless styling under **VS Code Dark**, **VS Code Light**, and **VS Code High Contrast**.
+- **Full Keyboard Accessibility**: Complete Tab navigation, Enter to activate, and Escape to dismiss.
+- **Action Triad**: Clear, uncluttered route actions: `[ Analyze ] [ Test API ] [ OpenAPI ]`.
+- **First-Run Experience**: Lightweight, non-intrusive welcome prompt requiring no setup.
+
+### 🛡️ 6. Privacy & Security First
+- **Zero Cloud Sync**: Everything runs 100% locally on your machine.
+- **No Account Required**: No login, no sign-up, no API key needed.
+- **No Telemetry**: No tracking, phone-home beacons, or external analytics.
+- **No `.env` Scanning**: Local environment variables and secrets are never scanned or indexed.
+- **Strict Content Security Policy**: Nonce-based script execution with `default-src 'none'`.
 
 ---
 
 ## Supported Frameworks
 
-API Route Explorer provides first-class support for the following frameworks:
-
-### 1. Express.js
-- Standard HTTP methods: `app.get()`, `app.post()`, `router.put()`, `router.delete()`, etc.
-- Router prefix composition via `app.use('/prefix', router)` and multi-level nested router chaining.
-- Dynamic route parameters (`:id`, `:userId`) with parameter normalization.
-- Chained route-level middleware extraction.
-
-### 2. Next.js
-- **App Router**:
-  - Route handler files: `app/**/route.{ts,js,tsx,jsx}` and `src/app/**/route.{ts,js,tsx,jsx}`.
-  - Named HTTP method exports: `export async function GET()`, `POST()`, `PUT()`, `PATCH()`, `DELETE()`, `HEAD()`, `OPTIONS()`.
-  - Dynamic route parameters: `[id]` → `:id`.
-  - Catch-all route parameters: `[...slug]` and `[[...slug]]` → `*slug`.
-  - Route groups: `app/(dashboard)/api/users/route.ts` → `/api/users` (parentheses groups omitted from public URLs).
-  - Source navigation: Jumps directly to the specific HTTP method export declaration line.
-- **Pages Router**:
-  - API routes under `pages/api/**` and `src/pages/api/**`.
-  - Dynamic routes: `pages/api/users/[id].ts` → `/api/users/:id`.
-  - Explicit method checks (`req.method === 'GET'`) or fallback generic `ANY` endpoint.
-
-### 3. Fastify
-- Standard HTTP methods: `fastify.get()`, `post()`, `put()`, `patch()`, `delete()`, `head()`, `options()`.
-- Instance variations: `fastify.*`, `app.*`, `server.*`, `api.*`.
-- Multi-method route definitions: `fastify.route({ method: ['GET', 'POST'], url: '/users', handler })`.
-- Dynamic parameters: `/users/:id` with parameter normalization.
-- Static plugin prefix resolution: `fastify.register(plugin, { prefix: '/api/v1' })`.
-- Route-level pre-handlers: `preHandler` and `preValidation` inspection.
-
-### 4. NestJS
-- Controller decorator detection: `@Controller('users')`, `@Controller()`, `@Controller('/api/users')`.
-- HTTP method decorators: `@Get()`, `@Post()`, `@Put()`, `@Patch()`, `@Delete()`, `@Head()`, `@Options()`.
-- Controller prefix composition: `@Controller('users')` + `@Get(':id')` → `GET /users/:id`.
-- Exact decorator navigation: Clicking jumps directly to `@Get(':id')` line and column.
-- Route guards and interceptors: Extracts `@UseGuards(AuthGuard)` and `@UseInterceptors(LoggingInterceptor)`.
-- False positive immunity: Non-HTTP decorators like `@Injectable()` and `@Module()` are cleanly ignored.
+| Framework | Route Discovery | Router Prefixes | Middleware / Guards | HTTP Client | OpenAPI 3.0 |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Express.js** | `app.get()`, `router.post()` | Nested `app.use()` | Chained middlewares | Supported | Supported |
+| **Next.js App Router** | `app/api/**/route.ts` | Folder-based routing | Route segment configs | Supported | Supported |
+| **Next.js Pages Router** | `pages/api/**/*.ts` | File-based routing | Handler checks | Supported | Supported |
+| **Fastify** | `fastify.get()`, `fastify.route()` | `fastify.register(prefix)` | `preHandler`, `preValidation` | Supported | Supported |
+| **NestJS** | `@Controller()`, `@Get()`, etc. | Controller prefix | `@UseGuards()`, Interceptors | Supported | Supported |
 
 ---
 
-## Quick Start
+## Installation
 
-1. Install **API Route Explorer** from the VS Code Marketplace or VSIX package.
-2. Open any workspace containing an Express, Next.js, Fastify, or NestJS backend.
-3. Click the **API Route Explorer** icon in the Activity Bar.
-4. Click **Scan Routes** (or press `Cmd+Shift+P` / `Ctrl+Shift+P` and execute `API Route Explorer: Scan Routes`).
-5. Browse your endpoints organized by file in **API Routes** and inspect health in **Route Analysis**.
-6. Click any route item to jump straight to its code definition.
+### From VS Code Marketplace
+1. Open Visual Studio Code.
+2. Press `Cmd+P` (macOS) or `Ctrl+P` (Windows/Linux).
+3. Type:
+   ```text
+   ext install api-route-explorer.api-route-explorer
+   ```
 
----
-
-## How It Works
-
-API Route Explorer uses offline, AST-aware static analysis without executing runtime code:
-
-```text
-Workspace Files
-       ↓
-Framework Detection & Registry
-       ↓
-Framework Adapters (Express / Next.js / Fastify / NestJS)
-       ↓
-In-Memory Route Index
-       ↓
-Route Intelligence Pipeline (Prefixes, Duplicates, Conflicts, Middleware, Health)
-       ↓
-VS Code UI (Sidebar TreeView / QuickPick Search / Diagnostics / Status Bar)
+### From VSIX Package
+Download the latest `api-route-explorer-1.5.0.vsix` from [GitHub Releases](https://github.com/api-route-explorer/api-route-explorer/releases) and run:
+```bash
+code --install-extension api-route-explorer-1.5.0.vsix --force
 ```
 
 ---
 
-## Route Explorer & Grouping
+## Quick Start (Under 2 Minutes)
 
-The **API Routes** sidebar provides flexible, multi-dimensional organization:
-- **Group by File (Default)**: Groups routes by source file, showing developer-friendly module folder names (e.g. `booking` or `admin/booking`) rather than long, repetitive file paths.
-- **Group by Framework**: Organizes routes cleanly into **Express**, **Next.js**, **Fastify**, and **NestJS** top-level categories.
-- **Group by HTTP Method**: Groups endpoints by HTTP verb (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`, etc.).
-- **Group by Route Health**: Groups routes by diagnostic health status (`Errors`, `Warnings`, `Info`, `Healthy`).
-- **Instant Grouping Switching**: Switch grouping dynamically from the view title menu (`apiRouteExplorer.groupBy`) without rescanning.
+```text
+1. Open a project  ──▶  2. Open Activity Bar  ──▶  3. Scan Routes  ──▶  4. Test Endpoint  ──▶  5. Export OpenAPI
+```
 
----
-
-## Advanced Route Filtering
-
-Filter your route inventory entirely in-memory:
-- **By Framework**: Express, Next.js, Fastify, NestJS, or All.
-- **By HTTP Method**: GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD.
-- **By Health**: Healthy, Warnings, Errors, Info.
-- **By Route State**: Duplicates, Shared Paths, Conflicts, Shadowed routes, or Missing Handlers.
-- **By File / Folder**: Narrow down to specific submodules or filenames.
-- **Multi-Token Free Text**: Query routes using multi-token search patterns (e.g. `GET users`, `nestjs auth`).
+1. **Open Backend Project**: Open any Express, Next.js, Fastify, or NestJS project in VS Code.
+2. **Open Extension**: Click the **API Route Explorer** icon in the Activity Bar.
+3. **Explore Endpoints**: View your discovered routes grouped by file or framework.
+4. **Analyze Route**: Click **Analyze** to check health, route diagnostics, and middleware.
+5. **Test in HTTP Client**: Click **Test API** to launch the built-in HTTP Client. Fill dynamic parameters and click **Send**.
+6. **Inspect Response**: Review the HTTP status, response headers, latency, and formatted JSON body.
+7. **View OpenAPI**: Click **OpenAPI** to generate a YAML specification preview.
 
 ---
 
-## Route Inventory Export
+## Screenshots
 
-Export your entire API route catalog using native VS Code save workflows:
-- **Structured JSON (`api-routes.json`)**: Machine-readable array containing HTTP method, public path, framework, file path, line, column, health classification, detected issues, and middleware bindings.
-- **Markdown Documentation (`api-routes.md`)**: Beautifully formatted documentation grouped by framework with health badges, source links, parameter warnings, and middleware guards.
-
-Run `API Route Explorer: Export Routes...` from the title bar or Command Palette.
-
----
-
-## Route Search
-
-Press `Cmd+Shift+P` / `Ctrl+Shift+P` and run **API Route Explorer: Search Routes**:
-- **Multi-Token Matching**: Matches against HTTP method, URL path, framework, filename, folder path, and controller handler name.
-- **Instant Response**: Operates entirely in memory on the pre-indexed route cache without filesystem latency.
-- **Direct Jump**: Selecting any result opens the file and places your cursor directly at the route handler.
+```text
+┌─ VS CODE ACTIVITY BAR ───────────────────┐  ┌─ NATIVE HTTP CLIENT WEBVIEW ──────────────────────────┐
+│ ▼ API ROUTES (118)                       │  │ [EXPRESS] GET /api/v1/users/{id}                      │
+│   ▼ routes/user.routes.ts                │  │ Source: src/routes/user.routes.ts:42                  │
+│     GET /api/v1/users/:id  [Test API]    │  │ ───────────────────────────────────────────────────── │
+│     POST /api/v1/users                   │  │ [GET ▼] http://localhost:5000/api/v1/users/usr_102    │
+│   ▼ routes/auth.routes.ts                │  │ [Params] [Headers] [Body] [cURL]                      │
+│     POST /api/v1/auth/login              │  │ ───────────────────────────────────────────────────── │
+│     POST /api/v1/auth/register           │  │ ● 200 OK • 42ms • 185B                                │
+└──────────────────────────────────────────┘  └───────────────────────────────────────────────────────┘
+```
 
 ---
 
 ## Configuration Settings
 
-Configure extension behavior via VS Code Settings (`settings.json`):
+Customize API Route Explorer in your VS Code `settings.json`:
 
-| Setting | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `apiRouteExplorer.defaultGrouping` | `string` | `"file"` | Default grouping mode for the TreeView (`"file"`, `"framework"`, `"method"`, `"health"`). |
-| `apiRouteExplorer.baseUrl` | `string` | `"http://localhost:3000"` | Base URL used when copying complete route URLs. |
-| `apiRouteExplorer.scan.exclude` | `array` | `[]` | Additional folder/file patterns to exclude during scanning (extends built-in safe defaults). |
-| `apiRouteExplorer.autoRefresh` | `boolean` | `true` | Automatically refresh and incrementally update routes when files change. |
-| `apiRouteExplorer.httpClient.timeout` | `number` | `10000` | Timeout in milliseconds for HTTP Client requests (default: 10000ms / 10s). |
-
----
-
-## Extension Commands
-
-| Command | Command ID | Description |
-| :--- | :--- | :--- |
-| **Scan Routes** | `apiRouteExplorer.scan` | Scans workspace and discovers API routes |
-| **Refresh Routes** | `apiRouteExplorer.refresh` | Re-scans and updates the sidebar |
-| **Search Routes** | `apiRouteExplorer.searchRoutes` | QuickPick search matching method, path, framework, or file |
-| **Search Similar Routes** | `apiRouteExplorer.searchSimilarRoutes` | QuickPick pre-filled with the route's resource segment |
-| **Group Routes By...** | `apiRouteExplorer.groupBy` | Switch grouping between File, Framework, Method, and Health |
-| **Filter Routes...** | `apiRouteExplorer.filterRoutes` | Multi-criteria filter hub (framework, method, health, state) |
-| **Filter by HTTP Method** | `apiRouteExplorer.filterByMethod` | Filter sidebar routes by method or duplicate/shared condition |
-| **Export Routes...** | `apiRouteExplorer.exportRoutes` | Export routes to JSON or Markdown documentation |
-| **Quick Hub Menu** | `apiRouteExplorer.statusBarMenu` | Status bar quick actions for search, filters, export, and stats |
-| **Show Route Statistics** | `apiRouteExplorer.showStatistics` | Interactive metrics modal with duplicate & shared path breakdown |
-| **Open Route** | `apiRouteExplorer.openRoute` | Jumps to the exact route definition line in code |
-| **Open File** | `apiRouteExplorer.openFile` | Opens the source file containing the route |
-| **Copy Route** | `apiRouteExplorer.copyRoute` | Copies route signature (e.g. `GET /api/users`) |
-| **Copy Route Path** | `apiRouteExplorer.copyRoutePath` | Copies route path only (e.g. `/api/users`) |
-| **Copy Route URL** | `apiRouteExplorer.copyRouteUrl` | Copies full local URL (e.g. `http://localhost:3000/api/users`) |
-| **Copy Route Definition** | `apiRouteExplorer.copyRouteDefinition` | Copies developer-readable format (e.g. `GET /users -> users.ts:42`) |
-| **Copy as cURL** | `apiRouteExplorer.copyCurl` | Copies reproducible curl command to clipboard |
-| **Open HTTP Client** | `apiRouteExplorer.openHttpClient` | Opens dedicated HTTP Client webview for testing the route |
-
----
-
-## Examples
-
-### 1. Express Router with Mount Prefixes
-```javascript
-// src/app.js
-const express = require('express');
-const app = express();
-const userRouter = require('./routes/userRoutes');
-app.use('/api/v1', userRouter);
-
-// src/routes/userRoutes.js
-const router = express.Router();
-router.get('/users', authMiddleware, getUsers);
-router.post('/users', authMiddleware, createUser);
-router.get('/users/:id', authMiddleware, getUserById);
-module.exports = router;
-```
-Discovered routes:
-- `GET /api/v1/users` (Line 2, `userRoutes.js`)
-- `POST /api/v1/users` (Line 3, `userRoutes.js`)
-- `GET /api/v1/users/:id` (Line 4, `userRoutes.js`)
-
-### 2. Next.js App Router
-```typescript
-// app/api/orders/[id]/route.ts
-export async function GET(request: Request, { params }: { params: { id: string } }) { ... }
-export async function DELETE(request: Request, { params }: { params: { id: string } }) { ... }
-```
-Discovered routes:
-- `GET /api/orders/:id`
-- `DELETE /api/orders/:id`
-
-### 3. NestJS Controller
-```typescript
-// src/billing/billing.controller.ts
-@Controller('billing')
-export class BillingController {
-  @Get('invoices')
-  @UseGuards(JwtAuthGuard)
-  getInvoices() { ... }
+```json
+{
+  "apiRouteExplorer.defaultGrouping": "file",
+  "apiRouteExplorer.baseUrl": "http://localhost:5000",
+  "apiRouteExplorer.autoRefresh": true,
+  "apiRouteExplorer.scan.exclude": ["**/custom-temp/**"],
+  "apiRouteExplorer.httpClient.timeout": 10000,
+  "apiRouteExplorer.openapi.title": "My API Specification",
+  "apiRouteExplorer.openapi.version": "1.0.0"
 }
 ```
-Discovered routes:
-- `GET /billing/invoices` (Protected by `JwtAuthGuard`)
 
 ---
 
-## OpenAPI / Swagger Specification Generation
+## Security & Privacy Policy
 
-API Route Explorer can transform discovered and analyzed API routes into valid **OpenAPI 3.0.3** specifications directly inside VS Code — without requiring your backend server to be running.
-
-### Key Capabilities
-- 📄 **Dual Format Export**: Export as formatted OpenAPI **YAML** (`.yaml`) or machine-readable **JSON** (`.json`).
-- 🔄 **Multi-Framework Path Conversion**:
-  - Express / Fastify / NestJS `:id` → `{id}`
-  - Next.js dynamic parameters `[id]` → `{id}`
-  - Next.js catch-all routes `[...slug]` → `{slug}`
-- 🏷️ **Automatic Path Parameters**: Extracts path parameters into formal OpenAPI parameter objects with `in: 'path'`, `required: true`, and `schema: { type: 'string' }`.
-- 🗂️ **Smart Resource Tagging**: Groups operations under semantic tags derived from route resource segments (e.g. `users`, `orders`, `auth`).
-- 🆔 **Deterministic Operation IDs**: Generates predictable camelCase operation identifiers (e.g. `getUsers`, `getUsersById`, `postOrders`).
-- ⚡ **Shared & Duplicate Route Safety**: Groups multi-method endpoints under single path items and collapses duplicate route declarations without emitting duplicate JSON/YAML keys.
-- 🔒 **Privacy & Zero Leaks**: Strict safeguards ensure local absolute machine paths (`/Users/...`) and environment variables are never included.
-
-### What is Inferred vs. What is NOT Inferred
-To ensure contracts are reliable and truthful:
-- **Inferred from code**: Paths, HTTP methods, path parameter names, resource tags, source file locations (workspace-relative), and standard HTTP response statuses (`200`, `201`, `204`, etc.).
-- **Intentionally NOT inferred**: API Route Explorer does **not** fabricate fictitious response models, data schemas, or validation rules that do not exist in static route declarations. Generated contracts serve as clean, accurate architectural skeletons ready for further documentation or Swagger UI viewing.
-
-### Exporting OpenAPI Specifications
-1. Open the **API Route Explorer** sidebar or Command Palette (`Cmd+Shift+P` / `Ctrl+Shift+P`).
-2. Run `API Route Explorer: Export OpenAPI Specification...` (or export directly to YAML / JSON).
-3. Select your desired route scope (Filtered Routes or All Routes) and file destination.
+API Route Explorer was built on a **privacy-first** foundation:
+- **No telemetry or data collection**: Zero external network requests are made by the extension core.
+- **Local network execution**: HTTP Client requests are dispatched strictly from your local Node.js environment to the target server you configure.
+- **No secret harvesting**: Secret files (`.env`, `.env.local`, `.pem`) are intentionally ignored by the scanner.
+- **Zero machine path leakage**: Exported OpenAPI specifications use workspace-relative paths to prevent leaking absolute machine directories.
 
 ---
 
-## Interactive HTTP Client Webview
+## Contributing & Support
 
-API Route Explorer features a lightweight, developer-focused **HTTP Client Webview** built directly inside VS Code. Rather than switching to heavy external API clients like Postman or Insomnia, test any discovered endpoint immediately in your current editor layout.
-
-```text
-Discover Route  →  Select Route  →  Open HTTP Client  →  Configure & Send  →  Inspect Response
-```
-
-### Opening the HTTP Client
-- **Route Item Action**: Right-click any route in the sidebar TreeView and select **Open HTTP Client** (or click the inline `$(send)` icon on hover).
-- **Command Palette**: Run `API Route Explorer: Open HTTP Client` to select from any discovered route.
-- **Quick Hub Menu**: Select `Open HTTP Client...` from the Status Bar menu.
-
-### Request Configuration
-- **Pre-filled Route State**: Automatically populates the route's HTTP method, converted path syntax (`{id}`), and configured `apiRouteExplorer.baseUrl`.
-- **Path Parameters**: Detects all path parameters (e.g. `{id}`, `{slug}`) and provides dedicated input fields. Required parameters are validated before sending.
-- **Query Parameters**: Interactive key-value editor with enable/disable toggles, add/remove controls, and safe URL encoding.
-- **Request Headers**: Easily configure request headers. Mutating methods (`POST`, `PUT`, `PATCH`) automatically include `Content-Type: application/json`.
-- **JSON Request Body**: Clean editor for `POST`, `PUT`, `PATCH`, and `DELETE` requests with automatic JSON syntax validation before dispatch and a **Format JSON** beautifier.
-- **Copy as cURL**: Generate and copy a fully resolved, reproducible cURL command reflecting your active parameters, headers, and body.
-- **Reset**: Instantly restore request inputs to the endpoint's pristine discovered state.
-
-### Response Inspector
-- **Status & Badges**: Color-coded status pills (`200 OK`, `201 Created`, `400 Bad Request`, `404 Not Found`, `500 Server Error`).
-- **Timing & Metrics**: Millisecond-accurate request duration and response payload size calculation.
-- **Pretty-Printed Body**: Automatically formats JSON responses while safely rendering plain text, HTML, and other payloads.
-- **Response Headers**: Tabular view of all incoming response headers.
-- **One-Click Copy**: Copy the response body directly to your clipboard.
-
-### Security & Privacy Boundaries
-- **Strict Content Security Policy (CSP)**: Nonce-based script execution with zero unsafe evaluation.
-- **Untrusted UI Isolation**: All webview messages undergo strict structural validation. Network execution occurs safely in the Extension Host.
-- **Zero Secret Exposure**: Never scans `.env` files, never accesses workspace secrets, never logs sensitive `Authorization` headers, and never persists user credentials or tokens.
-- **Timeout Protection**: Configurable request timeout (`apiRouteExplorer.httpClient.timeout`, default 10s) guarantees no hanging requests.
-
----
-
-## Troubleshooting
-
-- **No routes discovered**: Ensure your project files are within the opened VS Code workspace and use supported file extensions (`.js`, `.jsx`, `.ts`, `.tsx`). Run `API Route Explorer: Scan Routes` from the Command Palette.
-- **Large workspace scanning**: Build directories (`node_modules`, `.git`, `.next`, `dist`, `build`, `coverage`, `out`) are automatically excluded to preserve performance.
-- **Router prefix not resolving**: Ensure your router mounting file (`app.js` or `server.ts`) is part of the workspace. Prefix resolution traces direct `require` and `import` references.
-
----
-
-## Requirements
-
-- VS Code version `1.90.0` or higher.
-- Zero runtime dependencies.
-
----
-
-## Development & Testing
-
-```bash
-# Clone repository
-git clone https://github.com/api-route-explorer/api-route-explorer.git
-cd api-route-explorer
-
-# Install dev dependencies
-npm install
-
-# Compile TypeScript
-npm run compile
-
-# Run tests
-npm test
-
-# Run ESLint
-npm run lint
-
-# Build VSIX package
-npm run package
-```
+- **Bug Reports & Feature Requests**: [GitHub Issues](https://github.com/api-route-explorer/api-route-explorer/issues)
+- **Contributing Guide**: [CONTRIBUTING.md](CONTRIBUTING.md)
+- **Support & Help**: [SUPPORT.md](SUPPORT.md)
+- **Changelog**: [CHANGELOG.md](CHANGELOG.md)
 
 ---
 
 ## License
 
-MIT © [API Route Explorer Contributors](LICENSE)
+API Route Explorer is open-source software licensed under the [MIT License](LICENSE).  
+Copyright (c) 2026 API Route Explorer Contributors.

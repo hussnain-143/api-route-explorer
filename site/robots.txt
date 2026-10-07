@@ -1,0 +1,5 @@
+# robots.txt for API Route Explorer
+User-agent: *
+Allow: /
+
+Sitemap: https://apirouteexplorer.dev/sitemap.xml

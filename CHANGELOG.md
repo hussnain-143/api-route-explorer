@@ -2,6 +2,25 @@
 
 All notable changes to the "api-route-explorer" extension will be documented in this file.
 
+## [1.5.0-rc] - Sprint 16: Release Candidate & Public Website Preparation
+
+### Hardened & Prepared for Public Release
+- **Release Candidate Verification**:
+  - Full end-to-end regression validation: 250 automated tests passing with 0 failures.
+  - Zero TypeScript errors (`tsc --noEmit`), zero ESLint errors or warnings.
+  - VSIX package optimized and audited: 55 files, 135 KB, zero development or test leakage.
+- **Solo Backend Validation**:
+  - Verified route discovery, relationship analysis, live HTTP Client requests (GET, POST, query parameters, dynamic parameters, headers), cURL generation, 404 responses, and request cancellation against real `/Users/husnain/Desktop/solo/solo-backend`.
+  - Zero modifications to Solo Backend codebase.
+- **Documentation & Open Source Assets**:
+  - Added [CONTRIBUTING.md](CONTRIBUTING.md) with guidelines for architecture, test standards, and PR workflows.
+  - Added [SUPPORT.md](SUPPORT.md) with bug reporting channels and security disclosure guidelines.
+  - Completely updated [README.md](README.md) with concise 2-minute developer overview, framework matrix, installation guides, and security policies.
+- **Public Website & Launch Materials**:
+  - Created standalone public landing page and documentation site in `site/`.
+  - Structured into Hero, Workflow, Feature Matrix, Framework Support, Developer Experience, Security, and Install sections.
+  - Fully responsive, dark/light theme toggle, VS Code aesthetic, SEO meta tags, Open Graph tags, Twitter card tags, `robots.txt`, and `sitemap.xml`.
+
 ## [1.5.0] - Sprint 15: MVP Integration & UX (Feature Freeze)
 
 ### Connected & Polished
