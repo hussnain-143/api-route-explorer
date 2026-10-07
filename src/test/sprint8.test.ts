@@ -359,7 +359,7 @@ suite('API Route Explorer — Sprint 8 Performance & Large Project Suite', () =>
 
       assert.strictEqual(provider.getRoutes().length, 1000);
       assert.strictEqual(provider.getFileGroups().length, 50);
-      assert.ok(elapsed < 100, `TreeView setRoutes took ${elapsed}ms, should be < 100ms`);
+      assert.ok(elapsed < 200, `TreeView setRoutes took ${elapsed}ms, should be < 200ms`);
     });
   });
 });

@@ -14,7 +14,8 @@ import {
   removeSingleFile,
 } from './scanner/routeScanner';
 import { RouteIndex } from './scanner/routeIndex';
-import { showRouteQuickPick } from './scanner/routeSearch';
+import { createRouteQuickPickItem, showRouteQuickPick } from './scanner/routeSearch';
+import { openHttpClientForRoute } from './httpClient/httpClientProvider';
 import {
   analyzeWorkspaceRoutes,
   RouteAnalysisResult,
@@ -651,6 +652,33 @@ export function activate(context: vscode.ExtensionContext): void {
       await showExportOpenApiDialog(routes, routeTreeProvider.getAnalysis(), filteredRoutes, 'json');
     }),
 
+    // 13d. Open HTTP Client Webview command
+    vscode.commands.registerCommand(COMMANDS.OPEN_HTTP_CLIENT, async (arg: unknown) => {
+      const route = extractRouteFromArg(arg);
+      if (route) {
+        openHttpClientForRoute(context.extensionUri, route);
+        return;
+      }
+
+      const allRoutes = routeTreeProvider.getRoutes();
+      if (allRoutes.length === 0) {
+        vscode.window.showInformationMessage(MESSAGES.SEARCH_NO_SCAN);
+        return;
+      }
+
+      const items = allRoutes.map(createRouteQuickPickItem);
+      const selected = await vscode.window.showQuickPick(items, {
+        title: 'API Route Explorer: Open HTTP Client',
+        placeHolder: 'Select an API route to test in the HTTP Client',
+        matchOnDescription: true,
+        matchOnDetail: true,
+      });
+
+      if (selected) {
+        openHttpClientForRoute(context.extensionUri, selected.route);
+      }
+    }),
+
     // 14. Filter routes by HTTP method
     vscode.commands.registerCommand(COMMANDS.FILTER_BY_METHOD, async () => {
       const allRoutes = routeTreeProvider.getRoutes();
@@ -894,6 +922,14 @@ export function activate(context: vscode.ExtensionContext): void {
           detail: 'Export standardized API contract with path parameters and operations',
           action: async () => {
             await vscode.commands.executeCommand(COMMANDS.EXPORT_OPENAPI);
+          },
+        },
+        {
+          label: '$(send) Open HTTP Client...',
+          description: 'Test API routes directly with parameters and headers',
+          detail: 'Configure and send requests to discovered routes',
+          action: async () => {
+            await vscode.commands.executeCommand(COMMANDS.OPEN_HTTP_CLIENT);
           },
         },
         {
