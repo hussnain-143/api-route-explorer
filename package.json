@@ -4,6 +4,7 @@
   "description": "Discover, analyze, search, and navigate API routes directly inside VS Code.",
   "version": "1.5.0",
   "publisher": "hussnain-143",
+  "publisherDisplayName": "Hussnain Ahmed",
   "author": {
     "name": "Hussnain Ahmed",
     "url": "https://github.com/hussnain-143"
