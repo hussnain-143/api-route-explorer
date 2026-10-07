@@ -2,7 +2,7 @@
   "name": "api-route-explorer",
   "displayName": "API Route Explorer",
   "description": "Discover, analyze, search, and navigate API routes directly inside VS Code.",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "publisher": "api-route-explorer",
   "license": "MIT",
   "repository": {
@@ -72,6 +72,21 @@
           "type": "boolean",
           "default": true,
           "description": "Automatically refresh and update route analysis when files are modified in the workspace."
+        },
+        "apiRouteExplorer.openapi.title": {
+          "type": "string",
+          "default": "",
+          "description": "Custom API title for generated OpenAPI specifications (defaults to package.json name or workspace title)."
+        },
+        "apiRouteExplorer.openapi.version": {
+          "type": "string",
+          "default": "",
+          "description": "Custom API version for generated OpenAPI specifications (defaults to package.json version or 1.0.0)."
+        },
+        "apiRouteExplorer.openapi.includeSourceMetadata": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include x-api-route-explorer source code metadata in generated OpenAPI specifications."
         }
       }
     },
@@ -205,6 +220,24 @@
         "title": "Show Route Statistics",
         "category": "API Route Explorer",
         "icon": "$(graph)"
+      },
+      {
+        "command": "apiRouteExplorer.exportOpenApi",
+        "title": "Export OpenAPI Specification...",
+        "category": "API Route Explorer",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "apiRouteExplorer.exportOpenApiYaml",
+        "title": "Export OpenAPI Specification (YAML)",
+        "category": "API Route Explorer",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "apiRouteExplorer.exportOpenApiJson",
+        "title": "Export OpenAPI Specification (JSON)",
+        "category": "API Route Explorer",
+        "icon": "$(json)"
       }
     ],
     "menus": {

@@ -2,6 +2,30 @@
 
 All notable changes to the "api-route-explorer" extension will be documented in this file.
 
+## [1.2.0] - Sprint 12: Advanced API Intelligence — OpenAPI / Swagger Specification Generation
+
+### Added
+- **OpenAPI 3.0.3 Specification Generation**:
+  - Automatically transforms discovered routes into standardized OpenAPI 3.0.3 API contracts without running the backend server.
+  - Multi-framework route path conversion supporting Express colon parameters (`:id`), Next.js dynamic routes (`[id]`), catch-all routes (`[...slug]`), optional catch-all (`[[...slug]]`), Fastify, and NestJS parameters into standard `{param}` placeholders.
+  - Automatic parameter definitions with `in: 'path'`, `required: true`, and `schema: { type: 'string' }`.
+  - Automatic resource tag extraction based on top-level resource segments for clean Swagger UI organization.
+  - Deterministic camelCase `operationId` generation with collision avoidance (e.g. `getUsers`, `getUsersById`).
+  - Shared paths support: multiple HTTP methods on the same route are grouped under the same path item.
+  - Graceful duplicate route handling: collapses multiple identical route declarations into a single OpenAPI operation without emitting duplicate JSON/YAML keys, tracking multiple declaration locations in extension metadata.
+  - Safe Next.js Pages router wildcard (`ANY`) expansion into standard HTTP methods without overriding explicit routes.
+  - Sensible default responses (`200`, `201`, `204`, `400`, `404`) and safe request body skeletons for `POST`, `PUT`, and `PATCH`.
+- **Zero-Dependency YAML & JSON Export**:
+  - Native VS Code export dialogs with file format selection: OpenAPI 3.0 YAML (`.yaml`) and OpenAPI 3.0 JSON (`.json`).
+  - Supports filtered route export scope when sidebar filters are active.
+  - Guaranteed deterministic output ordering for paths, methods, tags, and parameters.
+  - Privacy safeguards: strictly prevents leaking local absolute machine paths (`/Users/...`) or environment variables into exported documents.
+- **Commands & Configuration**:
+  - `apiRouteExplorer.exportOpenApi`: Interactive dialog to choose format and save location.
+  - `apiRouteExplorer.exportOpenApiYaml`: Direct export to OpenAPI YAML.
+  - `apiRouteExplorer.exportOpenApiJson`: Direct export to OpenAPI JSON.
+  - Configurable settings: `apiRouteExplorer.openapi.title`, `apiRouteExplorer.openapi.version`, and `apiRouteExplorer.openapi.includeSourceMetadata`.
+
 ## [1.1.1] - Sprint 11: User Feedback, Product Refinement & v1.1.1 Stability
 
 ### Refinements & Stability

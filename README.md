@@ -220,6 +220,34 @@ Discovered routes:
 
 ---
 
+## OpenAPI / Swagger Specification Generation
+
+API Route Explorer can transform discovered and analyzed API routes into valid **OpenAPI 3.0.3** specifications directly inside VS Code — without requiring your backend server to be running.
+
+### Key Capabilities
+- 📄 **Dual Format Export**: Export as formatted OpenAPI **YAML** (`.yaml`) or machine-readable **JSON** (`.json`).
+- 🔄 **Multi-Framework Path Conversion**:
+  - Express / Fastify / NestJS `:id` → `{id}`
+  - Next.js dynamic parameters `[id]` → `{id}`
+  - Next.js catch-all routes `[...slug]` → `{slug}`
+- 🏷️ **Automatic Path Parameters**: Extracts path parameters into formal OpenAPI parameter objects with `in: 'path'`, `required: true`, and `schema: { type: 'string' }`.
+- 🗂️ **Smart Resource Tagging**: Groups operations under semantic tags derived from route resource segments (e.g. `users`, `orders`, `auth`).
+- 🆔 **Deterministic Operation IDs**: Generates predictable camelCase operation identifiers (e.g. `getUsers`, `getUsersById`, `postOrders`).
+- ⚡ **Shared & Duplicate Route Safety**: Groups multi-method endpoints under single path items and collapses duplicate route declarations without emitting duplicate JSON/YAML keys.
+- 🔒 **Privacy & Zero Leaks**: Strict safeguards ensure local absolute machine paths (`/Users/...`) and environment variables are never included.
+
+### What is Inferred vs. What is NOT Inferred
+To ensure contracts are reliable and truthful:
+- **Inferred from code**: Paths, HTTP methods, path parameter names, resource tags, source file locations (workspace-relative), and standard HTTP response statuses (`200`, `201`, `204`, etc.).
+- **Intentionally NOT inferred**: API Route Explorer does **not** fabricate fictitious response models, data schemas, or validation rules that do not exist in static route declarations. Generated contracts serve as clean, accurate architectural skeletons ready for further documentation or Swagger UI viewing.
+
+### Exporting OpenAPI Specifications
+1. Open the **API Route Explorer** sidebar or Command Palette (`Cmd+Shift+P` / `Ctrl+Shift+P`).
+2. Run `API Route Explorer: Export OpenAPI Specification...` (or export directly to YAML / JSON).
+3. Select your desired route scope (Filtered Routes or All Routes) and file destination.
+
+---
+
 ## Troubleshooting
 
 - **No routes discovered**: Ensure your project files are within the opened VS Code workspace and use supported file extensions (`.js`, `.jsx`, `.ts`, `.tsx`). Run `API Route Explorer: Scan Routes` from the Command Palette.
