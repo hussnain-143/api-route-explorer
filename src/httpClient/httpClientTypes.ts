@@ -61,6 +61,16 @@ export interface HttpResponseData {
   isJson: boolean;
 }
 
+export interface HttpClientRouteContext {
+  method: HttpClientMethod | 'ANY';
+  path: string;
+  sourceFile?: string;
+  sourceLine?: number;
+  sourceColumn?: number;
+  framework?: string;
+  handlerName?: string;
+}
+
 export interface HttpErrorData {
   message: string;
   code?: string;
@@ -82,4 +92,5 @@ export interface HttpClientInitialState {
   framework?: string;
   filePath?: string;
   line?: number;
+  routeContext?: HttpClientRouteContext;
 }

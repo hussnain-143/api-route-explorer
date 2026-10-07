@@ -24,6 +24,8 @@ export const COMMANDS = {
   EXPORT_OPENAPI_JSON: 'apiRouteExplorer.exportOpenApiJson',
   EXPORT_OPENAPI_YAML: 'apiRouteExplorer.exportOpenApiYaml',
   OPEN_HTTP_CLIENT: 'apiRouteExplorer.openHttpClient',
+  ANALYZE_ROUTE: 'apiRouteExplorer.analyzeRoute',
+  VIEW_ROUTE_OPENAPI: 'apiRouteExplorer.viewRouteOpenApi',
   STATUS_BAR_MENU: 'apiRouteExplorer.statusBarMenu',
 } as const;
 
@@ -59,13 +61,16 @@ export const BRAND_COLORS = {
 } as const;
 
 export const MESSAGES = {
-  NO_WORKSPACE: 'No workspace is open.',
+  NO_WORKSPACE: 'No workspace folder open. Open a folder containing a backend project to explore API routes.',
   NO_ROUTES_FOUND: 'No API routes found.',
   NO_ROUTES_TITLE: 'No routes discovered yet',
-  NO_ROUTES_DESCRIPTION: 'Scan your workspace to discover API routes.',
+  NO_ROUTES_DESCRIPTION: 'Scan your workspace to discover Express, Next.js, Fastify, and NestJS routes.',
   NO_ROUTES_EMPTY_DESCRIPTION: 'No API routes discovered in workspace.',
-  SEARCH_NO_SCAN: 'No routes discovered yet. Run Scan Routes first.',
+  SEARCH_NO_SCAN: 'No routes discovered yet. Run Scan Routes to discover endpoints.',
   ROUTE_PATH_COPIED: 'Route path copied.',
   ROUTE_COPIED: 'Route copied.',
   FILE_NOT_FOUND: 'Route source file no longer exists or could not be opened.',
+  SCAN_FAILED_TITLE: 'Route scanning failed.',
+  SCAN_FAILED_BODY: 'An error occurred while discovering routes.',
+  FIRST_RUN_WELCOME: 'API Route Explorer: Discover your API routes. Analyze your backend. Test endpoints. Generate OpenAPI documentation.',
 } as const;

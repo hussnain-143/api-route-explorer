@@ -1,4 +1,5 @@
 import * as crypto from 'crypto';
+import * as path from 'path';
 import * as vscode from 'vscode';
 import {
   isWebviewToHostMessage,
@@ -155,6 +156,34 @@ export class HttpClientPanel {
         });
         break;
       }
+
+      case 'openSource': {
+        const { filePath, line } = message.payload;
+        if (filePath) {
+          try {
+            let targetPath = filePath;
+            if (!path.isAbsolute(targetPath)) {
+              const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+              if (workspaceFolder) {
+                targetPath = path.join(workspaceFolder.uri.fsPath, targetPath);
+              }
+            }
+            const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(targetPath));
+            const editor = await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
+            if (line && line > 0) {
+              const pos = new vscode.Position(line - 1, 0);
+              editor.selection = new vscode.Selection(pos, pos);
+              editor.revealRange(
+                new vscode.Range(pos, pos),
+                vscode.TextEditorRevealType.InCenter
+              );
+            }
+          } catch {
+            vscode.window.showErrorMessage(`Unable to open source file: ${filePath}`);
+          }
+        }
+        break;
+      }
     }
   }
 
@@ -273,6 +302,66 @@ export class HttpClientPanel {
     .header-meta {
       font-size: 11px;
       opacity: 0.7;
+    }
+
+    .route-context-bar {
+      background: var(--input-bg);
+      border: 1px solid var(--panel-border);
+      border-left: 3px solid var(--btn-bg);
+      border-radius: 6px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .route-context-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .route-context-badge {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: var(--badge-bg);
+      color: var(--badge-fg);
+      letter-spacing: 0.5px;
+    }
+
+    .route-context-signature {
+      font-family: var(--code-font);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--fg);
+    }
+
+    .route-context-source {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--fg);
+      opacity: 0.85;
+    }
+
+    .source-link-btn {
+      background: transparent;
+      border: none;
+      color: var(--vscode-textLink-foreground, #3794ff);
+      cursor: pointer;
+      font-family: var(--code-font);
+      font-size: 11px;
+      text-decoration: underline;
+      padding: 0;
+    }
+
+    .source-link-btn:hover {
+      color: var(--vscode-textLink-activeForeground, #3794ff);
     }
 
     .request-bar {
@@ -712,6 +801,18 @@ export class HttpClientPanel {
       <div class="header-meta" id="header-meta"></div>
     </div>
 
+    <!-- Route Context Banner -->
+    <div class="route-context-bar" id="route-context-bar" style="display: none;">
+      <div class="route-context-top">
+        <span class="route-context-badge" id="route-context-badge">API</span>
+        <span class="route-context-signature" id="route-context-signature"></span>
+      </div>
+      <div class="route-context-source" id="route-context-source">
+        <span>Source:</span>
+        <button type="button" class="source-link-btn" id="btn-jump-code" title="Jump to route definition in code"></button>
+      </div>
+    </div>
+
     <!-- Request Row -->
     <div class="request-bar">
       <select id="method-select" class="method-select" data-method="GET">
@@ -907,6 +1008,12 @@ export class HttpClientPanel {
     const validationError = document.getElementById('validation-error');
     const headerMeta = document.getElementById('header-meta');
 
+    const routeContextBar = document.getElementById('route-context-bar');
+    const routeContextBadge = document.getElementById('route-context-badge');
+    const routeContextSignature = document.getElementById('route-context-signature');
+    const routeContextSource = document.getElementById('route-context-source');
+    const btnJumpCode = document.getElementById('btn-jump-code');
+
     const pathParamsWrapper = document.getElementById('path-params-wrapper');
     const pathParamsList = document.getElementById('path-params-list');
     const queryTableBody = document.getElementById('query-table-body');
@@ -1022,6 +1129,20 @@ export class HttpClientPanel {
     btnCopyCurl.addEventListener('click', () => {
       const text = curlPreview.textContent || '';
       vscode.postMessage({ type: 'copyText', payload: { text, label: 'cURL command' } });
+    });
+
+    btnJumpCode.addEventListener('click', () => {
+      if (currentInitialState) {
+        const rc = currentInitialState.routeContext;
+        const targetFile = (rc && rc.sourceFile) || currentInitialState.filePath;
+        const targetLine = (rc && rc.sourceLine) || currentInitialState.line;
+        if (targetFile) {
+          vscode.postMessage({
+            type: 'openSource',
+            payload: { filePath: targetFile, line: targetLine },
+          });
+        }
+      }
     });
 
     btnSend.addEventListener('click', () => {
@@ -1362,6 +1483,29 @@ export class HttpClientPanel {
           headerMeta.textContent = currentInitialState.framework
             ? currentInitialState.framework.toUpperCase() + (currentInitialState.filePath ? ' • ' + currentInitialState.filePath : '')
             : '';
+
+          if (currentInitialState.routeContext || currentInitialState.filePath) {
+            const rc = currentInitialState.routeContext;
+            const fw = (rc && rc.framework) || currentInitialState.framework || 'API';
+            const meth = (rc && rc.method) || currentInitialState.method || 'GET';
+            const rPath = (rc && rc.path) || currentInitialState.openApiPath || currentInitialState.path || '';
+            const sFile = (rc && rc.sourceFile) || currentInitialState.filePath;
+            const sLine = (rc && rc.sourceLine) || currentInitialState.line;
+
+            routeContextBadge.textContent = fw.toUpperCase();
+            routeContextSignature.textContent = meth + ' ' + rPath;
+
+            if (sFile) {
+              const locText = sLine ? sFile + ':' + sLine : sFile;
+              btnJumpCode.textContent = locText;
+              routeContextSource.style.display = 'flex';
+            } else {
+              routeContextSource.style.display = 'none';
+            }
+            routeContextBar.style.display = 'flex';
+          } else {
+            routeContextBar.style.display = 'none';
+          }
 
           // Reset response area
           responseEmpty.style.display = 'block';

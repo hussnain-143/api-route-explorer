@@ -66,6 +66,8 @@ export function buildInitialStateForRoute(
     ? '{\n  \n}'
     : '';
 
+  const relFilePath = getRelativeFilePath(route.filePath);
+
   return {
     routePath: route.path,
     openApiPath,
@@ -77,8 +79,17 @@ export function buildInitialStateForRoute(
     headers,
     body,
     framework: route.framework,
-    filePath: getRelativeFilePath(route.filePath),
+    filePath: relFilePath,
     line: route.line,
+    routeContext: {
+      method: route.method,
+      path: route.path,
+      sourceFile: relFilePath,
+      sourceLine: route.line + 1,
+      sourceColumn: route.column + 1,
+      framework: route.framework,
+      handlerName: route.handlerName,
+    },
   };
 }
 
