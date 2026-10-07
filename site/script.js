@@ -1,9 +1,10 @@
 /**
- * API Route Explorer — Public Website Interactive Script
+ * API Route Explorer — Production Product Website Script
+ * Accessible, fast, zero external dependencies.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Theme Toggle (Dark / Light)
+  // 1. Theme Management (Dark / Light)
   const themeToggleBtn = document.getElementById('theme-toggle-btn');
   const themeIcon = document.getElementById('theme-icon');
 
@@ -31,24 +32,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 2. Copy Installation Command
-  const copyCmdBtn = document.getElementById('copy-cmd-btn');
-  const installCmdText = document.getElementById('install-cmd-text');
+  // 2. Mobile Drawer Navigation
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const mobileDrawer = document.getElementById('mobile-drawer');
 
-  if (copyCmdBtn && installCmdText) {
-    copyCmdBtn.addEventListener('click', async () => {
-      const text = installCmdText.textContent.trim();
-      try {
-        await navigator.clipboard.writeText(text);
-        const originalText = copyCmdBtn.textContent;
-        copyCmdBtn.textContent = '✓ Copied';
-        copyCmdBtn.style.color = 'var(--emerald-primary)';
-        setTimeout(() => {
-          copyCmdBtn.textContent = originalText;
-          copyCmdBtn.style.color = '';
-        }, 2000);
-      } catch (err) {
-        console.error('Clipboard copy failed:', err);
+  if (mobileMenuBtn && mobileDrawer) {
+    mobileMenuBtn.addEventListener('click', () => {
+      const isOpen = mobileDrawer.classList.contains('open');
+      if (isOpen) {
+        mobileDrawer.classList.remove('open');
+        mobileMenuBtn.setAttribute('aria-expanded', 'false');
+      } else {
+        mobileDrawer.classList.add('open');
+        mobileMenuBtn.setAttribute('aria-expanded', 'true');
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && mobileDrawer.classList.contains('open')) {
+        mobileDrawer.classList.remove('open');
+        mobileMenuBtn.setAttribute('aria-expanded', 'false');
       }
     });
   }
@@ -100,14 +103,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   routeItems.forEach((item) => {
     item.addEventListener('click', () => {
-      // Remove active and jump-arrow from all items
       routeItems.forEach((r) => {
         r.classList.remove('active');
         const arrow = r.querySelector('.jump-arrow');
         if (arrow) arrow.remove();
       });
 
-      // Mark this item active and add jump arrow
       item.classList.add('active');
       const arrowSpan = document.createElement('span');
       arrowSpan.className = 'jump-arrow';
@@ -121,6 +122,30 @@ document.addEventListener('DOMContentLoaded', () => {
         mockupSignature.textContent = `${preset.method} ${preset.path}`;
         mockupUrlInput.value = preset.url;
         mockupResponsePre.textContent = preset.response;
+      }
+    });
+  });
+
+  // 4. Universal Clipboard Copy Buttons
+  document.querySelectorAll('.copy-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const targetId = btn.getAttribute('data-target');
+      const codeTarget = targetId ? document.getElementById(targetId) : btn.closest('.code-block')?.querySelector('pre');
+      const textToCopy = codeTarget ? codeTarget.textContent.trim() : btn.previousElementSibling?.textContent?.trim();
+
+      if (textToCopy) {
+        try {
+          await navigator.clipboard.writeText(textToCopy);
+          const originalText = btn.textContent;
+          btn.textContent = '✓ Copied';
+          btn.style.color = 'var(--emerald-primary)';
+          setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.color = '';
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy text:', err);
+        }
       }
     });
   });

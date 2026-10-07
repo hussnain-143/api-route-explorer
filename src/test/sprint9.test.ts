@@ -26,7 +26,7 @@ suite('API Route Explorer — Sprint 9 v1.0 Release Readiness Suite', () => {
       const pkg = require('../../package.json');
       assert.ok(/^\d+\.\d+\.\d+$/.test(pkg.version), `Version should be valid release version, got ${pkg.version}`);
       assert.strictEqual(pkg.name, 'api-route-explorer');
-      assert.strictEqual(pkg.publisher, 'api-route-explorer');
+      assert.strictEqual(pkg.publisher, 'hussnain-143');
       assert.strictEqual(pkg.license, 'MIT');
       assert.ok(pkg.description && pkg.description.includes('API routes'));
       assert.ok(pkg.keywords && pkg.keywords.length >= 5);

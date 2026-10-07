@@ -3,560 +3,676 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <!-- Primary SEO Meta Tags -->
-  <title>API Route Explorer — Discover, Analyze, Test & Document APIs in VS Code</title>
-  <meta name="title" content="API Route Explorer — Discover, Analyze, Test & Document APIs in VS Code">
-  <meta name="description" content="Discover, analyze, test, and document backend API routes directly inside Visual Studio Code. Offline AST route discovery for Express, Next.js, Fastify, and NestJS.">
-  <meta name="keywords" content="VS Code extension, API routes, route explorer, Express, Next.js, Fastify, NestJS, HTTP Client, OpenAPI, Swagger, REST API">
-  <meta name="author" content="API Route Explorer Contributors">
-  <meta name="robots" content="index, follow">
+  <title>API Route Explorer — API Routes Inside VS Code</title>
+  <meta name="description" content="Discover, analyze, test, and document backend API routes directly inside VS Code. Supports Express, Next.js, Fastify, and NestJS.">
+  <link rel="canonical" href="https://apirouteexplorer.dev/">
 
-  <!-- Open Graph / Facebook -->
+  <!-- Open Graph / Social Sharing -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://apirouteexplorer.dev/">
-  <meta property="og:title" content="API Route Explorer — Discover, Analyze, Test & Document APIs in VS Code">
-  <meta property="og:description" content="Stop switching between code, terminal, Postman, and docs. Discover, analyze, test, and document your backend routes directly inside VS Code.">
-  <meta property="og:image" content="https://apirouteexplorer.dev/assets/logos/logo-horizontal.svg">
+  <meta property="og:title" content="API Route Explorer — API Routes Inside VS Code">
+  <meta property="og:description" content="See every API route. Jump straight to the code. Discover, analyze, test, and document backend APIs directly inside VS Code.">
+  <meta property="og:image" content="https://apirouteexplorer.dev/assets/social-preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
 
-  <!-- Twitter -->
-  <meta property="twitter:card" content="summary_large_image">
-  <meta property="twitter:url" content="https://apirouteexplorer.dev/">
-  <meta property="twitter:title" content="API Route Explorer — Discover, Analyze, Test & Document APIs in VS Code">
-  <meta property="twitter:description" content="Stop switching between code, terminal, Postman, and docs. Discover, analyze, test, and document your backend routes directly inside VS Code.">
-  <meta property="twitter:image" content="https://apirouteexplorer.dev/assets/logos/logo-horizontal.svg">
+  <!-- Twitter Meta -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="API Route Explorer — API Routes Inside VS Code">
+  <meta name="twitter:description" content="Discover, analyze, test, and document backend API routes directly inside VS Code.">
+  <meta name="twitter:image" content="https://apirouteexplorer.dev/assets/social-preview.png">
 
-  <!-- Favicon & Brand Icons -->
+  <!-- Favicons -->
   <link rel="icon" type="image/svg+xml" href="assets/logos/favicon.svg">
-  
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/logos/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/logos/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/logos/apple-touch-icon.png">
 
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <!-- Top Navigation -->
-  <header class="navbar">
+  <!-- Header & Sticky Navigation -->
+  <header class="site-header">
     <div class="container nav-container">
-      <a href="#" class="brand">
-        <img src="assets/logos/logo-symbol.svg" alt="API Route Explorer Logo">
-        <span>API Route Explorer</span>
-        <span class="brand-badge">v1.5.0 RC</span>
+      <a href="index.html" class="brand" aria-label="API Route Explorer Home">
+        <img src="assets/logos/logo-symbol.svg" alt="API Route Explorer Symbol" class="brand-icon">
+        <span>API Route <span class="brand-accent">Explorer</span></span>
       </a>
 
-      <ul class="nav-links">
-        <li><a href="#workflow" class="nav-link">Workflow</a></li>
-        <li><a href="#features" class="nav-link">Features</a></li>
-        <li><a href="#frameworks" class="nav-link">Frameworks</a></li>
-        <li><a href="#security" class="nav-link">Security</a></li>
-        <li><a href="#changelog" class="nav-link">Changelog</a></li>
-      </ul>
+      <nav class="nav-menu" aria-label="Main Navigation">
+        <a href="features.html" class="nav-link">Features</a>
+        <a href="frameworks.html" class="nav-link">Frameworks</a>
+        <a href="docs/index.html" class="nav-link">Docs</a>
+        <a href="security.html" class="nav-link">Security</a>
+        <a href="changelog.html" class="nav-link">Changelog</a>
+      </nav>
 
       <div class="nav-actions">
-        <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Toggle Dark/Light Mode" title="Toggle Theme">
+        <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Toggle Theme" title="Toggle Dark/Light Mode">
           <span id="theme-icon">☀️</span>
         </button>
-        <a href="https://github.com/hussnain-143/api-route-explorer" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">
+        <a href="https://github.com/hussnain-143/api-route-explorer" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm" aria-label="View on GitHub">
           GitHub
         </a>
-        <a href="https://marketplace.visualstudio.com/items?itemName=api-route-explorer.api-route-explorer" class="btn btn-primary btn-sm">
-          Install for VS Code
+        <a href="install.html" class="btn btn-primary btn-sm">
+          Install
         </a>
+        <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Toggle mobile menu" aria-expanded="false">
+          ☰
+        </button>
       </div>
     </div>
   </header>
 
-  <!-- Hero Section -->
-  <section class="hero-section">
-    <div class="container">
-      <div class="hero-pill">
-        <span>⚡ Pure Offline Static Analysis • Zero Cloud Dependencies</span>
-      </div>
+  <!-- Mobile Drawer -->
+  <div id="mobile-drawer" class="mobile-drawer" aria-label="Mobile Navigation">
+    <a href="features.html" class="nav-link">Features</a>
+    <a href="frameworks.html" class="nav-link">Frameworks</a>
+    <a href="docs/index.html" class="nav-link">Documentation</a>
+    <a href="security.html" class="nav-link">Security & Privacy</a>
+    <a href="changelog.html" class="nav-link">Changelog</a>
+    <a href="https://github.com/hussnain-143/api-route-explorer" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">View on GitHub</a>
+    <a href="install.html" class="btn btn-primary">Install for VS Code</a>
+  </div>
 
-      <h1 class="hero-title">
-        Discover, analyze, test, and document your APIs — <span class="hero-title-highlight">directly inside VS Code.</span>
-      </h1>
-
-      <p class="hero-subtitle">
-        A fast, privacy-first Visual Studio Code extension that bridges the gap between your backend routes and the code that runs them. Stop context switching between your editor, terminal curl, Postman, and external Swagger viewers.
-      </p>
-
-      <div class="hero-cta-group">
-        <a href="https://marketplace.visualstudio.com/items?itemName=api-route-explorer.api-route-explorer" class="btn btn-primary btn-lg">
-          Install for VS Code
-        </a>
-        <a href="https://github.com/hussnain-143/api-route-explorer" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-lg">
-          View on GitHub
-        </a>
-      </div>
-
-      <div class="install-command-box">
-        <span>$</span>
-        <code id="install-cmd-text">ext install api-route-explorer.api-route-explorer</code>
-        <button id="copy-cmd-btn" class="copy-cmd-btn" title="Copy install command">Copy</button>
-      </div>
-
-      <!-- Editor Mockup Visual -->
-      <div class="editor-mockup-wrap">
-        <div class="mockup-header">
-          <span class="mockup-dot mockup-dot-red"></span>
-          <span class="mockup-dot mockup-dot-yellow"></span>
-          <span class="mockup-dot mockup-dot-green"></span>
-          <span class="mockup-title">Visual Studio Code — API Route Explorer</span>
+  <main>
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="container">
+        <div class="hero-pill">
+          <span class="hero-pill-dot"></span>
+          <span>OPEN SOURCE • VS CODE EXTENSION</span>
         </div>
-        <div class="mockup-body">
-          <!-- Left Panel: VS Code Sidebar Route Tree (matches readme-hero) -->
-          <div class="mockup-sidebar">
-            <div class="mockup-sidebar-header">
-              <span class="mockup-sidebar-brand">API ROUTE EXPLORER</span>
-              <div class="mockup-search-pill">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <span>Filter routes (⌘P)...</span>
-              </div>
-            </div>
 
-            <!-- Group AUTH -->
-            <div class="tree-group">
-              <div class="tree-group-header">
-                <span class="tree-chevron">▼</span>
-                <span class="tree-group-name">AUTH</span>
-              </div>
-              <div class="tree-children">
-                <div class="route-item-mock" data-route="POST /api/v1/auth/login">
-                  <span class="method-tag tag-post">POST</span>
-                  <span class="route-path">/api/v1/auth/login</span>
-                </div>
-                <div class="route-item-mock" data-route="POST /api/v1/auth/register">
-                  <span class="method-tag tag-post">POST</span>
-                  <span class="route-path">/api/v1/auth/register</span>
-                </div>
-              </div>
-            </div>
+        <h1 class="hero-title">
+          See every API route.<br>
+          <span class="hero-title-highlight">Jump straight to the code.</span>
+        </h1>
 
-            <!-- Group USERS -->
-            <div class="tree-group">
-              <div class="tree-group-header">
-                <span class="tree-chevron">▼</span>
-                <span class="tree-group-name">USERS</span>
-              </div>
-              <div class="tree-children">
-                <div class="route-item-mock" data-route="GET /api/v1/users">
-                  <span class="method-tag tag-get">GET</span>
-                  <span class="route-path">/api/v1/users</span>
-                </div>
-                <div class="route-item-mock active" data-route="GET /api/v1/users/:id">
-                  <span class="method-tag tag-get">GET</span>
-                  <span class="route-path">/api/v1/users/:id</span>
-                  <span class="jump-arrow" title="1-Click AST Jump">→</span>
-                </div>
-              </div>
-            </div>
+        <p class="hero-subtitle">
+          API Route Explorer discovers, analyzes, tests, and documents backend API routes directly inside VS Code.
+        </p>
 
-            <!-- Group PRODUCTS -->
-            <div class="tree-group">
-              <div class="tree-group-header">
-                <span class="tree-chevron">▼</span>
-                <span class="tree-group-name">PRODUCTS</span>
-              </div>
-              <div class="tree-children">
-                <div class="route-item-mock" data-route="GET /api/v1/products">
-                  <span class="method-tag tag-get">GET</span>
-                  <span class="route-path">/api/v1/products</span>
-                </div>
-                <div class="route-item-mock" data-route="POST /api/v1/products">
-                  <span class="method-tag tag-post">POST</span>
-                  <span class="route-path">/api/v1/products</span>
-                </div>
-              </div>
-            </div>
+        <div class="hero-cta-group">
+          <a href="install.html" class="btn btn-primary btn-lg">
+            Install for VS Code
+          </a>
+          <a href="https://github.com/hussnain-143/api-route-explorer" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-lg">
+            View on GitHub
+          </a>
+        </div>
+
+        <div class="install-command-box">
+          <span>$</span>
+          <code>code --install-extension hussnain-143.api-route-explorer</code>
+          <button class="copy-btn" title="Copy CLI Command">Copy</button>
+        </div>
+
+        <div class="framework-metadata-row">
+          <div class="metadata-item"><span class="metadata-check">✓</span> Express</div>
+          <div class="metadata-item"><span class="metadata-check">✓</span> Next.js App Router</div>
+          <div class="metadata-item"><span class="metadata-check">✓</span> Next.js Pages Router</div>
+          <div class="metadata-item"><span class="metadata-check">✓</span> Fastify</div>
+          <div class="metadata-item"><span class="metadata-check">✓</span> NestJS</div>
+          <div class="metadata-item"><span class="metadata-check">✓</span> OpenAPI 3.0.3</div>
+        </div>
+
+        <!-- Product Preview Visual (Matching readme-hero.svg) -->
+        <div class="editor-mockup-wrap">
+          <div class="mockup-header">
+            <span class="mockup-dot mockup-dot-red"></span>
+            <span class="mockup-dot mockup-dot-yellow"></span>
+            <span class="mockup-dot mockup-dot-green"></span>
+            <span class="mockup-title">Visual Studio Code — API Route Explorer</span>
           </div>
-          <!-- Main HTTP Client -->
-          <div class="mockup-main">
-            <div class="mockup-route-header">
-              <div>
-                <span class="brand-badge">EXPRESS</span>
-                <span id="mockup-signature" class="mockup-signature" style="margin-left: 8px;">GET /api/v1/users/{id}</span>
+          <div class="mockup-body">
+            <!-- Sidebar: Route Tree -->
+            <div class="mockup-sidebar">
+              <div class="mockup-sidebar-header">
+                <span class="mockup-sidebar-brand">API ROUTE EXPLORER</span>
+                <div class="mockup-search-pill">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                  <span>Filter routes (⌘P)...</span>
+                </div>
               </div>
-              <div class="mockup-actions">
-                <span class="btn btn-secondary btn-sm">[ Analyze ]</span>
-                <span class="btn btn-primary btn-sm">[ Test API ]</span>
-                <span class="btn btn-secondary btn-sm">[ OpenAPI ]</span>
+
+              <!-- Group: AUTH -->
+              <div class="tree-group">
+                <div class="tree-group-header">
+                  <span class="tree-chevron">▼</span>
+                  <span>AUTH</span>
+                </div>
+                <div class="tree-children">
+                  <div class="route-item-mock" data-route="POST /api/v1/auth/login">
+                    <span class="method-tag tag-post">POST</span>
+                    <span class="route-path">/api/v1/auth/login</span>
+                  </div>
+                  <div class="route-item-mock" data-route="POST /api/v1/auth/register">
+                    <span class="method-tag tag-post">POST</span>
+                    <span class="route-path">/api/v1/auth/register</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Group: USERS -->
+              <div class="tree-group">
+                <div class="tree-group-header">
+                  <span class="tree-chevron">▼</span>
+                  <span>USERS</span>
+                </div>
+                <div class="tree-children">
+                  <div class="route-item-mock" data-route="GET /api/v1/users">
+                    <span class="method-tag tag-get">GET</span>
+                    <span class="route-path">/api/v1/users</span>
+                  </div>
+                  <div class="route-item-mock active" data-route="GET /api/v1/users/:id">
+                    <span class="method-tag tag-get">GET</span>
+                    <span class="route-path">/api/v1/users/:id</span>
+                    <span class="jump-arrow" title="1-Click AST Code Jump">→</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Group: PRODUCTS -->
+              <div class="tree-group">
+                <div class="tree-group-header">
+                  <span class="tree-chevron">▼</span>
+                  <span>PRODUCTS</span>
+                </div>
+                <div class="tree-children">
+                  <div class="route-item-mock" data-route="GET /api/v1/products">
+                    <span class="method-tag tag-get">GET</span>
+                    <span class="route-path">/api/v1/products</span>
+                  </div>
+                  <div class="route-item-mock" data-route="POST /api/v1/products">
+                    <span class="method-tag tag-post">POST</span>
+                    <span class="route-path">/api/v1/products</span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div class="mockup-url-bar">
-              <input type="text" id="mockup-url-input" class="mockup-url-input" value="http://localhost:5000/api/v1/users/usr_99182" readonly>
-              <button class="btn btn-primary btn-sm">Send</button>
-            </div>
-
-            <div class="mockup-response-preview">
-              <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: var(--emerald-primary); font-weight: 600;">
-                <span>● 200 OK</span>
-                <span style="color: var(--text-muted);">40 ms • 142 B</span>
+            <!-- Main: Native HTTP Client -->
+            <div class="mockup-main">
+              <div class="mockup-route-header">
+                <div>
+                  <span class="brand-badge">EXPRESS</span>
+                  <span id="mockup-signature" class="mockup-signature" style="margin-left: 8px;">GET /api/v1/users/{id}</span>
+                </div>
+                <div class="mockup-actions">
+                  <span class="btn btn-secondary btn-sm">[ Analyze ]</span>
+                  <span class="btn btn-primary btn-sm">[ Test API ]</span>
+                  <span class="btn btn-secondary btn-sm">[ OpenAPI ]</span>
+                </div>
               </div>
-              <pre id="mockup-response-pre">{
+
+              <div class="mockup-url-bar">
+                <input type="text" id="mockup-url-input" class="mockup-url-input" value="http://localhost:5000/api/v1/users/usr_99182" readonly>
+                <button class="btn btn-primary btn-sm">Send</button>
+              </div>
+
+              <div class="mockup-tabs">
+                <span class="mockup-tab active">Params (1)</span>
+                <span class="mockup-tab">Headers (2)</span>
+                <span class="mockup-tab">Body</span>
+                <span class="mockup-tab">cURL</span>
+              </div>
+
+              <div class="mockup-response-preview">
+                <div class="mockup-response-header">
+                  <span>● 200 OK</span>
+                  <span style="color: var(--text-muted);">40 ms • 142 B</span>
+                </div>
+                <pre id="mockup-response-pre">{
   "id": "usr_99182",
   "name": "Alex Mercer",
   "role": "engineer",
   "verified": true
 }</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Micro-Proof Credibility Row -->
+        <div class="micro-proof-row">
+          <div class="micro-proof-item">
+            <span style="color: var(--emerald-primary);">🛡️</span>
+            <span><strong>250+</strong> automated tests</span>
+          </div>
+          <div class="micro-proof-item">
+            <span style="color: var(--emerald-primary);">⚡</span>
+            <span><strong>118 routes</strong> verified in real backends</span>
+          </div>
+          <div class="micro-proof-item">
+            <span style="color: var(--emerald-primary);">📜</span>
+            <span><strong>OpenAPI 3.0.3</strong> spec export</span>
+          </div>
+          <div class="micro-proof-item">
+            <span style="color: var(--emerald-primary);">🔒</span>
+            <span><strong>Local-first</strong> offline execution</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="section section-alt">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">Context Switching</div>
+          <h2 class="section-title">Stop switching between tools.</h2>
+          <p class="section-subtitle">
+            Developers lose hours each week copying URLs, swapping editor tabs, and navigating disconnected API clients.
+          </p>
+        </div>
+
+        <div class="problem-card">
+          <div class="problem-col">
+            <h3 style="color: #F87171;">The Traditional Friction</h3>
+            <div class="problem-steps">
+              <div class="problem-step problem-step-bad">1. Inspect backend controller in VS Code</div>
+              <div class="problem-step problem-step-bad">2. Manually reconstruct base path & router prefixes</div>
+              <div class="problem-step problem-step-bad">3. Switch window to Postman or Insomnia</div>
+              <div class="problem-step problem-step-bad">4. Fill path parameters and headers</div>
+              <div class="problem-step problem-step-bad">5. Execute request and inspect response</div>
+              <div class="problem-step problem-step-bad">6. Switch back to VS Code to find handler line</div>
+            </div>
+          </div>
+
+          <div class="problem-col">
+            <h3 style="color: var(--emerald-primary);">The API Route Explorer Way</h3>
+            <div class="problem-steps">
+              <div class="problem-step problem-step-good">✓ Automatic AST discovery of all backend routes</div>
+              <div class="problem-step problem-step-good">✓ Click "Test API" directly in the Activity Bar</div>
+              <div class="problem-step problem-step-good">✓ Route signature & path parameters pre-populated</div>
+              <div class="problem-step problem-step-good">✓ Execute requests locally via native Webview</div>
+              <div class="problem-step problem-step-good">✓ 1-click jump straight back to controller code</div>
+              <div class="problem-step problem-step-good">✓ 1-click export to valid OpenAPI 3.0.3 spec</div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Workflow Section -->
-  <section id="workflow" class="section" style="background: var(--bg-surface-elevated);">
-    <div class="container">
-      <div class="section-header">
-        <div class="section-tag">Continuous Workflow</div>
-        <h2 class="section-title">One seamless developer journey.</h2>
-        <p class="section-subtitle">No copy-pasting URLs. No third-party clients. Everything connects right inside your IDE.</p>
-      </div>
-
-      <div class="workflow-steps-grid">
-        <div class="workflow-card">
-          <div class="workflow-number">1</div>
-          <h3 class="workflow-title">Discover</h3>
-          <p class="workflow-desc">Zero runtime execution. Instant static AST scans find every route in your workspace.</p>
-        </div>
-        <div class="workflow-card">
-          <div class="workflow-number">2</div>
-          <h3 class="workflow-title">Analyze</h3>
-          <p class="workflow-desc">Detect duplicate routes, shadowed endpoints, missing handlers, and extract middleware stacks.</p>
-        </div>
-        <div class="workflow-card">
-          <div class="workflow-number">3</div>
-          <h3 class="workflow-title">Test API</h3>
-          <p class="workflow-desc">Launch the native HTTP Client pre-populated with method, base URL, and path parameters.</p>
-        </div>
-        <div class="workflow-card">
-          <div class="workflow-number">4</div>
-          <h3 class="workflow-title">Inspect</h3>
-          <p class="workflow-desc">Inspect status codes, response headers, millisecond latency, payload sizes, and formatted bodies.</p>
-        </div>
-        <div class="workflow-card">
-          <div class="workflow-number">5</div>
-          <h3 class="workflow-title">Document</h3>
-          <p class="workflow-desc">Generate valid OpenAPI 3.0.3 YAML and JSON specifications without manual annotations.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Feature Grid Section -->
-  <section id="features" class="section">
-    <div class="container">
-      <div class="section-header">
-        <div class="section-tag">Core Capabilities</div>
-        <h2 class="section-title">Engineered for real-world backend engineering.</h2>
-        <p class="section-subtitle">Everything you need to navigate, test, and document backend APIs without leaving VS Code.</p>
-      </div>
-
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon-badge">⚡</div>
-          <h3 class="feature-title">1-Click Source Navigation</h3>
-          <p class="feature-desc">Click any endpoint to jump straight to its exact controller declaration line and column in your editor.</p>
+    <!-- 5-Step Product Workflow -->
+    <section class="section">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">Continuous Workflow</div>
+          <h2 class="section-title">Five steps. Zero context switching.</h2>
+          <p class="section-subtitle">
+            From raw source code to verified response and live documentation without leaving your editor.
+          </p>
         </div>
 
-        <div class="feature-card">
-          <div class="feature-icon-badge">🔍</div>
-          <h3 class="feature-title">Fuzzy Search & Filters</h3>
-          <p class="feature-desc">Search across thousands of endpoints by path, HTTP method, module folder, or handler function name.</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon-badge">🩺</div>
-          <h3 class="feature-title">Route Health Diagnostics</h3>
-          <p class="feature-desc">Automatic detection of route shadowing, parameter collisions, duplicate paths, and missing handlers.</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon-badge">🛠️</div>
-          <h3 class="feature-title">Native HTTP Client</h3>
-          <p class="feature-desc">Send GET, POST, PUT, PATCH, DELETE requests. Configure path params, query params, headers, and JSON bodies.</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon-badge">📋</div>
-          <h3 class="feature-title">cURL Generation</h3>
-          <p class="feature-desc">One-click copy of reproducible, formatted cURL commands reflecting your exact parameters, headers, and body.</p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon-badge">📄</div>
-          <h3 class="feature-title">OpenAPI 3.0.3 Export</h3>
-          <p class="feature-desc">Export standardized OpenAPI YAML and JSON specifications with zero absolute machine path leakage.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Framework Support Section -->
-  <section id="frameworks" class="section" style="background: var(--bg-surface-elevated);">
-    <div class="container">
-      <div class="section-header">
-        <div class="section-tag">Framework Compatibility</div>
-        <h2 class="section-title">Full support for the modern Node.js ecosystem.</h2>
-        <p class="section-subtitle">Robust, AST-based parsers designed to understand nested routes, decorators, and folder conventions.</p>
-      </div>
-
-      <div class="frameworks-grid">
-        <!-- Express -->
-        <div class="framework-card">
-          <div class="framework-header">
-            <span class="brand-badge">EXPRESS</span>
-            <h3 class="framework-name">Express.js</h3>
+        <div class="workflow-grid">
+          <div class="workflow-card">
+            <div class="workflow-num">01</div>
+            <h3 class="workflow-title">Discover</h3>
+            <p class="workflow-desc">Instant static AST analysis indexes every route across your backend without running user code.</p>
+            <div class="workflow-code-pill">GET /api/v1/users</div>
           </div>
-          <ul class="framework-checklist">
-            <li>app.get(), router.post()</li>
-            <li>Nested router prefixes</li>
-            <li>Chained route middleware</li>
-            <li>Dynamic :params normalization</li>
-          </ul>
-        </div>
 
-        <!-- Next.js -->
-        <div class="framework-card">
-          <div class="framework-header">
-            <span class="brand-badge">NEXT.JS</span>
-            <h3 class="framework-name">Next.js</h3>
+          <div class="workflow-card">
+            <div class="workflow-num">02</div>
+            <h3 class="workflow-title">Analyze</h3>
+            <p class="workflow-desc">Detect duplicate routes, shadowed parameters, missing handlers, and active middleware stacks.</p>
+            <div class="workflow-code-pill">Healthy • 0 Conflicts</div>
           </div>
-          <ul class="framework-checklist">
-            <li>App Router (route.ts GET/POST)</li>
-            <li>Pages Router (pages/api/**)</li>
-            <li>Dynamic & catch-all routes ([id])</li>
-            <li>Route groups (parentheses)</li>
-          </ul>
-        </div>
 
-        <!-- Fastify -->
-        <div class="framework-card">
-          <div class="framework-header">
-            <span class="brand-badge">FASTIFY</span>
-            <h3 class="framework-name">Fastify</h3>
+          <div class="workflow-card">
+            <div class="workflow-num">03</div>
+            <h3 class="workflow-title">Test</h3>
+            <p class="workflow-desc">Open the native HTTP Client pre-populated with method, base URL, and path parameter inputs.</p>
+            <div class="workflow-code-pill">Send [ ⌘+Enter ]</div>
           </div>
-          <ul class="framework-checklist">
-            <li>fastify.get(), fastify.route()</li>
-            <li>Plugin prefix resolution</li>
-            <li>preHandler & preValidation</li>
-            <li>Multi-method route arrays</li>
-          </ul>
-        </div>
 
-        <!-- NestJS -->
-        <div class="framework-card">
-          <div class="framework-header">
-            <span class="brand-badge">NESTJS</span>
-            <h3 class="framework-name">NestJS</h3>
+          <div class="workflow-card">
+            <div class="workflow-num">04</div>
+            <h3 class="workflow-title">Inspect</h3>
+            <p class="workflow-desc">Inspect status codes, response headers, millisecond timing, payload size, and formatted JSON.</p>
+            <div class="workflow-code-pill">200 OK • 40 ms</div>
           </div>
-          <ul class="framework-checklist">
-            <li>@Controller() decorators</li>
-            <li>@Get(), @Post(), @Delete()</li>
-            <li>@UseGuards() extraction</li>
-            <li>Controller prefix chaining</li>
-          </ul>
+
+          <div class="workflow-card">
+            <div class="workflow-num">05</div>
+            <h3 class="workflow-title">Document</h3>
+            <p class="workflow-desc">Generate deterministic OpenAPI 3.0.3 specifications with single-click YAML or JSON export.</p>
+            <div class="workflow-code-pill">openapi: 3.0.3</div>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Security & Privacy Section -->
-  <section id="security" class="section">
-    <div class="container">
-      <div class="security-box">
-        <div>
-          <div class="section-tag">Privacy & Security First</div>
-          <h2 class="section-title">Built for enterprise confidentiality.</h2>
-          <p class="section-subtitle">Your code, credentials, and network requests stay strictly on your local computer.</p>
-
-          <ul class="security-points">
-            <li class="security-point">
-              <span>🔒</span>
-              <div>
-                <strong>Zero Cloud Synchronization:</strong> All route indexing, AST parsing, and request dispatch happens locally.
+    <!-- Showcase 1: Native HTTP Client -->
+    <section class="section section-alt">
+      <div class="container">
+        <div class="showcase-grid">
+          <div class="showcase-content">
+            <div class="section-tag">Native HTTP Client</div>
+            <h2 class="showcase-title">Test the route without leaving your editor.</h2>
+            <p class="showcase-desc">
+              Execute live HTTP requests directly beside your code. No cloud synchronization, no external account, and no separate desktop client required.
+            </p>
+            <div class="showcase-list">
+              <div class="showcase-list-item">
+                <span class="check">✓</span>
+                <span><strong>Dynamic Path Parameters:</strong> Automatically derives input fields for <code>:id</code>, <code>{id}</code>, or <code>[id]</code>.</span>
               </div>
-            </li>
-            <li class="security-point">
-              <span>🚫</span>
-              <div>
-                <strong>No .env Scanning:</strong> We deliberately ignore environment files, secret files, and private keys.
+              <div class="showcase-list-item">
+                <span class="check">✓</span>
+                <span><strong>Local Node Transport:</strong> Requests execute purely from your machine via local sockets.</span>
               </div>
-            </li>
-            <li class="security-point">
-              <span>🛡️</span>
-              <div>
-                <strong>Strict CSP & Nonces:</strong> Webviews execute under strict Content Security Policies with zero unsafe-eval.
+              <div class="showcase-list-item">
+                <span class="check">✓</span>
+                <span><strong>Reproducible cURL:</strong> Instant one-click copyable cURL commands matching your exact active configuration.</span>
               </div>
-            </li>
-            <li class="security-point">
-              <span>👤</span>
-              <div>
-                <strong>No Account Required:</strong> No registration, no telemetry, no tracking pixels, zero analytics beacons.
+              <div class="showcase-list-item">
+                <span class="check">✓</span>
+                <span><strong>In-flight Cancellation:</strong> Abort long-running requests safely with graceful socket teardown.</span>
               </div>
-            </li>
-          </ul>
-        </div>
+            </div>
+          </div>
 
-        <div class="security-badge-wall">
-          <div class="sec-pill">
-            <span class="sec-pill-icon">✓</span>
-            <span>Local Node.js Execution Only</span>
-          </div>
-          <div class="sec-pill">
-            <span class="sec-pill-icon">✓</span>
-            <span>Zero Remote Telemetry</span>
-          </div>
-          <div class="sec-pill">
-            <span class="sec-pill-icon">✓</span>
-            <span>Cryptographic CSP Nonces</span>
-          </div>
-          <div class="sec-pill">
-            <span class="sec-pill-icon">✓</span>
-            <span>No Machine Paths in OpenAPI</span>
+          <div class="showcase-preview-card">
+            <img src="assets/screenshots/route-statistics.png" alt="API Route Explorer QuickPick and Metrics">
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Changelog & Release Timeline Section -->
-  <section id="changelog" class="section" style="background: var(--bg-surface-elevated);">
-    <div class="container">
-      <div class="section-header">
-        <div class="section-tag">Release History</div>
-        <h2 class="section-title">Continuous engineering excellence.</h2>
-        <p class="section-subtitle">Hardened through 16 iterative sprints with 250 passing automated tests.</p>
-      </div>
-
-      <div class="release-timeline">
-        <div class="release-entry">
-          <div class="release-header">
-            <span class="release-badge">v1.5.0 Release Candidate</span>
-            <span class="release-date">October 2026</span>
+    <!-- Showcase 2: 1-Click Source Navigation -->
+    <section class="section">
+      <div class="container">
+        <div class="showcase-grid">
+          <div class="showcase-preview-card">
+            <img src="assets/screenshots/route-explorer-tree.png" alt="API Route Explorer Activity Bar TreeView">
           </div>
-          <ul class="release-bullets">
-            <li>Unified MVP workflow: Discover → Analyze → Test API → Inspect Response → Document.</li>
-            <li>Streamlined Route Action Triad: [ Analyze ] [ Test API ] [ OpenAPI ].</li>
-            <li>Route Context banner in HTTP Client with framework badge and 1-click source jump.</li>
-            <li>250 passing automated tests with 0 failures and 0 warnings.</li>
-            <li>Full Solo Backend validation verified with zero source modifications.</li>
-          </ul>
-        </div>
 
-        <div class="release-entry">
-          <div class="release-header">
-            <span class="release-badge">v1.4.0 — HTTP Client Hardening</span>
-            <span class="release-date">October 2026</span>
+          <div class="showcase-content">
+            <div class="section-tag">Source Navigation</div>
+            <h2 class="showcase-title">From route to source in one click.</h2>
+            <p class="showcase-desc">
+              Click any route in the Activity Bar TreeView to jump directly to its controller definition line and column in your editor.
+            </p>
+            <div class="showcase-list">
+              <div class="showcase-list-item">
+                <span class="check">✓</span>
+                <span><strong>Pinpoint Accuracy:</strong> Direct jump to route declaration line across nested controllers.</span>
+              </div>
+              <div class="showcase-list-item">
+                <span class="check">✓</span>
+                <span><strong>Smart Grouping Modes:</strong> Organize routes by File, Framework, HTTP Method, or Health status.</span>
+              </div>
+              <div class="showcase-list-item">
+                <span class="check">✓</span>
+                <span><strong>Sub-second Watchers:</strong> Incremental file watchers update your tree dynamically as you write code.</span>
+              </div>
+            </div>
+            <div>
+              <a href="features.html" class="btn btn-secondary">Explore All Features →</a>
+            </div>
           </div>
-          <ul class="release-bullets">
-            <li>URL & base path prefix deduplication architecture.</li>
-            <li>Interactive dynamic parameter inputs with client validation.</li>
-            <li>Response inspector with status badge, duration timing, and size calculation.</li>
-            <li>cURL generation and one-click clipboard copying.</li>
-          </ul>
-        </div>
-
-        <div class="release-entry">
-          <div class="release-header">
-            <span class="release-badge">v1.3.0 — Native HTTP Client</span>
-            <span class="release-date">October 2026</span>
-          </div>
-          <ul class="release-bullets">
-            <li>Interactive HTTP Client Webview replacing external API testing tools.</li>
-            <li>Strict CSP and message validation boundaries.</li>
-            <li>Request cancellation with clean socket teardown.</li>
-          </ul>
-        </div>
-
-        <div class="release-entry">
-          <div class="release-header">
-            <span class="release-badge">v1.2.0 — OpenAPI Generation</span>
-            <span class="release-date">October 2026</span>
-          </div>
-          <ul class="release-bullets">
-            <li>Deterministic OpenAPI 3.0.3 specification generator.</li>
-            <li>Standard YAML and JSON serializers with zero absolute path leaks.</li>
-          </ul>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Final Call to Action -->
-  <section class="section" style="text-align: center; padding: 100px 0;">
-    <div class="container">
-      <h2 class="section-title" style="font-size: 2.8rem; margin-bottom: 20px;">
-        Ready to master your API routes?
-      </h2>
-      <p class="section-subtitle" style="margin-bottom: 36px;">
-        Free and open-source. Install in seconds directly from the Visual Studio Code Marketplace.
-      </p>
-      <div class="hero-cta-group">
-        <a href="https://marketplace.visualstudio.com/items?itemName=api-route-explorer.api-route-explorer" class="btn btn-primary btn-lg">
-          Install for VS Code
-        </a>
-        <a href="https://github.com/hussnain-143/api-route-explorer" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-lg">
-          Star on GitHub
-        </a>
+    <!-- Showcase 3: OpenAPI 3.0.3 Generation -->
+    <section class="section section-alt">
+      <div class="container">
+        <div class="showcase-grid">
+          <div class="showcase-content">
+            <div class="section-tag">OpenAPI 3.0.3</div>
+            <h2 class="showcase-title">Turn discovered routes into documentation.</h2>
+            <p class="showcase-desc">
+              Generate complete, compliant OpenAPI 3.0.3 specifications from discovered endpoints without writing JSDoc tags or Swagger decorators.
+            </p>
+            <div class="code-block">
+              <div class="code-block-header">
+                <span>openapi.yaml</span>
+                <span>OpenAPI 3.0.3</span>
+              </div>
+              <pre><code>openapi: 3.0.3
+info:
+  title: API Route Explorer Workspace
+  version: 1.0.0
+paths:
+  /api/v1/users/{id}:
+    get:
+      summary: GET /api/v1/users/{id}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response</code></pre>
+            </div>
+            <div>
+              <a href="docs/openapi.html" class="btn btn-primary">OpenAPI Documentation Guide →</a>
+            </div>
+          </div>
+
+          <div class="showcase-preview-card">
+            <img src="assets/screenshots/route-tree-detail.png" alt="API Route Explorer TreeView Details">
+          </div>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Footer -->
-  <footer class="footer">
+    <!-- Frameworks Grid Preview -->
+    <section class="section">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">Supported Frameworks</div>
+          <h2 class="section-title">Built for your backend stack.</h2>
+          <p class="section-subtitle">
+            First-class static route discovery for the most popular Node.js & TypeScript frameworks.
+          </p>
+        </div>
+
+        <div class="frameworks-grid">
+          <div class="framework-card">
+            <div class="framework-card-header">
+              <span class="framework-name">Express.js</span>
+              <span class="badge badge-emerald">Verified</span>
+            </div>
+            <p class="feature-desc">Discovers top-level application verbs and nested <code>express.Router()</code> mounts.</p>
+            <div class="framework-pills">
+              <div class="framework-pill-item">app.get(), app.post()</div>
+              <div class="framework-pill-item">router.use('/prefix', child)</div>
+              <div class="framework-pill-item">Dynamic :param segments</div>
+            </div>
+          </div>
+
+          <div class="framework-card">
+            <div class="framework-card-header">
+              <span class="framework-name">Next.js App Router</span>
+              <span class="badge badge-emerald">Verified</span>
+            </div>
+            <p class="feature-desc">Analyzes folder-based routing in <code>app/api/**/route.ts</code>.</p>
+            <div class="framework-pills">
+              <div class="framework-pill-item">GET, POST, PUT, DELETE exports</div>
+              <div class="framework-pill-item">Dynamic [id] folders</div>
+              <div class="framework-pill-item">Catch-all [...slug] routes</div>
+            </div>
+          </div>
+
+          <div class="framework-card">
+            <div class="framework-card-header">
+              <span class="framework-name">Fastify</span>
+              <span class="badge badge-emerald">Verified</span>
+            </div>
+            <p class="feature-desc">Parses fastify instance verbs and modular plugin route registrations.</p>
+            <div class="framework-pills">
+              <div class="framework-pill-item">fastify.get(), fastify.route()</div>
+              <div class="framework-pill-item">fastify.register(plugin, { prefix })</div>
+              <div class="framework-pill-item">preHandler stacks</div>
+            </div>
+          </div>
+
+          <div class="framework-card">
+            <div class="framework-card-header">
+              <span class="framework-name">NestJS</span>
+              <span class="badge badge-emerald">Verified</span>
+            </div>
+            <p class="feature-desc">Inspects TypeScript controller classes and method-level route decorators.</p>
+            <div class="framework-pills">
+              <div class="framework-pill-item">@Controller('prefix')</div>
+              <div class="framework-pill-item">@Get(), @Post(), @Delete()</div>
+              <div class="framework-pill-item">@Param(), @UseGuards()</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 36px;">
+          <a href="frameworks.html" class="btn btn-secondary">View Framework Guide & Detection Rules →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Security & Privacy Architecture -->
+    <section class="section section-alt">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">Privacy & Security</div>
+          <h2 class="section-title">Your code stays on your machine.</h2>
+          <p class="section-subtitle">
+            A developer tool built with a strict offline, zero-telemetry architecture.
+          </p>
+        </div>
+
+        <div class="security-comparison-grid">
+          <div class="security-col">
+            <h3 style="color: var(--emerald-primary);">What API Route Explorer Does</h3>
+            <div class="security-list">
+              <div class="security-item">
+                <span class="icon-check">✓</span>
+                <span><strong>Local Static Parsing:</strong> Analyzes code syntax trees locally without running untrusted code.</span>
+              </div>
+              <div class="security-item">
+                <span class="icon-check">✓</span>
+                <span><strong>Direct Local Transport:</strong> HTTP client requests are sent directly to the local port you specify.</span>
+              </div>
+              <div class="security-item">
+                <span class="icon-check">✓</span>
+                <span><strong>Safe Relative Paths:</strong> Generated OpenAPI files strip absolute machine directories to prevent leakage.</span>
+              </div>
+              <div class="security-item">
+                <span class="icon-check">✓</span>
+                <span><strong>Strict CSP:</strong> Webview panels enforce nonce-based execution with <code>default-src 'none'</code>.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="security-col">
+            <h3 style="color: #F87171;">What API Route Explorer Never Does</h3>
+            <div class="security-list">
+              <div class="security-item">
+                <span class="icon-cross">✗</span>
+                <span><strong>No Telemetry or Tracking:</strong> Zero analytics beacons, telemetry pings, or usage trackers.</span>
+              </div>
+              <div class="security-item">
+                <span class="icon-cross">✗</span>
+                <span><strong>No Account or Cloud Sync:</strong> No logins, sign-ups, or remote cloud servers involved.</span>
+              </div>
+              <div class="security-item">
+                <span class="icon-cross">✗</span>
+                <span><strong>No .env Scanning:</strong> Secret environment files are explicitly excluded from workspace scanners.</span>
+              </div>
+              <div class="security-item">
+                <span class="icon-cross">✗</span>
+                <span><strong>No Credential Harvesting:</strong> Authorization headers and tokens are never persisted or logged.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="privacy-diagram-card">
+          <pre><code>YOUR WORKSPACE ──▶ API Route Explorer ──▶ Scan / Test / OpenAPI ──▶ Local Machine Only
+                                                                  └── [ NO CLOUD • NO ACCOUNT • NO TELEMETRY ]</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Final Call to Action -->
+    <section class="section" style="text-align: center;">
+      <div class="container">
+        <h2 class="section-title">Ready to master your API routes?</h2>
+        <p class="section-subtitle" style="margin-bottom: 36px;">
+          Free and open-source. Install in seconds directly from the Visual Studio Code Marketplace.
+        </p>
+        <div class="hero-cta-group">
+          <a href="install.html" class="btn btn-primary btn-lg">
+            Install for VS Code
+          </a>
+          <a href="https://github.com/hussnain-143/api-route-explorer" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-lg">
+            Star on GitHub
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
     <div class="container">
       <div class="footer-grid">
         <div>
-          <div class="brand">
-            <img src="assets/logos/logo-symbol.svg" alt="API Route Explorer Logo">
-            <span>API Route Explorer</span>
-          </div>
+          <a href="index.html" class="brand">
+            <img src="assets/logos/logo-symbol.svg" alt="API Route Explorer" class="brand-icon">
+            <span>API Route <span class="brand-accent">Explorer</span></span>
+          </a>
           <p class="footer-desc">
-            The developer-focused Visual Studio Code extension to discover, analyze, test, and document backend API routes.
+            Visual API route discovery, analysis, testing, and OpenAPI documentation directly inside Visual Studio Code.
           </p>
         </div>
 
         <div>
           <div class="footer-col-title">Product</div>
-          <ul class="footer-links">
-            <li><a href="#workflow" class="footer-link">Workflow</a></li>
-            <li><a href="#features" class="footer-link">Features</a></li>
-            <li><a href="#frameworks" class="footer-link">Frameworks</a></li>
-            <li><a href="#changelog" class="footer-link">Changelog</a></li>
-          </ul>
+          <div class="footer-links">
+            <a href="features.html" class="footer-link">Features</a>
+            <a href="frameworks.html" class="footer-link">Frameworks</a>
+            <a href="install.html" class="footer-link">Install</a>
+            <a href="changelog.html" class="footer-link">Changelog</a>
+          </div>
         </div>
 
         <div>
           <div class="footer-col-title">Documentation</div>
-          <ul class="footer-links">
-            <li><a href="https://github.com/hussnain-143/api-route-explorer#readme" class="footer-link">Quick Start</a></li>
-            <li><a href="https://github.com/hussnain-143/api-route-explorer/blob/main/CONTRIBUTING.md" class="footer-link">Contributing</a></li>
-            <li><a href="https://github.com/hussnain-143/api-route-explorer/blob/main/SUPPORT.md" class="footer-link">Support</a></li>
-            <li><a href="#security" class="footer-link">Security Policy</a></li>
-          </ul>
+          <div class="footer-links">
+            <a href="docs/getting-started.html" class="footer-link">Getting Started</a>
+            <a href="docs/http-client.html" class="footer-link">HTTP Client</a>
+            <a href="docs/openapi.html" class="footer-link">OpenAPI 3.0</a>
+            <a href="docs/troubleshooting.html" class="footer-link">Troubleshooting</a>
+          </div>
         </div>
 
         <div>
           <div class="footer-col-title">Community</div>
-          <ul class="footer-links">
-            <li><a href="https://github.com/hussnain-143/api-route-explorer" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub Repository</a></li>
-            <li><a href="https://github.com/hussnain-143/api-route-explorer/issues" target="_blank" rel="noopener noreferrer" class="footer-link">Issue Tracker</a></li>
-            <li><a href="https://marketplace.visualstudio.com/items?itemName=api-route-explorer.api-route-explorer" target="_blank" rel="noopener noreferrer" class="footer-link">VS Code Marketplace</a></li>
-            <li><a href="https://github.com/hussnain-143/api-route-explorer/blob/main/LICENSE" class="footer-link">MIT License</a></li>
-          </ul>
+          <div class="footer-links">
+            <a href="https://github.com/hussnain-143/api-route-explorer" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub</a>
+            <a href="https://github.com/hussnain-143/api-route-explorer/issues" target="_blank" rel="noopener noreferrer" class="footer-link">Issues</a>
+            <a href="https://marketplace.visualstudio.com/items?itemName=hussnain-143.api-route-explorer" target="_blank" rel="noopener noreferrer" class="footer-link">Marketplace</a>
+            <a href="https://github.com/hussnain-143/api-route-explorer/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer" class="footer-link">Contributing</a>
+          </div>
+        </div>
+
+        <div>
+          <div class="footer-col-title">Legal</div>
+          <div class="footer-links">
+            <a href="security.html" class="footer-link">Security & Privacy</a>
+            <a href="https://github.com/hussnain-143/api-route-explorer/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="footer-link">MIT License</a>
+          </div>
         </div>
       </div>
 
       <div class="footer-bottom">
-        <span>© 2026 Hussnain Ahmed and API Route Explorer Contributors. Released under the MIT License.</span>
-        <span>Created by <a href="https://github.com/hussnain-143" target="_blank" rel="noopener noreferrer" style="color: var(--emerald-primary); text-decoration: underline;">Hussnain Ahmed</a> • Zero tracking</span>
+        <span>© 2026 Hussnain Ahmed and API Route Explorer Contributors. Open-source under MIT License.</span>
+        <span>Created by <a href="https://github.com/hussnain-143" target="_blank" rel="noopener noreferrer" style="color: var(--emerald-primary); text-decoration: underline;">Hussnain Ahmed</a></span>
       </div>
     </div>
   </footer>

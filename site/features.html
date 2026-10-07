@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Features — API Route Explorer for VS Code</title>
+  <meta name="description" content="Explore all features of API Route Explorer: AST Route Discovery, Health Analysis, Native HTTP Client, and OpenAPI 3.0.3 generation.">
+  <link rel="canonical" href="https://apirouteexplorer.dev/features.html">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://apirouteexplorer.dev/features.html">
+  <meta property="og:title" content="Features — API Route Explorer">
+  <meta property="og:description" content="Route Intelligence, Native HTTP Client, OpenAPI 3.0.3, and Developer UX directly inside VS Code.">
+  <meta property="og:image" content="https://apirouteexplorer.dev/assets/social-preview.png">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/svg+xml" href="assets/logos/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/logos/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/logos/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/logos/apple-touch-icon.png">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav-container">
+      <a href="index.html" class="brand" aria-label="API Route Explorer Home">
+        <img src="assets/logos/logo-symbol.svg" alt="API Route Explorer Symbol" class="brand-icon">
+        <span>API Route <span class="brand-accent">Explorer</span></span>
+      </a>
+
+      <nav class="nav-menu" aria-label="Main Navigation">
+        <a href="features.html" class="nav-link active" aria-current="page">Features</a>
+        <a href="frameworks.html" class="nav-link">Frameworks</a>
+        <a href="docs/index.html" class="nav-link">Docs</a>
+        <a href="security.html" class="nav-link">Security</a>
+        <a href="changelog.html" class="nav-link">Changelog</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Toggle Theme" title="Toggle Dark/Light Mode">
+          <span id="theme-icon">☀️</span>
+        </button>
+        <a href="https://github.com/hussnain-143/api-route-explorer" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">GitHub</a>
+        <a href="install.html" class="btn btn-primary btn-sm">Install</a>
+        <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Toggle mobile menu" aria-expanded="false">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="mobile-drawer" class="mobile-drawer" aria-label="Mobile Navigation">
+    <a href="features.html" class="nav-link active">Features</a>
+    <a href="frameworks.html" class="nav-link">Frameworks</a>
+    <a href="docs/index.html" class="nav-link">Documentation</a>
+    <a href="security.html" class="nav-link">Security & Privacy</a>
+    <a href="changelog.html" class="nav-link">Changelog</a>
+    <a href="install.html" class="btn btn-primary">Install for VS Code</a>
+  </div>
+
+  <main>
+    <section class="section" style="padding: 64px 0 32px;">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">Product Capabilities</div>
+          <h1 class="section-title">Engineered for real-world backend workflows.</h1>
+          <p class="section-subtitle">
+            Every feature is designed to eliminate context switching and bring API navigation, testing, and documentation directly into VS Code.
+          </p>
+        </div>
+
+        <div class="features-container">
+          <!-- Group 1: Route Intelligence -->
+          <div>
+            <h2 class="feature-group-title">
+              <span style="color: var(--emerald-primary);">🧭</span> Route Intelligence & Navigation
+            </h2>
+            <div class="features-grid">
+              <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3 class="feature-title">Offline AST Parsing</h3>
+                <p class="feature-desc">Static analysis parses route signatures safely without executing runtime application code or side effects.</p>
+              </div>
+              <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3 class="feature-title">1-Click Source Navigation</h3>
+                <p class="feature-desc">Click any endpoint in the tree to jump directly to its controller definition line and column in your editor.</p>
+              </div>
+              <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <h3 class="feature-title">Fuzzy Search & QuickPick</h3>
+                <p class="feature-desc">Press <code>Cmd+P</code> to search endpoints by HTTP method, route path, handler token, or controller file name.</p>
+              </div>
+              <div class="feature-card">
+                <div class="feature-icon">🗂️</div>
+                <h3 class="feature-title">Multi-Dimensional Grouping</h3>
+                <p class="feature-desc">Switch between Group by File, Group by Framework, Group by HTTP Method, or Group by Health status instantly.</p>
+              </div>
+              <div class="feature-card">
+                <div class="feature-icon">🩺</div>
+                <h3 class="feature-title">Conflict & Shadowing Detection</h3>
+                <p class="feature-desc">Flags parameterized routes that shadow static endpoints (e.g. <code>/users/:id</code> shadowing <code>/users/me</code>).</p>
+              </div>
+              <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h3 class="feature-title">Middleware Stack Inspection</h3>
+                <p class="feature-desc">Inspect active middleware chains, Fastify pre-handlers, and NestJS <code>@UseGuards()</code> decorators.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Group 2: Native HTTP Client -->
+          <div>
+            <h2 class="feature-group-title">
+              <span style="color: var(--emerald-primary);">⚡</span> Native HTTP Client
+            </h2>
+            <div class="features-grid">
+              <div class="feature-card">
+                <div class="feature-icon">🔌</div>
+                <h3 class="feature-title">Zero-Configuration Launch</h3>
+                <p class="feature-desc">Click "Test API" on any route to open the HTTP client with HTTP verb, base path, and route context pre-loaded.</p>
+              </div>
+              <div class="feature-card">
+                <div class="feature-icon">🧩</div>
+                <h3 class="feature-title">Dynamic Path Parameters</h3>
+                <p class="feature-desc">Automatically derives input fields for <code>:id</code>, <code>{id}</code>, or <code>[id]</code> and substitutes them cleanly into the request URL.</p>
+              </div>
+              <div class="feature-card">
+                <div class="feature-icon">📝</div>
+                <h3 class="feature-title">JSON Body & Headers Editor</h3>
+                <p class="feature-desc">Configure custom request headers and format JSON payloads with syntax error checks prior to sending.</p>
+              </div>
+              <div class="feature-card">
+                <div class="feature-icon">⏱️</div>
+                <h3 class="feature-title">Millisecond Response Inspector</h3>
+                <p class="feature-desc">Measures roundtrip socket latency, status codes, payload bytes, pretty-printed JSON body, and response headers.</p>
+              </div>
+              <div class="feature-card">
+                <div class="feature-icon">📋</div>
+                <h3 class="feature-title">Reproducible cURL Export</h3>
+                <p class="feature-desc">Generates exact, copyable terminal cURL commands matching your active parameters, headers, and request body.</p>
+              </div>
+              <div class="feature-card">
+                <div class="feature-icon">🛑</div>
+                <h3 class="feature-title">In-Flight Cancellation</h3>
+                <p class="feature-desc">Abort hanging or slow requests with clean socket teardown without freezing your VS Code window.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Group 3: OpenAPI 3.0.3 -->
+          <div>
+            <h2 class="feature-group-title">
+              <span style="color: var(--emerald-primary);">📜</span> OpenAPI 3.0.3 Specification
+            </h2>
+            <div class="features-grid">
+              <div class="feature-card">
+                <div class="feature-icon">✨</div>
+                <h3 class="feature-title">Automated Spec Builder</h3>
+                <p class="feature-desc">Compiles a valid OpenAPI 3.0.3 document from discovered routes without requiring manual annotations or YAML maintenance.</p>
+              </div>
+              <div class="feature-card">
+                <div class="feature-icon">👁️</div>
+                <h3 class="feature-title">Route-Level Preview</h3>
+                <p class="feature-desc">Click "View OpenAPI" to preview a single route's YAML operation definition side-by-side with your code.</p>
+              </div>
+              <div class="feature-card">
+                <div class="feature-icon">💾</div>
+                <h3 class="feature-title">Deterministic Export</h3>
+                <p class="feature-desc">Export your entire backend API catalog to standard JSON or YAML. Strips private machine paths for safe commits.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 64px;">
+          <a href="install.html" class="btn btn-primary btn-lg">Install API Route Explorer</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="index.html" class="brand">
+            <img src="assets/logos/logo-symbol.svg" alt="API Route Explorer" class="brand-icon">
+            <span>API Route <span class="brand-accent">Explorer</span></span>
+          </a>
+          <p class="footer-desc">Visual API route discovery, analysis, testing, and OpenAPI documentation directly inside VS Code.</p>
+        </div>
+        <div>
+          <div class="footer-col-title">Product</div>
+          <div class="footer-links">
+            <a href="features.html" class="footer-link">Features</a>
+            <a href="frameworks.html" class="footer-link">Frameworks</a>
+            <a href="install.html" class="footer-link">Install</a>
+            <a href="changelog.html" class="footer-link">Changelog</a>
+          </div>
+        </div>
+        <div>
+          <div class="footer-col-title">Documentation</div>
+          <div class="footer-links">
+            <a href="docs/getting-started.html" class="footer-link">Getting Started</a>
+            <a href="docs/http-client.html" class="footer-link">HTTP Client</a>
+            <a href="docs/openapi.html" class="footer-link">OpenAPI 3.0</a>
+            <a href="docs/troubleshooting.html" class="footer-link">Troubleshooting</a>
+          </div>
+        </div>
+        <div>
+          <div class="footer-col-title">Community</div>
+          <div class="footer-links">
+            <a href="https://github.com/hussnain-143/api-route-explorer" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub</a>
+            <a href="https://github.com/hussnain-143/api-route-explorer/issues" target="_blank" rel="noopener noreferrer" class="footer-link">Issues</a>
+            <a href="https://marketplace.visualstudio.com/items?itemName=hussnain-143.api-route-explorer" target="_blank" rel="noopener noreferrer" class="footer-link">Marketplace</a>
+          </div>
+        </div>
+        <div>
+          <div class="footer-col-title">Legal</div>
+          <div class="footer-links">
+            <a href="security.html" class="footer-link">Security & Privacy</a>
+            <a href="https://github.com/hussnain-143/api-route-explorer/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="footer-link">MIT License</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Hussnain Ahmed and API Route Explorer Contributors. Open-source under MIT License.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
