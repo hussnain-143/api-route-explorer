@@ -20,6 +20,9 @@ export const COMMANDS = {
   GROUP_BY: 'apiRouteExplorer.groupBy',
   SEARCH_SIMILAR_ROUTES: 'apiRouteExplorer.searchSimilarRoutes',
   EXPORT_ROUTES: 'apiRouteExplorer.exportRoutes',
+  EXPORT_OPENAPI: 'apiRouteExplorer.exportOpenApi',
+  EXPORT_OPENAPI_JSON: 'apiRouteExplorer.exportOpenApiJson',
+  EXPORT_OPENAPI_YAML: 'apiRouteExplorer.exportOpenApiYaml',
   STATUS_BAR_MENU: 'apiRouteExplorer.statusBarMenu',
 } as const;
 

@@ -22,6 +22,7 @@ import {
 import { RouteDiagnosticsManager } from './analysis/diagnostics';
 import { showRouteStatisticsModal } from './analysis/routeStatistics';
 import { showExportRoutesDialog } from './utils/routeExporter';
+import { showExportOpenApiDialog } from './openapi/openApiExporter';
 import { COMMANDS, MESSAGES, RouteGroupingMode, VIEWS } from './utils/constants';
 import { openFile, openRoute } from './utils/navigation';
 import {
@@ -617,6 +618,39 @@ export function activate(context: vscode.ExtensionContext): void {
       await showExportRoutesDialog(routes, routeTreeProvider.getAnalysis(), filteredRoutes);
     }),
 
+    // 13a. Export OpenAPI Specification command (interactive dialog)
+    vscode.commands.registerCommand(COMMANDS.EXPORT_OPENAPI, async () => {
+      const routes = routeTreeProvider.getRoutes();
+      if (routes.length === 0) {
+        vscode.window.showInformationMessage(MESSAGES.NO_ROUTES_FOUND);
+        return;
+      }
+      const filteredRoutes = routeTreeProvider.getFilteredRoutesList();
+      await showExportOpenApiDialog(routes, routeTreeProvider.getAnalysis(), filteredRoutes);
+    }),
+
+    // 13b. Export OpenAPI Specification (YAML directly)
+    vscode.commands.registerCommand(COMMANDS.EXPORT_OPENAPI_YAML, async () => {
+      const routes = routeTreeProvider.getRoutes();
+      if (routes.length === 0) {
+        vscode.window.showInformationMessage(MESSAGES.NO_ROUTES_FOUND);
+        return;
+      }
+      const filteredRoutes = routeTreeProvider.getFilteredRoutesList();
+      await showExportOpenApiDialog(routes, routeTreeProvider.getAnalysis(), filteredRoutes, 'yaml');
+    }),
+
+    // 13c. Export OpenAPI Specification (JSON directly)
+    vscode.commands.registerCommand(COMMANDS.EXPORT_OPENAPI_JSON, async () => {
+      const routes = routeTreeProvider.getRoutes();
+      if (routes.length === 0) {
+        vscode.window.showInformationMessage(MESSAGES.NO_ROUTES_FOUND);
+        return;
+      }
+      const filteredRoutes = routeTreeProvider.getFilteredRoutesList();
+      await showExportOpenApiDialog(routes, routeTreeProvider.getAnalysis(), filteredRoutes, 'json');
+    }),
+
     // 14. Filter routes by HTTP method
     vscode.commands.registerCommand(COMMANDS.FILTER_BY_METHOD, async () => {
       const allRoutes = routeTreeProvider.getRoutes();
@@ -852,6 +886,14 @@ export function activate(context: vscode.ExtensionContext): void {
           detail: 'Save route inventory with health and middleware details',
           action: async () => {
             await vscode.commands.executeCommand(COMMANDS.EXPORT_ROUTES);
+          },
+        },
+        {
+          label: '$(file-code) Export OpenAPI Specification...',
+          description: 'Generate OpenAPI 3.0 specification (YAML or JSON)',
+          detail: 'Export standardized API contract with path parameters and operations',
+          action: async () => {
+            await vscode.commands.executeCommand(COMMANDS.EXPORT_OPENAPI);
           },
         },
         {
