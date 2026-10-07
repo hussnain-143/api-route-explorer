@@ -4,15 +4,19 @@
   "description": "Discover, analyze, search, and navigate API routes directly inside VS Code.",
   "version": "1.5.0",
   "publisher": "api-route-explorer",
+  "author": {
+    "name": "Hussnain Ahmed",
+    "url": "https://github.com/hussnain-143"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/api-route-explorer/api-route-explorer"
+    "url": "https://github.com/hussnain-143/api-route-explorer"
   },
   "bugs": {
-    "url": "https://github.com/api-route-explorer/api-route-explorer/issues"
+    "url": "https://github.com/hussnain-143/api-route-explorer/issues"
   },
-  "homepage": "https://github.com/api-route-explorer/api-route-explorer#readme",
+  "homepage": "https://github.com/hussnain-143/api-route-explorer#readme",
   "keywords": [
     "api",
     "routes",

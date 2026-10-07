@@ -2,11 +2,12 @@
 
 > **Discover → Analyze → Test → Response → Document API routes directly inside VS Code.**
 
-[![Version](https://img.shields.io/badge/version-1.5.0-emerald.svg)](https://github.com/api-route-explorer/api-route-explorer/releases)
+[![Version](https://img.shields.io/badge/version-1.5.0-emerald.svg)](https://github.com/hussnain-143/api-route-explorer/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-teal.svg)](LICENSE)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.90.0-cyan.svg)](https://marketplace.visualstudio.com/items?itemName=api-route-explorer.api-route-explorer)
-[![Tests: 250 passing](https://img.shields.io/badge/tests-250%20passing-success.svg)](https://github.com/api-route-explorer/api-route-explorer)
+[![Tests: 250 passing](https://img.shields.io/badge/tests-250%20passing-success.svg)](https://github.com/hussnain-143/api-route-explorer)
 [![Dependencies: 0](https://img.shields.io/badge/dependencies-0-success.svg)](package.json)
+[![Author: Hussnain Ahmed](https://img.shields.io/badge/Author-Hussnain%20Ahmed-blue.svg)](https://github.com/hussnain-143)
 
 **API Route Explorer** is a developer-focused VS Code extension that automatically discovers, analyzes, tests, and documents backend API routes directly from your editor. Stop context switching between code, terminal windows, Postman, and Swagger docs.
 
@@ -23,6 +24,24 @@ Open Project ──▶ Discover Routes ──▶ Analyze Health ──▶ Test i
 3. **Test**: Opens a native, secure HTTP Client pre-populated with method, base URL, path parameters, and headers.
 4. **Response**: Measures millisecond timing, status codes, payload sizes, and inspects formatted response bodies and headers.
 5. **Document**: Generates deterministic OpenAPI 3.0.3 specifications with single-click YAML or JSON export.
+
+---
+
+## Screenshots
+
+### 🌲 Discovered Routes in Activity Bar TreeView
+*Explore all backend API endpoints categorized by file with HTTP method icons, route paths, and direct source line navigation:*
+
+<p align="center">
+  <img src="resources/screenshots/route-explorer-tree.png" alt="API Route Explorer TreeView" width="650" />
+</p>
+
+### 📊 Real-time Route Statistics & Breakdown
+*Instant route metrics showing breakdown across HTTP methods, duplicate collisions, and shared multi-method paths:*
+
+<p align="center">
+  <img src="resources/screenshots/route-statistics.png" alt="API Route Explorer Statistics" width="650" />
+</p>
 
 ---
 
@@ -95,7 +114,7 @@ Open Project ──▶ Discover Routes ──▶ Analyze Health ──▶ Test i
    ```
 
 ### From VSIX Package
-Download the latest `api-route-explorer-1.5.0.vsix` from [GitHub Releases](https://github.com/api-route-explorer/api-route-explorer/releases) and run:
+Download the latest `api-route-explorer-1.5.0.vsix` from [GitHub Releases](https://github.com/hussnain-143/api-route-explorer/releases) and run:
 ```bash
 code --install-extension api-route-explorer-1.5.0.vsix --force
 ```
@@ -115,22 +134,6 @@ code --install-extension api-route-explorer-1.5.0.vsix --force
 5. **Test in HTTP Client**: Click **Test API** to launch the built-in HTTP Client. Fill dynamic parameters and click **Send**.
 6. **Inspect Response**: Review the HTTP status, response headers, latency, and formatted JSON body.
 7. **View OpenAPI**: Click **OpenAPI** to generate a YAML specification preview.
-
----
-
-## Screenshots
-
-```text
-┌─ VS CODE ACTIVITY BAR ───────────────────┐  ┌─ NATIVE HTTP CLIENT WEBVIEW ──────────────────────────┐
-│ ▼ API ROUTES (118)                       │  │ [EXPRESS] GET /api/v1/users/{id}                      │
-│   ▼ routes/user.routes.ts                │  │ Source: src/routes/user.routes.ts:42                  │
-│     GET /api/v1/users/:id  [Test API]    │  │ ───────────────────────────────────────────────────── │
-│     POST /api/v1/users                   │  │ [GET ▼] http://localhost:5000/api/v1/users/usr_102    │
-│   ▼ routes/auth.routes.ts                │  │ [Params] [Headers] [Body] [cURL]                      │
-│     POST /api/v1/auth/login              │  │ ───────────────────────────────────────────────────── │
-│     POST /api/v1/auth/register           │  │ ● 200 OK • 42ms • 185B                                │
-└──────────────────────────────────────────┘  └───────────────────────────────────────────────────────┘
-```
 
 ---
 
@@ -162,9 +165,19 @@ API Route Explorer was built on a **privacy-first** foundation:
 
 ---
 
+## Author & References
+
+Developed and maintained by **Hussnain Ahmed**:
+- **GitHub**: [@hussnain-143](https://github.com/hussnain-143)
+- **Repository**: [hussnain-143/api-route-explorer](https://github.com/hussnain-143/api-route-explorer)
+- **Issues & Feedback**: [Report an Issue](https://github.com/hussnain-143/api-route-explorer/issues)
+- **Discussions**: [Join GitHub Discussions](https://github.com/hussnain-143/api-route-explorer/discussions)
+
+---
+
 ## Contributing & Support
 
-- **Bug Reports & Feature Requests**: [GitHub Issues](https://github.com/api-route-explorer/api-route-explorer/issues)
+- **Bug Reports & Feature Requests**: [GitHub Issues](https://github.com/hussnain-143/api-route-explorer/issues)
 - **Contributing Guide**: [CONTRIBUTING.md](CONTRIBUTING.md)
 - **Support & Help**: [SUPPORT.md](SUPPORT.md)
 - **Changelog**: [CHANGELOG.md](CHANGELOG.md)
@@ -174,4 +187,4 @@ API Route Explorer was built on a **privacy-first** foundation:
 ## License
 
 API Route Explorer is open-source software licensed under the [MIT License](LICENSE).  
-Copyright (c) 2026 API Route Explorer Contributors.
+Copyright (c) 2026 Hussnain Ahmed and API Route Explorer Contributors.

@@ -43,7 +43,7 @@ src/
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/api-route-explorer/api-route-explorer.git
+   git clone https://github.com/hussnain-143/api-route-explorer.git
    cd api-route-explorer
    ```
 

@@ -59,7 +59,7 @@
         <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Toggle Dark/Light Mode" title="Toggle Theme">
           <span id="theme-icon">☀️</span>
         </button>
-        <a href="https://github.com/api-route-explorer/api-route-explorer" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">
+        <a href="https://github.com/hussnain-143/api-route-explorer" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">
           GitHub
         </a>
         <a href="https://marketplace.visualstudio.com/items?itemName=api-route-explorer.api-route-explorer" class="btn btn-primary btn-sm">
@@ -88,7 +88,7 @@
         <a href="https://marketplace.visualstudio.com/items?itemName=api-route-explorer.api-route-explorer" class="btn btn-primary btn-lg">
           Install for VS Code
         </a>
-        <a href="https://github.com/api-route-explorer/api-route-explorer" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-lg">
+        <a href="https://github.com/hussnain-143/api-route-explorer" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-lg">
           View on GitHub
         </a>
       </div>
@@ -108,24 +108,69 @@
           <span class="mockup-title">Visual Studio Code — API Route Explorer</span>
         </div>
         <div class="mockup-body">
-          <!-- Sidebar -->
+          <!-- Left Panel: VS Code Sidebar Route Tree (matches readme-hero) -->
           <div class="mockup-sidebar">
-            <div class="mockup-sidebar-title">Discovered Routes (118)</div>
-            <div class="route-item-mock active" data-route="GET /api/v1/users/:id">
-              <span class="method-tag tag-get">GET</span>
-              <span>/api/v1/users/:id</span>
+            <div class="mockup-sidebar-header">
+              <span class="mockup-sidebar-brand">API ROUTE EXPLORER</span>
+              <div class="mockup-search-pill">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <span>Filter routes (⌘P)...</span>
+              </div>
             </div>
-            <div class="route-item-mock" data-route="POST /api/v1/auth/login">
-              <span class="method-tag tag-post">POST</span>
-              <span>/api/v1/auth/login</span>
+
+            <!-- Group AUTH -->
+            <div class="tree-group">
+              <div class="tree-group-header">
+                <span class="tree-chevron">▼</span>
+                <span class="tree-group-name">AUTH</span>
+              </div>
+              <div class="tree-children">
+                <div class="route-item-mock" data-route="POST /api/v1/auth/login">
+                  <span class="method-tag tag-post">POST</span>
+                  <span class="route-path">/api/v1/auth/login</span>
+                </div>
+                <div class="route-item-mock" data-route="POST /api/v1/auth/register">
+                  <span class="method-tag tag-post">POST</span>
+                  <span class="route-path">/api/v1/auth/register</span>
+                </div>
+              </div>
             </div>
-            <div class="route-item-mock" data-route="GET /api/v1/admin/bookings">
-              <span class="method-tag tag-get">GET</span>
-              <span>/api/v1/admin/bookings</span>
+
+            <!-- Group USERS -->
+            <div class="tree-group">
+              <div class="tree-group-header">
+                <span class="tree-chevron">▼</span>
+                <span class="tree-group-name">USERS</span>
+              </div>
+              <div class="tree-children">
+                <div class="route-item-mock" data-route="GET /api/v1/users">
+                  <span class="method-tag tag-get">GET</span>
+                  <span class="route-path">/api/v1/users</span>
+                </div>
+                <div class="route-item-mock active" data-route="GET /api/v1/users/:id">
+                  <span class="method-tag tag-get">GET</span>
+                  <span class="route-path">/api/v1/users/:id</span>
+                  <span class="jump-arrow" title="1-Click AST Jump">→</span>
+                </div>
+              </div>
             </div>
-            <div class="route-item-mock" data-route="DELETE /api/v1/items/:id">
-              <span class="method-tag tag-delete">DEL</span>
-              <span>/api/v1/items/:id</span>
+
+            <!-- Group PRODUCTS -->
+            <div class="tree-group">
+              <div class="tree-group-header">
+                <span class="tree-chevron">▼</span>
+                <span class="tree-group-name">PRODUCTS</span>
+              </div>
+              <div class="tree-children">
+                <div class="route-item-mock" data-route="GET /api/v1/products">
+                  <span class="method-tag tag-get">GET</span>
+                  <span class="route-path">/api/v1/products</span>
+                </div>
+                <div class="route-item-mock" data-route="POST /api/v1/products">
+                  <span class="method-tag tag-post">POST</span>
+                  <span class="route-path">/api/v1/products</span>
+                </div>
+              </div>
             </div>
           </div>
           <!-- Main HTTP Client -->
@@ -457,7 +502,7 @@
         <a href="https://marketplace.visualstudio.com/items?itemName=api-route-explorer.api-route-explorer" class="btn btn-primary btn-lg">
           Install for VS Code
         </a>
-        <a href="https://github.com/api-route-explorer/api-route-explorer" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-lg">
+        <a href="https://github.com/hussnain-143/api-route-explorer" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-lg">
           Star on GitHub
         </a>
       </div>
@@ -491,9 +536,9 @@
         <div>
           <div class="footer-col-title">Documentation</div>
           <ul class="footer-links">
-            <li><a href="https://github.com/api-route-explorer/api-route-explorer#readme" class="footer-link">Quick Start</a></li>
-            <li><a href="https://github.com/api-route-explorer/api-route-explorer/blob/main/CONTRIBUTING.md" class="footer-link">Contributing</a></li>
-            <li><a href="https://github.com/api-route-explorer/api-route-explorer/blob/main/SUPPORT.md" class="footer-link">Support</a></li>
+            <li><a href="https://github.com/hussnain-143/api-route-explorer#readme" class="footer-link">Quick Start</a></li>
+            <li><a href="https://github.com/hussnain-143/api-route-explorer/blob/main/CONTRIBUTING.md" class="footer-link">Contributing</a></li>
+            <li><a href="https://github.com/hussnain-143/api-route-explorer/blob/main/SUPPORT.md" class="footer-link">Support</a></li>
             <li><a href="#security" class="footer-link">Security Policy</a></li>
           </ul>
         </div>
@@ -501,17 +546,17 @@
         <div>
           <div class="footer-col-title">Community</div>
           <ul class="footer-links">
-            <li><a href="https://github.com/api-route-explorer/api-route-explorer" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub Repository</a></li>
-            <li><a href="https://github.com/api-route-explorer/api-route-explorer/issues" target="_blank" rel="noopener noreferrer" class="footer-link">Issue Tracker</a></li>
+            <li><a href="https://github.com/hussnain-143/api-route-explorer" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub Repository</a></li>
+            <li><a href="https://github.com/hussnain-143/api-route-explorer/issues" target="_blank" rel="noopener noreferrer" class="footer-link">Issue Tracker</a></li>
             <li><a href="https://marketplace.visualstudio.com/items?itemName=api-route-explorer.api-route-explorer" target="_blank" rel="noopener noreferrer" class="footer-link">VS Code Marketplace</a></li>
-            <li><a href="https://github.com/api-route-explorer/api-route-explorer/blob/main/LICENSE" class="footer-link">MIT License</a></li>
+            <li><a href="https://github.com/hussnain-143/api-route-explorer/blob/main/LICENSE" class="footer-link">MIT License</a></li>
           </ul>
         </div>
       </div>
 
       <div class="footer-bottom">
-        <span>© 2026 API Route Explorer Contributors. Released under the MIT License.</span>
-        <span>Built with pure HTML & CSS • Zero tracking</span>
+        <span>© 2026 Hussnain Ahmed and API Route Explorer Contributors. Released under the MIT License.</span>
+        <span>Created by <a href="https://github.com/hussnain-143" target="_blank" rel="noopener noreferrer" style="color: var(--emerald-primary); text-decoration: underline;">Hussnain Ahmed</a> • Zero tracking</span>
       </div>
     </div>
   </footer>
