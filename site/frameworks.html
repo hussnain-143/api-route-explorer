@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supported Frameworks — API Route Explorer</title>
+  <meta name="description" content="Detailed guide to supported backend frameworks: Express, Next.js App & Pages Router, Fastify, and NestJS.">
+  <link rel="canonical" href="https://apirouteexplorer.dev/frameworks.html">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://apirouteexplorer.dev/frameworks.html">
+  <meta property="og:title" content="Supported Frameworks — API Route Explorer">
+  <meta property="og:description" content="Static route detection across Express, Next.js, Fastify, and NestJS without executing runtime code.">
+  <meta property="og:image" content="https://apirouteexplorer.dev/assets/social-preview.png">
+
+  <link rel="icon" type="image/svg+xml" href="assets/logos/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/logos/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/logos/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/logos/apple-touch-icon.png">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav-container">
+      <a href="index.html" class="brand" aria-label="API Route Explorer Home">
+        <img src="assets/logos/logo-symbol.svg" alt="API Route Explorer Symbol" class="brand-icon">
+        <span>API Route <span class="brand-accent">Explorer</span></span>
+      </a>
+
+      <nav class="nav-menu" aria-label="Main Navigation">
+        <a href="features.html" class="nav-link">Features</a>
+        <a href="frameworks.html" class="nav-link active" aria-current="page">Frameworks</a>
+        <a href="docs/index.html" class="nav-link">Docs</a>
+        <a href="security.html" class="nav-link">Security</a>
+        <a href="changelog.html" class="nav-link">Changelog</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Toggle Theme" title="Toggle Dark/Light Mode">
+          <span id="theme-icon">☀️</span>
+        </button>
+        <a href="https://github.com/hussnain-143/api-route-explorer" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">GitHub</a>
+        <a href="install.html" class="btn btn-primary btn-sm">Install</a>
+        <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Toggle mobile menu" aria-expanded="false">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="mobile-drawer" class="mobile-drawer" aria-label="Mobile Navigation">
+    <a href="features.html" class="nav-link">Features</a>
+    <a href="frameworks.html" class="nav-link active">Frameworks</a>
+    <a href="docs/index.html" class="nav-link">Documentation</a>
+    <a href="security.html" class="nav-link">Security & Privacy</a>
+    <a href="changelog.html" class="nav-link">Changelog</a>
+    <a href="install.html" class="btn btn-primary">Install for VS Code</a>
+  </div>
+
+  <main>
+    <section class="section" style="padding: 64px 0 32px;">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">Multi-Framework Intelligence</div>
+          <h1 class="section-title">Built for your backend architecture.</h1>
+          <p class="section-subtitle">
+            API Route Explorer detects route patterns across the leading Node.js and TypeScript frameworks using static syntax trees.
+          </p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 48px; max-width: 900px; margin: 0 auto;">
+          <!-- Express -->
+          <div class="feature-card">
+            <div class="framework-card-header">
+              <div>
+                <h2 style="font-size: 1.5rem; font-weight: 800;">Express.js</h2>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 4px;">Application instances, modular routers, and nested router mounts.</p>
+              </div>
+              <span class="badge badge-emerald">Verified</span>
+            </div>
+            <div class="code-block">
+              <div class="code-block-header"><span>routes/user.routes.ts</span><span>Express 4.x / 5.x</span></div>
+              <pre><code>const router = Router();
+
+// Detected: GET /api/v1/users/:id
+router.get('/:id', authMiddleware, getUserById);
+
+// Nested mount resolved: app.use('/api/v1/users', router);</code></pre>
+            </div>
+            <p class="feature-desc">
+              Resolves prefix chaining across <code>app.use('/prefix', router)</code> mounts, detects dynamic parameters (<code>:id</code>), and extracts chained middleware handlers.
+            </p>
+          </div>
+
+          <!-- Next.js App Router -->
+          <div class="feature-card">
+            <div class="framework-card-header">
+              <div>
+                <h2 style="font-size: 1.5rem; font-weight: 800;">Next.js App Router</h2>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 4px;">Route handler files in <code>app/api/**/route.ts</code>.</p>
+              </div>
+              <span class="badge badge-emerald">Verified</span>
+            </div>
+            <div class="code-block">
+              <div class="code-block-header"><span>app/api/users/[id]/route.ts</span><span>Next.js 13+ / 14 / 15</span></div>
+              <pre><code>// Detected: GET /api/users/{id}
+export async function GET(req: Request, { params }: { params: { id: string } }) {
+  return Response.json({ user: params.id });
+}
+
+// Detected: DELETE /api/users/{id}
+export async function DELETE(req: Request) { ... }</code></pre>
+            </div>
+            <p class="feature-desc">
+              Extracts named HTTP method exports (<code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>DELETE</code>, <code>PATCH</code>) and normalizes bracket dynamic routes (<code>[id]</code>) and catch-all routes (<code>[...slug]</code>).
+            </p>
+          </div>
+
+          <!-- Next.js Pages Router -->
+          <div class="feature-card">
+            <div class="framework-card-header">
+              <div>
+                <h2 style="font-size: 1.5rem; font-weight: 800;">Next.js Pages Router</h2>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 4px;">File-based API routes in <code>pages/api/**/*.ts</code>.</p>
+              </div>
+              <span class="badge badge-emerald">Verified</span>
+            </div>
+            <div class="code-block">
+              <div class="code-block-header"><span>pages/api/users/[id].ts</span><span>Next.js Pages</span></div>
+              <pre><code>// Detected: ANY /api/users/{id}
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method === 'GET') { ... }
+}</code></pre>
+            </div>
+            <p class="feature-desc">
+              Maps API route file paths under <code>pages/api</code>, supporting single-file endpoints and dynamic folder segments.
+            </p>
+          </div>
+
+          <!-- Fastify -->
+          <div class="feature-card">
+            <div class="framework-card-header">
+              <div>
+                <h2 style="font-size: 1.5rem; font-weight: 800;">Fastify</h2>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 4px;">Instance verbs, route options, and modular plugins.</p>
+              </div>
+              <span class="badge badge-emerald">Verified</span>
+            </div>
+            <div class="code-block">
+              <div class="code-block-header"><span>src/plugins/items.ts</span><span>Fastify 4.x / 5.x</span></div>
+              <pre><code>// Detected: GET /items/:id
+fastify.get('/:id', { preHandler: [auth] }, async (req, reply) => {
+  return { id: req.params.id };
+});
+
+// Plugin prefix: fastify.register(itemsPlugin, { prefix: '/items' });</code></pre>
+            </div>
+            <p class="feature-desc">
+              Discovers shorthand methods (<code>fastify.get</code>, <code>fastify.post</code>) as well as full <code>fastify.route({...})</code> configuration objects with pre-handlers.
+            </p>
+          </div>
+
+          <!-- NestJS -->
+          <div class="feature-card">
+            <div class="framework-card-header">
+              <div>
+                <h2 style="font-size: 1.5rem; font-weight: 800;">NestJS</h2>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 4px;">Controller classes, method decorators, and parameter tokens.</p>
+              </div>
+              <span class="badge badge-emerald">Verified</span>
+            </div>
+            <div class="code-block">
+              <div class="code-block-header"><span>src/users/users.controller.ts</span><span>NestJS 9.x / 10.x</span></div>
+              <pre><code>@Controller('users')
+export class UsersController {
+  // Detected: GET /users/:id
+  @Get(':id')
+  @UseGuards(AuthGuard)
+  findOne(@Param('id') id: string) { ... }
+}</code></pre>
+            </div>
+            <p class="feature-desc">
+              Inspects class-level <code>@Controller('path')</code> prefixes and maps method decorators (<code>@Get</code>, <code>@Post</code>, <code>@Put</code>, <code>@Delete</code>, <code>@Patch</code>) with active guards.
+            </p>
+          </div>
+        </div>
+
+        <div class="docs-callout" style="max-width: 900px; margin: 48px auto; text-align: center;">
+          <strong>Need another framework?</strong> Support for additional backend frameworks (e.g., Koa, Hono, Elysia, Go, Python) can be added based on community demand. <a href="https://github.com/hussnain-143/api-route-explorer/issues" target="_blank" rel="noopener noreferrer" style="color: var(--emerald-primary); text-decoration: underline;">Request a Framework on GitHub</a>.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="index.html" class="brand">
+            <img src="assets/logos/logo-symbol.svg" alt="API Route Explorer" class="brand-icon">
+            <span>API Route <span class="brand-accent">Explorer</span></span>
+          </a>
+          <p class="footer-desc">Visual API route discovery, analysis, testing, and OpenAPI documentation directly inside VS Code.</p>
+        </div>
+        <div>
+          <div class="footer-col-title">Product</div>
+          <div class="footer-links">
+            <a href="features.html" class="footer-link">Features</a>
+            <a href="frameworks.html" class="footer-link">Frameworks</a>
+            <a href="install.html" class="footer-link">Install</a>
+            <a href="changelog.html" class="footer-link">Changelog</a>
+          </div>
+        </div>
+        <div>
+          <div class="footer-col-title">Documentation</div>
+          <div class="footer-links">
+            <a href="docs/getting-started.html" class="footer-link">Getting Started</a>
+            <a href="docs/http-client.html" class="footer-link">HTTP Client</a>
+            <a href="docs/openapi.html" class="footer-link">OpenAPI 3.0</a>
+            <a href="docs/troubleshooting.html" class="footer-link">Troubleshooting</a>
+          </div>
+        </div>
+        <div>
+          <div class="footer-col-title">Community</div>
+          <div class="footer-links">
+            <a href="https://github.com/hussnain-143/api-route-explorer" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub</a>
+            <a href="https://github.com/hussnain-143/api-route-explorer/issues" target="_blank" rel="noopener noreferrer" class="footer-link">Issues</a>
+            <a href="https://marketplace.visualstudio.com/items?itemName=api-route-explorer.api-route-explorer" target="_blank" rel="noopener noreferrer" class="footer-link">Marketplace</a>
+          </div>
+        </div>
+        <div>
+          <div class="footer-col-title">Legal</div>
+          <div class="footer-links">
+            <a href="security.html" class="footer-link">Security & Privacy</a>
+            <a href="https://github.com/hussnain-143/api-route-explorer/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="footer-link">MIT License</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Hussnain Ahmed and API Route Explorer Contributors. Open-source under MIT License.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

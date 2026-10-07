@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started — API Route Explorer Documentation</title>
+  <meta name="description" content="Quick start guide to discover, analyze, test, and document backend API routes with API Route Explorer.">
+  <link rel="canonical" href="https://apirouteexplorer.dev/docs/getting-started.html">
+
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://apirouteexplorer.dev/docs/getting-started.html">
+  <meta property="og:title" content="Getting Started — API Route Explorer Docs">
+  <meta property="og:description" content="Step-by-step walkthrough for new users of API Route Explorer in Visual Studio Code.">
+  <meta property="og:image" content="https://apirouteexplorer.dev/assets/social-preview.png">
+
+  <link rel="icon" type="image/svg+xml" href="../assets/logos/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/logos/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../assets/logos/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/logos/apple-touch-icon.png">
+
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav-container">
+      <a href="../index.html" class="brand" aria-label="API Route Explorer Home">
+        <img src="../assets/logos/logo-symbol.svg" alt="API Route Explorer Symbol" class="brand-icon">
+        <span>API Route <span class="brand-accent">Explorer</span></span>
+      </a>
+
+      <nav class="nav-menu" aria-label="Main Navigation">
+        <a href="../features.html" class="nav-link">Features</a>
+        <a href="../frameworks.html" class="nav-link">Frameworks</a>
+        <a href="index.html" class="nav-link active" aria-current="page">Docs</a>
+        <a href="../security.html" class="nav-link">Security</a>
+        <a href="../changelog.html" class="nav-link">Changelog</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Toggle Theme" title="Toggle Dark/Light Mode">
+          <span id="theme-icon">☀️</span>
+        </button>
+        <a href="https://github.com/hussnain-143/api-route-explorer" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">GitHub</a>
+        <a href="../install.html" class="btn btn-primary btn-sm">Install</a>
+        <button id="mobile-menu-btn" class="mobile-menu-btn" aria-label="Toggle mobile menu" aria-expanded="false">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="mobile-drawer" class="mobile-drawer" aria-label="Mobile Navigation">
+    <a href="../features.html" class="nav-link">Features</a>
+    <a href="../frameworks.html" class="nav-link">Frameworks</a>
+    <a href="index.html" class="nav-link active">Documentation</a>
+    <a href="../security.html" class="nav-link">Security & Privacy</a>
+    <a href="../changelog.html" class="nav-link">Changelog</a>
+    <a href="../install.html" class="btn btn-primary">Install for VS Code</a>
+  </div>
+
+  <main class="container">
+    <div class="docs-layout">
+      <aside class="docs-sidebar">
+        <div>
+          <div class="docs-nav-group-title">Overview</div>
+          <div class="docs-nav-links">
+            <a href="index.html" class="docs-nav-link">Introduction</a>
+            <a href="getting-started.html" class="docs-nav-link active">Getting Started</a>
+          </div>
+        </div>
+
+        <div>
+          <div class="docs-nav-group-title">Core Guides</div>
+          <div class="docs-nav-links">
+            <a href="route-discovery.html" class="docs-nav-link">Route Discovery</a>
+            <a href="route-analysis.html" class="docs-nav-link">Route Analysis</a>
+            <a href="http-client.html" class="docs-nav-link">Native HTTP Client</a>
+            <a href="openapi.html" class="docs-nav-link">OpenAPI Generation</a>
+          </div>
+        </div>
+
+        <div>
+          <div class="docs-nav-group-title">Help & Reference</div>
+          <div class="docs-nav-links">
+            <a href="troubleshooting.html" class="docs-nav-link">Troubleshooting</a>
+            <a href="../install.html" class="docs-nav-link">Installation</a>
+          </div>
+        </div>
+      </aside>
+
+      <article class="docs-content">
+        <div class="docs-breadcrumbs">
+          <a href="../index.html">Home</a> <span>/</span>
+          <a href="index.html">Docs</a> <span>/</span>
+          <span>Getting Started</span>
+        </div>
+
+        <h1>Getting Started</h1>
+        <p class="docs-lead">
+          Get up and running with API Route Explorer in under 2 minutes. Follow this step-by-step workflow to explore your API routes.
+        </p>
+
+        <h2>Step 1: Open a Backend Project</h2>
+        <p>
+          Open any workspace containing an <strong>Express.js</strong>, <strong>Next.js (App Router or Pages Router)</strong>, <strong>Fastify</strong>, or <strong>NestJS</strong> project in VS Code.
+        </p>
+
+        <h2>Step 2: Access API Route Explorer</h2>
+        <p>
+          Click the dedicated <strong>API Route Explorer</strong> icon in the VS Code Activity Bar (left sidebar).
+        </p>
+        <div class="docs-callout">
+          <strong>Tip:</strong> If routes are not automatically scanned upon opening, click <strong>Scan Routes</strong> in the View title bar or press <code>Cmd+Shift+P</code> and select <code>API Route Explorer: Scan Workspace</code>.
+        </div>
+
+        <h2>Step 3: Explore and Group Routes</h2>
+        <p>
+          Discovered routes appear organized in an interactive tree view. Use the grouping actions to switch perspectives:
+        </p>
+        <ul>
+          <li><strong>Group by File (Default):</strong> Endpoints grouped under their source controller file.</li>
+          <li><strong>Group by Framework:</strong> Routes segmented by Express, Next.js, Fastify, or NestJS.</li>
+          <li><strong>Group by Method:</strong> Organized by HTTP verb (GET, POST, PUT, DELETE, PATCH).</li>
+          <li><strong>Group by Health:</strong> Filtered by Healthy, Warning, or Error status.</li>
+        </ul>
+
+        <h2>Step 4: Test in Native HTTP Client</h2>
+        <p>
+          Hover over any endpoint in the tree and click the <strong>Test API</strong> action icon. A native HTTP Client panel will open beside your code with the HTTP method, route signature, and base URL already configured.
+        </p>
+        <p>
+          If the route contains dynamic parameters (such as <code>:id</code> or <code>[id]</code>), enter test values in the <strong>Params</strong> tab, then click <strong>Send</strong> (or press <code>Cmd+Enter</code>).
+        </p>
+
+        <h2>Step 5: Export OpenAPI Specification</h2>
+        <p>
+          To generate an OpenAPI 3.0.3 specification from your discovered routes, click the <strong>OpenAPI</strong> icon in the view title bar. You can choose to export as <strong>JSON</strong> or <strong>YAML</strong> directly to your workspace.
+        </p>
+
+        <div class="docs-nav-cards">
+          <a href="index.html" class="docs-nav-card">
+            <span class="docs-nav-card-label">Previous</span>
+            <span class="docs-nav-card-title">← Overview</span>
+          </a>
+          <a href="route-discovery.html" class="docs-nav-card" style="text-align: right;">
+            <span class="docs-nav-card-label">Next</span>
+            <span class="docs-nav-card-title">Route Discovery Guide →</span>
+          </a>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="../index.html" class="brand">
+            <img src="../assets/logos/logo-symbol.svg" alt="API Route Explorer" class="brand-icon">
+            <span>API Route <span class="brand-accent">Explorer</span></span>
+          </a>
+          <p class="footer-desc">Visual API route discovery, analysis, testing, and OpenAPI documentation directly inside VS Code.</p>
+        </div>
+        <div>
+          <div class="footer-col-title">Product</div>
+          <div class="footer-links">
+            <a href="../features.html" class="footer-link">Features</a>
+            <a href="../frameworks.html" class="footer-link">Frameworks</a>
+            <a href="../install.html" class="footer-link">Install</a>
+            <a href="../changelog.html" class="footer-link">Changelog</a>
+          </div>
+        </div>
+        <div>
+          <div class="footer-col-title">Documentation</div>
+          <div class="footer-links">
+            <a href="getting-started.html" class="footer-link">Getting Started</a>
+            <a href="http-client.html" class="footer-link">HTTP Client</a>
+            <a href="openapi.html" class="footer-link">OpenAPI 3.0</a>
+            <a href="troubleshooting.html" class="footer-link">Troubleshooting</a>
+          </div>
+        </div>
+        <div>
+          <div class="footer-col-title">Community</div>
+          <div class="footer-links">
+            <a href="https://github.com/hussnain-143/api-route-explorer" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub</a>
+            <a href="https://github.com/hussnain-143/api-route-explorer/issues" target="_blank" rel="noopener noreferrer" class="footer-link">Issues</a>
+            <a href="https://marketplace.visualstudio.com/items?itemName=api-route-explorer.api-route-explorer" target="_blank" rel="noopener noreferrer" class="footer-link">Marketplace</a>
+          </div>
+        </div>
+        <div>
+          <div class="footer-col-title">Legal</div>
+          <div class="footer-links">
+            <a href="../security.html" class="footer-link">Security & Privacy</a>
+            <a href="https://github.com/hussnain-143/api-route-explorer/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="footer-link">MIT License</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Hussnain Ahmed and API Route Explorer Contributors. Open-source under MIT License.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../script.js"></script>
+</body>
+</html>
