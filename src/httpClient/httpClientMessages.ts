@@ -17,6 +17,7 @@ export type WebviewToHostMessage =
   | { type: 'cancelRequest' }
   | { type: 'copyCurl'; payload: HttpRequestConfig }
   | { type: 'copyText'; payload: { text: string; label: string } }
+  | { type: 'openSource'; payload: { filePath?: string; line?: number } }
   | { type: 'resetRequest' };
 
 export type HostToWebviewMessage =
@@ -51,6 +52,17 @@ export function isWebviewToHostMessage(data: unknown): data is WebviewToHostMess
     }
     const p = obj.payload as Record<string, unknown>;
     return typeof p.text === 'string' && typeof p.label === 'string';
+  }
+
+  if (type === 'openSource') {
+    if (!obj.payload || typeof obj.payload !== 'object') {
+      return false;
+    }
+    const p = obj.payload as Record<string, unknown>;
+    return (
+      (p.filePath === undefined || typeof p.filePath === 'string') &&
+      (p.line === undefined || typeof p.line === 'number')
+    );
   }
 
   return false;

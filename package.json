@@ -2,7 +2,7 @@
   "name": "api-route-explorer",
   "displayName": "API Route Explorer",
   "description": "Discover, analyze, search, and navigate API routes directly inside VS Code.",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "publisher": "api-route-explorer",
   "license": "MIT",
   "repository": {
@@ -246,9 +246,21 @@
       },
       {
         "command": "apiRouteExplorer.openHttpClient",
-        "title": "Open HTTP Client",
+        "title": "Test API",
         "category": "API Route Explorer",
         "icon": "$(send)"
+      },
+      {
+        "command": "apiRouteExplorer.analyzeRoute",
+        "title": "Analyze Route",
+        "category": "API Route Explorer",
+        "icon": "$(pulse)"
+      },
+      {
+        "command": "apiRouteExplorer.viewRouteOpenApi",
+        "title": "View OpenAPI Operation",
+        "category": "API Route Explorer",
+        "icon": "$(file-code)"
       }
     ],
     "menus": {
@@ -286,17 +298,17 @@
       ],
       "view/item/context": [
         {
-          "command": "apiRouteExplorer.copyRoutePath",
+          "command": "apiRouteExplorer.analyzeRoute",
           "when": "viewItem == apiRouteExplorer.route",
           "group": "inline@1"
         },
         {
-          "command": "apiRouteExplorer.openRoute",
+          "command": "apiRouteExplorer.openHttpClient",
           "when": "viewItem == apiRouteExplorer.route",
           "group": "inline@2"
         },
         {
-          "command": "apiRouteExplorer.openHttpClient",
+          "command": "apiRouteExplorer.viewRouteOpenApi",
           "when": "viewItem == apiRouteExplorer.route",
           "group": "inline@3"
         },
@@ -306,24 +318,34 @@
           "group": "inline@1"
         },
         {
-          "command": "apiRouteExplorer.openHttpClient",
-          "when": "viewItem == apiRouteExplorer.route",
-          "group": "navigation@0"
-        },
-        {
-          "command": "apiRouteExplorer.openRoute",
+          "command": "apiRouteExplorer.analyzeRoute",
           "when": "viewItem == apiRouteExplorer.route",
           "group": "navigation@1"
         },
         {
+          "command": "apiRouteExplorer.openHttpClient",
+          "when": "viewItem == apiRouteExplorer.route",
+          "group": "navigation@2"
+        },
+        {
+          "command": "apiRouteExplorer.viewRouteOpenApi",
+          "when": "viewItem == apiRouteExplorer.route",
+          "group": "navigation@3"
+        },
+        {
+          "command": "apiRouteExplorer.openRoute",
+          "when": "viewItem == apiRouteExplorer.route",
+          "group": "navigation@4"
+        },
+        {
           "command": "apiRouteExplorer.openFile",
           "when": "viewItem == apiRouteExplorer.route || viewItem == apiRouteExplorer.fileGroup",
-          "group": "navigation@2"
+          "group": "navigation@5"
         },
         {
           "command": "apiRouteExplorer.searchSimilarRoutes",
           "when": "viewItem == apiRouteExplorer.route",
-          "group": "navigation@3"
+          "group": "navigation@6"
         },
         {
           "command": "apiRouteExplorer.copyRoute",

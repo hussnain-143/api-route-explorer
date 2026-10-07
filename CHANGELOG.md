@@ -2,6 +2,39 @@
 
 All notable changes to the "api-route-explorer" extension will be documented in this file.
 
+## [1.5.0] - Sprint 15: MVP Integration & UX (Feature Freeze)
+
+### Connected & Polished
+- **Unified Developer Workflow (Discover → Analyze → Test → Document)**:
+  - Formed one continuous product experience connecting Discovery, Health Analysis, HTTP Client testing, and OpenAPI generation.
+  - Declared formal **Feature Freeze** for the MVP.
+- **Route → HTTP Client Integration & Action Triad**:
+  - Implemented the streamlined route action triad across the TreeView and context menus:
+    `[ Analyze ] [ Test API ] [ OpenAPI ]`.
+  - Clicking **Test API** instantly opens the HTTP Client pre-populated with method, base URL, converted route path, dynamic parameters, and default headers.
+- **Route Context Preservation**:
+  - Added `HttpClientRouteContext` model preserving route metadata (`method`, `path`, `sourceFile`, `sourceLine`, `sourceColumn`, `framework`, `handlerName`).
+  - Added Route Context top banner in HTTP Client Webview displaying framework badge, route signature, and clickable source file location.
+  - Added `openSource` message protocol: clicking the source file link in HTTP Client navigates directly to the route definition line in the active VS Code editor.
+- **Route Analysis Hub (`apiRouteExplorer.analyzeRoute`)**:
+  - Registered interactive analysis quick pick command providing immediate route health status, diagnostic issues, active middleware/guards count, and action options to jump to code, test API, or view OpenAPI.
+- **Direct Route OpenAPI Operation Preview (`apiRouteExplorer.viewRouteOpenApi`)**:
+  - Generates a dedicated OpenAPI 3.0.3 YAML operation definition for the selected route and opens an instant virtual editor preview with zero disk clutter.
+- **Loading & Empty State Discipline**:
+  - Polished empty and error states across the TreeView and HTTP Client with clear, actionable guidance explaining causes and resolution steps.
+  - All asynchronous scanning and test operations resolve strictly to Success, Error, Empty, or Cancelled states.
+- **Lightweight First-Run Experience**:
+  - Introduced clean, non-intrusive first-run welcome notification prompting users to explore routes on initial extension activation.
+  - Zero account requirements, zero telemetry, zero network dependency, and fully dismissible.
+- **Theme & Accessibility Conformance**:
+  - Verified UI rendering and high contrast ratios across VS Code Dark, Light, and High Contrast themes.
+  - Full keyboard accessibility: Tab navigation, Enter to activate actions, Escape to cancel.
+- **Automated Test Suite Expansion**:
+  - Expanded test suite from 243 to **250 passing tests** (100% pass rate) with 0 regressions.
+- **Solo Backend Real-World Validation**:
+  - Validated against `/Users/husnain/Desktop/solo/solo-backend`: route discovery, route selection, dynamic parameter resolution, query parameters, headers, error responses, 404 responses, request cancellation, and OpenAPI generation.
+  - Zero modifications to Solo Backend codebase (`Solo Backend source modifications: 0`).
+
 ## [1.4.0] - Sprint 14: HTTP Client Hardening & UX
 
 ### Fixed & Hardened

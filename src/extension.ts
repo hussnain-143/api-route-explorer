@@ -24,6 +24,9 @@ import { RouteDiagnosticsManager } from './analysis/diagnostics';
 import { showRouteStatisticsModal } from './analysis/routeStatistics';
 import { showExportRoutesDialog } from './utils/routeExporter';
 import { showExportOpenApiDialog } from './openapi/openApiExporter';
+import { generateOpenApiDocument } from './openapi/openApiGenerator';
+import { serializeOpenApiToYaml } from './openapi/openApiYamlSerializer';
+import { getRouteKey } from './analysis/routeRelationshipAnalyzer';
 import { COMMANDS, MESSAGES, RouteGroupingMode, VIEWS } from './utils/constants';
 import { openFile, openRoute } from './utils/navigation';
 import {
@@ -679,6 +682,115 @@ export function activate(context: vscode.ExtensionContext): void {
       }
     }),
 
+    // 13e. Analyze Route command (QuickPick route analysis & action hub)
+    vscode.commands.registerCommand(COMMANDS.ANALYZE_ROUTE, async (arg: unknown) => {
+      let route = extractRouteFromArg(arg);
+      if (!route) {
+        const allRoutes = routeTreeProvider.getRoutes();
+        if (allRoutes.length === 0) {
+          vscode.window.showInformationMessage(MESSAGES.SEARCH_NO_SCAN);
+          return;
+        }
+        const items = allRoutes.map(createRouteQuickPickItem);
+        const selected = await vscode.window.showQuickPick(items, {
+          title: 'API Route Explorer: Analyze Route',
+          placeHolder: 'Select an API route to analyze',
+        });
+        if (!selected) {
+          return;
+        }
+        route = selected.route;
+      }
+
+      const analysis = routeTreeProvider.getAnalysis();
+      const health = routeTreeProvider.getRouteHealth(route);
+      const relKey = getRouteKey(route);
+      const rel = analysis?.relationships?.get(relKey);
+
+      interface ActionPickItem extends vscode.QuickPickItem {
+        action: 'jump' | 'test' | 'openapi';
+      }
+
+      const issuesCount = rel?.issues?.length || 0;
+      const mwCount = rel?.middleware?.length || 0;
+      const conflictsCount = rel?.conflicts?.length || 0;
+
+      const healthEmoji = health === 'healthy' ? '✅' : health === 'warning' ? '⚠️' : '❌';
+      const items: ActionPickItem[] = [
+        {
+          label: '$(go-to-file) Jump to Source Code',
+          description: `${route.filePath}:${route.line + 1}`,
+          detail: 'Open the source file where this route is declared',
+          action: 'jump',
+        },
+        {
+          label: '$(send) Test API (HTTP Client)',
+          description: `${route.method} ${route.path}`,
+          detail: 'Open the HTTP Client pre-populated with this endpoint and parameters',
+          action: 'test',
+        },
+        {
+          label: '$(file-code) View OpenAPI Specification',
+          description: 'Inspect OpenAPI 3.0 operation schema',
+          detail: 'Generate and preview YAML OpenAPI definition for this route',
+          action: 'openapi',
+        },
+      ];
+
+      const chosen = await vscode.window.showQuickPick(items, {
+        title: `${healthEmoji} Route Analysis: ${route.method} ${route.path}`,
+        placeHolder: `Status: ${health.toUpperCase()} • ${mwCount} middleware • ${issuesCount} issues • ${conflictsCount} conflicts`,
+      });
+
+      if (!chosen) {
+        return;
+      }
+
+      if (chosen.action === 'jump') {
+        await openRoute(route);
+      } else if (chosen.action === 'test') {
+        openHttpClientForRoute(context.extensionUri, route);
+      } else if (chosen.action === 'openapi') {
+        await vscode.commands.executeCommand(COMMANDS.VIEW_ROUTE_OPENAPI, route);
+      }
+    }),
+
+    // 13f. View Route OpenAPI Specification preview
+    vscode.commands.registerCommand(COMMANDS.VIEW_ROUTE_OPENAPI, async (arg: unknown) => {
+      let route = extractRouteFromArg(arg);
+      if (!route) {
+        const allRoutes = routeTreeProvider.getRoutes();
+        if (allRoutes.length === 0) {
+          vscode.window.showInformationMessage(MESSAGES.SEARCH_NO_SCAN);
+          return;
+        }
+        const items = allRoutes.map(createRouteQuickPickItem);
+        const selected = await vscode.window.showQuickPick(items, {
+          title: 'API Route Explorer: View Route OpenAPI',
+          placeHolder: 'Select an API route to generate OpenAPI specification for',
+        });
+        if (!selected) {
+          return;
+        }
+        route = selected.route;
+      }
+
+      const singleDocResult = generateOpenApiDocument([route], routeTreeProvider.getAnalysis(), {
+        title: `API Route Explorer - ${route.method} ${route.path}`,
+        description: `Generated OpenAPI 3.0.3 specification for route ${route.method} ${route.path}`,
+      });
+
+      const yamlContent = serializeOpenApiToYaml(singleDocResult.document);
+      const doc = await vscode.workspace.openTextDocument({
+        language: 'yaml',
+        content: yamlContent,
+      });
+      await vscode.window.showTextDocument(doc, {
+        preview: true,
+        viewColumn: vscode.ViewColumn.Beside,
+      });
+    }),
+
     // 14. Filter routes by HTTP method
     vscode.commands.registerCommand(COMMANDS.FILTER_BY_METHOD, async () => {
       const allRoutes = routeTreeProvider.getRoutes();
@@ -974,6 +1086,21 @@ export function activate(context: vscode.ExtensionContext): void {
       await showRouteStatisticsModal(currentAnalysis.statistics, currentAnalysis);
     })
   );
+
+  // Task 9: Lightweight first-run experience
+  const welcomedKey = 'apiRouteExplorer.welcomed';
+  const hasBeenWelcomed = context.globalState.get<boolean>(welcomedKey, false);
+  if (!hasBeenWelcomed) {
+    void context.globalState.update(welcomedKey, true);
+    const exploreAction = 'Explore Routes';
+    void vscode.window
+      .showInformationMessage(MESSAGES.FIRST_RUN_WELCOME, exploreAction)
+      .then((choice) => {
+        if (choice === exploreAction) {
+          void vscode.commands.executeCommand(COMMANDS.SCAN_ROUTES);
+        }
+      });
+  }
 }
 
 /**
