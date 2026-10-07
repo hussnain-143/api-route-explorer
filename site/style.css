@@ -381,55 +381,172 @@ button {
 
 .mockup-body {
   display: grid;
-  grid-template-columns: 280px 1fr;
-  min-height: 440px;
+  grid-template-columns: 310px 1fr;
+  min-height: 460px;
 }
 
-/* Sidebar Mockup */
+/* Sidebar Mockup (Tree View from readme-hero) */
 .mockup-sidebar {
   border-right: 1px solid var(--border-subtle);
-  background: var(--bg-canvas);
-  padding: 14px;
+  background: #0B1220;
+  padding: 14px 12px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  font-family: var(--font-mono);
+  user-select: none;
 }
 
-.mockup-sidebar-title {
-  font-size: 0.72rem;
+.mockup-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mockup-sidebar-brand {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--emerald-primary);
+  letter-spacing: 0.8px;
   text-transform: uppercase;
+}
+
+.mockup-search-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #060A12;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  padding: 3px 7px;
+  font-size: 10px;
+  color: #94A3B8;
+  font-family: var(--font-sans);
+}
+
+.tree-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+}
+
+.tree-group-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
+  color: var(--emerald-primary);
+  letter-spacing: 0.5px;
+}
+
+.tree-chevron {
+  font-size: 8.5px;
+  color: var(--emerald-primary);
+  opacity: 0.85;
+}
+
+.tree-children {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 12px;
+  margin-left: 5px;
+  border-left: 1.5px dashed rgba(20, 184, 166, 0.5);
+  position: relative;
 }
 
 .route-item-mock {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 10px;
-  border-radius: 4px;
+  padding: 4px 8px;
+  border-radius: 5px;
   font-family: var(--font-mono);
-  font-size: 0.8rem;
+  font-size: 11.5px;
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.15s ease;
+  border: 1.5px solid transparent;
+  color: #E2E8F0;
+  position: relative;
+}
+
+.route-item-mock:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #FFFFFF;
 }
 
 .route-item-mock.active {
-  background: rgba(16, 185, 129, 0.15);
-  border-left: 2px solid var(--emerald-primary);
+  background: #060A12;
+  border-color: var(--emerald-primary);
+  color: #6EE7B7;
+  font-weight: 600;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
 }
 
 .method-tag {
-  font-size: 0.68rem;
-  font-weight: 700;
-  padding: 1px 5px;
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 1.5px 5px;
   border-radius: 3px;
+  letter-spacing: 0.5px;
+  font-family: var(--font-mono);
+  text-align: center;
+  min-width: 38px;
+  display: inline-block;
 }
-.tag-get { background: rgba(56, 189, 248, 0.15); color: var(--method-get); }
-.tag-post { background: rgba(52, 211, 153, 0.15); color: var(--method-post); }
-.tag-put { background: rgba(251, 146, 60, 0.15); color: var(--method-put); }
-.tag-delete { background: rgba(248, 113, 113, 0.15); color: var(--method-delete); }
+
+.tag-get {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid #10B981;
+  color: #10B981;
+}
+
+.tag-post {
+  background: rgba(20, 184, 166, 0.15);
+  border: 1px solid #14B8A6;
+  color: #14B8A6;
+}
+
+.tag-put {
+  background: rgba(251, 146, 60, 0.15);
+  border: 1px solid #FB923C;
+  color: #FB923C;
+}
+
+.tag-delete {
+  background: rgba(248, 113, 113, 0.15);
+  border: 1px solid #F87171;
+  color: #F87171;
+}
+
+.route-path {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.jump-arrow {
+  margin-left: auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--emerald-primary);
+  color: #060A12;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+  flex-shrink: 0;
+}
 
 /* Main Content Mockup */
 .mockup-main {

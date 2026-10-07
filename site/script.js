@@ -66,30 +66,54 @@ document.addEventListener('DOMContentLoaded', () => {
       url: 'http://localhost:5000/api/v1/users/usr_99182',
       response: '{\n  "id": "usr_99182",\n  "name": "Alex Mercer",\n  "role": "engineer",\n  "verified": true\n}',
     },
+    'GET /api/v1/users': {
+      method: 'GET',
+      path: '/api/v1/users',
+      url: 'http://localhost:5000/api/v1/users?limit=10',
+      response: '{\n  "total": 128,\n  "page": 1,\n  "users": [\n    { "id": "usr_01", "name": "Sarah Connor" },\n    { "id": "usr_02", "name": "John Doe" }\n  ]\n}',
+    },
     'POST /api/v1/auth/login': {
       method: 'POST',
       path: '/api/v1/auth/login',
       url: 'http://localhost:5000/api/v1/auth/login',
       response: '{\n  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6...",\n  "expiresIn": 3600,\n  "status": "authenticated"\n}',
     },
-    'DELETE /api/v1/items/:id': {
-      method: 'DELETE',
-      path: '/api/v1/items/{id}',
-      url: 'http://localhost:5000/api/v1/items/itm_4011',
-      response: '{\n  "success": true,\n  "deletedId": "itm_4011"\n}',
+    'POST /api/v1/auth/register': {
+      method: 'POST',
+      path: '/api/v1/auth/register',
+      url: 'http://localhost:5000/api/v1/auth/register',
+      response: '{\n  "id": "usr_104",\n  "email": "developer@antigravity.io",\n  "created": true\n}',
     },
-    'GET /api/v1/admin/bookings': {
+    'GET /api/v1/products': {
       method: 'GET',
-      path: '/api/v1/admin/bookings',
-      url: 'http://localhost:5000/api/v1/admin/bookings?status=confirmed',
-      response: '{\n  "total": 42,\n  "page": 1,\n  "bookings": [\n    { "id": "bk_01", "service": "Deep Clean" }\n  ]\n}',
+      path: '/api/v1/products',
+      url: 'http://localhost:5000/api/v1/products',
+      response: '{\n  "items": [\n    { "sku": "PRD_01", "name": "Pro License", "price": 49 }\n  ]\n}',
+    },
+    'POST /api/v1/products': {
+      method: 'POST',
+      path: '/api/v1/products',
+      url: 'http://localhost:5000/api/v1/products',
+      response: '{\n  "sku": "PRD_99",\n  "created": true,\n  "status": "active"\n}',
     },
   };
 
   routeItems.forEach((item) => {
     item.addEventListener('click', () => {
-      routeItems.forEach((r) => r.classList.remove('active'));
+      // Remove active and jump-arrow from all items
+      routeItems.forEach((r) => {
+        r.classList.remove('active');
+        const arrow = r.querySelector('.jump-arrow');
+        if (arrow) arrow.remove();
+      });
+
+      // Mark this item active and add jump arrow
       item.classList.add('active');
+      const arrowSpan = document.createElement('span');
+      arrowSpan.className = 'jump-arrow';
+      arrowSpan.title = '1-Click AST Jump';
+      arrowSpan.textContent = '→';
+      item.appendChild(arrowSpan);
 
       const routeKey = item.getAttribute('data-route');
       const preset = routePresets[routeKey];
