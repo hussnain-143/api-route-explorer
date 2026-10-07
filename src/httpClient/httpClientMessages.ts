@@ -14,7 +14,9 @@ import {
 export type WebviewToHostMessage =
   | { type: 'ready' }
   | { type: 'sendRequest'; payload: HttpRequestConfig }
+  | { type: 'cancelRequest' }
   | { type: 'copyCurl'; payload: HttpRequestConfig }
+  | { type: 'copyText'; payload: { text: string; label: string } }
   | { type: 'resetRequest' };
 
 export type HostToWebviewMessage =
@@ -35,12 +37,20 @@ export function isWebviewToHostMessage(data: unknown): data is WebviewToHostMess
   const obj = data as Record<string, unknown>;
   const type = obj.type;
 
-  if (type === 'ready' || type === 'resetRequest') {
+  if (type === 'ready' || type === 'resetRequest' || type === 'cancelRequest') {
     return true;
   }
 
   if (type === 'sendRequest' || type === 'copyCurl') {
     return isValidHttpRequestConfig(obj.payload);
+  }
+
+  if (type === 'copyText') {
+    if (!obj.payload || typeof obj.payload !== 'object') {
+      return false;
+    }
+    const p = obj.payload as Record<string, unknown>;
+    return typeof p.text === 'string' && typeof p.label === 'string';
   }
 
   return false;

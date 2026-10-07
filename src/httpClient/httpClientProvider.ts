@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { ApiRoute, HttpMethod } from '../models/route';
 import { convertRouteToOpenApiPath } from '../openapi/openApiPathBuilder';
 import { getRelativeFilePath } from '../providers/routeTreeProvider';
-import { getResolvedBaseUrl } from '../utils/routeFormatters';
+import { getResolvedBaseUrl, resolveFullUrl } from '../utils/routeFormatters';
 import { HttpClientPanel } from './httpClientPanel';
 import {
   HttpClientInitialState,
@@ -37,8 +37,7 @@ export function buildInitialStateForRoute(
   const openApiPath = conversion.openApiPath;
   const method = normalizeHttpClientMethod(route.method);
 
-  const cleanPath = openApiPath.startsWith('/') ? openApiPath : `/${openApiPath}`;
-  const fullUrl = `${baseUrl}${cleanPath}`;
+  const fullUrl = resolveFullUrl(baseUrl, openApiPath);
 
   const pathParams = conversion.pathParameters.map((name) => ({
     name,

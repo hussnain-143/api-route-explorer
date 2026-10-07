@@ -65,6 +65,8 @@ export interface HttpErrorData {
   message: string;
   code?: string;
   details?: string;
+  url?: string;
+  possibleCauses?: string[];
 }
 
 export interface HttpClientInitialState {
