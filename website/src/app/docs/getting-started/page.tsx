@@ -51,7 +51,7 @@ export default function GettingStartedPage() {
 
       {/* Step 2 */}
       <section className="space-y-3 p-6 rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)]">
-        <div className="flex items-center gap-2 text-teal-400 font-mono text-xs font-semibold">
+        <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-semibold">
           <span>STEP 02</span>
         </div>
         <h2 className="text-lg font-bold text-[var(--foreground)]">Open Your Backend Project</h2>
@@ -62,7 +62,7 @@ export default function GettingStartedPage() {
 
       {/* Step 3 */}
       <section className="space-y-3 p-6 rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)]">
-        <div className="flex items-center gap-2 text-cyan-400 font-mono text-xs font-semibold">
+        <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-semibold">
           <span>STEP 03</span>
         </div>
         <h2 className="text-lg font-bold text-[var(--foreground)]">Discover Routes</h2>
@@ -84,7 +84,7 @@ export default function GettingStartedPage() {
 
       {/* Step 5 */}
       <section className="space-y-3 p-6 rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)]">
-        <div className="flex items-center gap-2 text-teal-400 font-mono text-xs font-semibold">
+        <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-semibold">
           <span>STEP 05</span>
         </div>
         <h2 className="text-lg font-bold text-[var(--foreground)]">Test in the Native HTTP Client</h2>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { siteConfig } from "@/lib/site-config";
 
 export function Footer() {
@@ -8,24 +9,22 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 lg:gap-12 mb-12">
           {/* Brand Col */}
           <div className="col-span-2">
-            <Link href="/" className="flex items-center gap-2 mb-3">
-              <div className="w-6 h-6 rounded bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center p-1">
-                <svg
-                  className="w-full h-full text-emerald-400"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <circle cx="12" cy="12" r="4" />
-                </svg>
+            <Link href="/" className="flex items-center gap-2.5 mb-3 group">
+              <Image
+                src="/icon.png"
+                alt="API Route Explorer"
+                width={28}
+                height={28}
+                className="w-7 h-7 rounded-lg object-contain shadow-sm transition-transform group-hover:scale-105"
+              />
+              <div className="flex flex-col leading-tight">
+                <span className="font-semibold text-[var(--foreground)] tracking-tight">
+                  API Route <span className="text-emerald-400">Explorer</span>
+                </span>
+                <span className="text-[10px] text-[var(--muted)] font-mono tracking-tight">
+                  by Hussnain Ahmed
+                </span>
               </div>
-              <span className="font-semibold text-[var(--foreground)] tracking-tight">
-                API Route <span className="text-emerald-400">Explorer</span>
-              </span>
             </Link>
             <p className="text-xs text-[var(--muted)] leading-relaxed max-w-sm mb-4">
               Discover, analyze, test, and document backend API routes directly inside VS Code.
