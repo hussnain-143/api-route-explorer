@@ -92,7 +92,7 @@ export default function ChangelogPage() {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-16">
       {/* Header */}
       <div className="space-y-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[var(--surface-border)] bg-[var(--surface)] text-xs text-emerald-400 font-mono">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-xs font-medium text-emerald-400 font-mono">
           Releases &amp; Changelog
         </div>
         <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[var(--foreground)]">
@@ -116,7 +116,7 @@ export default function ChangelogPage() {
                   {release.version}
                 </span>
                 {release.badge && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-medium">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-medium">
                     {release.badge}
                   </span>
                 )}

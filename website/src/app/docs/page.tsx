@@ -46,9 +46,9 @@ export default function DocsIndexPage() {
 
         <Link
           href="/docs/route-discovery"
-          className="p-6 rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)] hover:border-teal-500/40 transition-colors space-y-2"
+          className="p-6 rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)] hover:border-emerald-500/40 transition-colors space-y-2"
         >
-          <span className="text-teal-400 text-xs font-mono font-semibold">02 / Engine</span>
+          <span className="text-emerald-400 text-xs font-mono font-semibold">02 / Engine</span>
           <h3 className="text-base font-bold text-[var(--foreground)]">Route Discovery →</h3>
           <p className="text-xs text-[var(--muted)]">
             Learn how the offline AST scanner identifies routes without runtime code execution.
@@ -57,9 +57,9 @@ export default function DocsIndexPage() {
 
         <Link
           href="/docs/http-client"
-          className="p-6 rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)] hover:border-cyan-500/40 transition-colors space-y-2"
+          className="p-6 rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)] hover:border-emerald-500/40 transition-colors space-y-2"
         >
-          <span className="text-cyan-400 text-xs font-mono font-semibold">03 / Testing</span>
+          <span className="text-emerald-400 text-xs font-mono font-semibold">03 / Testing</span>
           <h3 className="text-base font-bold text-[var(--foreground)]">Native HTTP Client →</h3>
           <p className="text-xs text-[var(--muted)]">
             Configure dynamic path parameters, request headers, JSON payloads, and cancellation.

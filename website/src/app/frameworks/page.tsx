@@ -22,7 +22,7 @@ export default function FrameworksPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-20">
       {/* Header */}
       <div className="max-w-3xl space-y-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[var(--surface-border)] bg-[var(--surface)] text-xs text-cyan-400 font-mono">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-xs font-medium text-emerald-400 font-mono">
           Supported Stacks
         </div>
         <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[var(--foreground)]">
@@ -42,7 +42,7 @@ export default function FrameworksPage() {
             </span>
             <h2 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)]">Express.js</h2>
           </div>
-          <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-mono w-fit">
+          <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-mono w-fit">
             Full AST Support
           </span>
         </div>
@@ -78,12 +78,12 @@ router.get('/:id', authMiddleware, async (req, res) => {
       <section className="p-8 sm:p-12 rounded-3xl border border-[var(--surface-border)] bg-[var(--surface)] space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-teal-400 font-mono">
+            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400 font-mono">
               Framework 02
             </span>
             <h2 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)]">Next.js App Router</h2>
           </div>
-          <span className="text-xs px-2.5 py-1 rounded-full bg-teal-500/20 text-teal-400 font-mono w-fit">
+          <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-mono w-fit">
             File-System Routing
           </span>
         </div>
@@ -120,12 +120,12 @@ export async function GET(
       <section className="p-8 sm:p-12 rounded-3xl border border-[var(--surface-border)] bg-[var(--surface)] space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-cyan-400 font-mono">
+            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400 font-mono">
               Framework 03
             </span>
             <h2 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)]">Next.js Pages Router</h2>
           </div>
-          <span className="text-xs px-2.5 py-1 rounded-full bg-cyan-500/20 text-cyan-400 font-mono w-fit">
+          <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-mono w-fit">
             Legacy &amp; Hybrid Support
           </span>
         </div>
@@ -164,7 +164,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
             </span>
             <h2 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)]">Fastify</h2>
           </div>
-          <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-mono w-fit">
+          <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-mono w-fit">
             Plugin Architecture
           </span>
         </div>
@@ -197,12 +197,12 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       <section className="p-8 sm:p-12 rounded-3xl border border-[var(--surface-border)] bg-[var(--surface)] space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-teal-400 font-mono">
+            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400 font-mono">
               Framework 05
             </span>
             <h2 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)]">NestJS</h2>
           </div>
-          <span className="text-xs px-2.5 py-1 rounded-full bg-teal-500/20 text-teal-400 font-mono w-fit">
+          <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-mono w-fit">
             TypeScript Decorators
           </span>
         </div>

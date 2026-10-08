@@ -8,15 +8,15 @@ export default function HomePage() {
       {/* 1. HERO SECTION */}
       <section className="relative pt-12 sm:pt-20 lg:pt-28 overflow-hidden">
         {/* Subtle background glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-b from-emerald-500/10 via-cyan-500/5 to-transparent blur-3xl pointer-events-none -z-10" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-b from-emerald-500/10 via-emerald-500/5 to-transparent blur-3xl pointer-events-none -z-10" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
           {/* Eyebrow */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[var(--surface-border)] bg-[var(--surface)] text-xs font-medium text-[var(--muted)]">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-xs font-medium text-emerald-400">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span>OPEN SOURCE • VS CODE EXTENSION</span>
-            <span className="text-[var(--surface-border-strong)]">•</span>
-            <span className="text-emerald-400 font-semibold">v{siteConfig.version}</span>
+            <span className="text-emerald-500/40">•</span>
+            <span className="text-emerald-400 font-semibold font-mono">v{siteConfig.version}</span>
           </div>
 
           {/* Headline */}
@@ -77,11 +77,11 @@ export default function HomePage() {
               <div className="text-xs text-[var(--muted)] mt-1">Automated tests passed</div>
             </div>
             <div className="p-4 rounded-xl border border-[var(--surface-border)] bg-[var(--surface)]">
-              <div className="text-xl sm:text-2xl font-bold text-teal-400 font-mono">118</div>
+              <div className="text-xl sm:text-2xl font-bold text-emerald-400 font-mono">118</div>
               <div className="text-xs text-[var(--muted)] mt-1">Routes benchmark validated</div>
             </div>
             <div className="p-4 rounded-xl border border-[var(--surface-border)] bg-[var(--surface)]">
-              <div className="text-xl sm:text-2xl font-bold text-cyan-400 font-mono">3.0.3</div>
+              <div className="text-xl sm:text-2xl font-bold text-emerald-400 font-mono">3.0.3</div>
               <div className="text-xs text-[var(--muted)] mt-1">OpenAPI compliant</div>
             </div>
             <div className="p-4 rounded-xl border border-[var(--surface-border)] bg-[var(--surface)]">
@@ -209,7 +209,7 @@ export default function HomePage() {
       {/* 4. FEATURE HIGHLIGHTS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <div className="text-xs font-semibold uppercase tracking-wider text-teal-400">
+          <div className="text-xs font-semibold uppercase tracking-wider text-emerald-400 font-mono">
             Feature Matrix
           </div>
           <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-[var(--foreground)]">
@@ -234,7 +234,7 @@ export default function HomePage() {
           </div>
 
           <div className="p-6 rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)] space-y-4">
-            <div className="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
               🔌
             </div>
             <h3 className="text-lg font-semibold text-[var(--foreground)]">Native HTTP Client</h3>
@@ -249,7 +249,7 @@ export default function HomePage() {
           </div>
 
           <div className="p-6 rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)] space-y-4">
-            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
               📄
             </div>
             <h3 className="text-lg font-semibold text-[var(--foreground)]">OpenAPI 3.0.3</h3>
@@ -274,7 +274,7 @@ export default function HomePage() {
       {/* 5. BUILT FOR YOUR STACK */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <div className="text-xs font-semibold uppercase tracking-wider text-cyan-400">
+          <div className="text-xs font-semibold uppercase tracking-wider text-emerald-400 font-mono">
             Ecosystem
           </div>
           <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-[var(--foreground)]">

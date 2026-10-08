@@ -21,7 +21,7 @@ export default function SecurityPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-20">
       {/* Header */}
       <div className="max-w-3xl space-y-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[var(--surface-border)] bg-[var(--surface)] text-xs text-emerald-400 font-mono">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-xs font-medium text-emerald-400 font-mono">
           Security &amp; Privacy Architecture
         </div>
         <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[var(--foreground)]">

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { siteConfig } from "@/lib/site-config";
@@ -22,28 +23,23 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b border-[var(--surface-border)] bg-[var(--background)]/80 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center p-1.5 transition-transform group-hover:scale-105">
-            <svg
-              className="w-full h-full text-emerald-400"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <path d="m4.93 4.93 4.24 4.24" />
-              <path d="m14.83 9.17 4.24-4.24" />
-              <path d="m14.83 14.83 4.24 4.24" />
-              <path d="m9.17 14.83-4.24 4.24" />
-              <circle cx="12" cy="12" r="4" />
-            </svg>
+        <Link href="/" className="flex items-center gap-3 group">
+          <Image
+            src="/icon.png"
+            alt="API Route Explorer"
+            width={34}
+            height={34}
+            className="w-8.5 h-8.5 rounded-lg object-contain shadow-sm transition-transform group-hover:scale-105"
+            priority
+          />
+          <div className="flex flex-col leading-tight">
+            <span className="font-semibold text-base sm:text-lg tracking-tight text-[var(--foreground)]">
+              API Route <span className="text-emerald-400">Explorer</span>
+            </span>
+            <span className="text-[10px] text-[var(--muted)] font-mono tracking-tight">
+              by Hussnain Ahmed
+            </span>
           </div>
-          <span className="font-semibold text-base sm:text-lg tracking-tight text-[var(--foreground)]">
-            API Route <span className="text-emerald-400">Explorer</span>
-          </span>
         </Link>
 
         {/* Desktop Navigation */}
