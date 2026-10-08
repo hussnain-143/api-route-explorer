@@ -1,5 +1,5 @@
 /**
- * Data contracts and models for the API Route Explorer HTTP Client.
+ * Data contracts and models for the API Routes Explorer HTTP Client.
  */
 
 export type HttpClientMethod =

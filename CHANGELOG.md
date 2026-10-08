@@ -263,7 +263,7 @@ All notable changes to the "api-route-explorer" extension will be documented in 
 - **Same-Path / Different-Method Awareness**: Accurately classifies shared endpoints with different HTTP verbs (GET, POST, PUT, DELETE) as valid shared paths rather than duplicate collisions.
 - **Possible Missing Handler Detection**: Flags suspicious route calls lacking handlers or middleware arguments while avoiding false positives on valid middleware chains.
 - **Route Diagnostics Lifecycle**: Native VS Code Diagnostic warnings for duplicates and missing handlers, automatically synchronized with file changes and clean disposal.
-- **Interactive Route Statistics**: `API Route Explorer: Show Route Statistics` (`apiRouteExplorer.showStatistics`) with drill-downs for shared paths, duplicates, and method search.
+- **Interactive Route Statistics**: `API Routes Explorer: Show Route Statistics` (`apiRouteExplorer.showStatistics`) with drill-downs for shared paths, duplicates, and method search.
 - **Dedicated Route Analysis Sidebar View**: Persistent `Route Analysis` view in the Activity Bar showing overview metrics, shared path drilldowns, collision status, and method distribution.
 - **Analysis Badges in Route Listing**: Visual indicators in the route tree for shared paths (`Line X • Shared`), duplicates (`⚠️ Duplicate`), and missing handlers (`⚠️ Missing handler`).
 
@@ -276,7 +276,7 @@ All notable changes to the "api-route-explorer" extension will be documented in 
 ## [0.3.0] - Sprint 3: Developer Navigation & Route UX
 
 ### Added
-- **Instant Route Search**: `API Route Explorer: Search Routes` (`apiRouteExplorer.searchRoutes`) QuickPick modal matching methods, paths, and filenames.
+- **Instant Route Search**: `API Routes Explorer: Search Routes` (`apiRouteExplorer.searchRoutes`) QuickPick modal matching methods, paths, and filenames.
 - **Context Menu Clipboard Actions**: Right-click route items to **Copy Route Path** or **Copy Route Signature**.
 - **Source File Navigation**: **Open File** action to open containing route source files.
 - **Intelligent Auto-Refresh**: Background workspace watcher with 750ms debouncing and concurrency protection.
@@ -306,6 +306,6 @@ All notable changes to the "api-route-explorer" extension will be documented in 
 - `RouteTreeProvider` implementing `vscode.TreeDataProvider`.
 - Intentional initial empty state: "No routes discovered yet" with guidance tooltip.
 - Domain models: `ApiRoute`, `HttpMethod`, and `ApiFramework`.
-- Command registration: `API Route Explorer: Scan Routes` and `Refresh Routes`.
+- Command registration: `API Routes Explorer: Scan Routes` and `Refresh Routes`.
 - Brand design tokens and constants (Emerald Green, Teal, Cyan).
 - Extension icon assets.

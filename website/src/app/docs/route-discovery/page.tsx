@@ -7,12 +7,12 @@ import { CodeBlock } from "@/components/CodeBlock";
 export const metadata: Metadata = {
   title: "Route Discovery — Offline AST Analysis Engine",
   description:
-    "Learn how API Route Explorer uses static Abstract Syntax Tree (AST) inspection to discover backend routes without executing untrusted code.",
+    "Learn how API Routes Explorer uses static Abstract Syntax Tree (AST) inspection to discover backend routes without executing untrusted code.",
   alternates: {
     canonical: `${siteConfig.url}/docs/route-discovery`,
   },
   openGraph: {
-    title: "Route Discovery — API Route Explorer Docs",
+    title: "Route Discovery — API Routes Explorer Docs",
     description: "Offline AST parsing mechanics, route normalization, and exclusion rules.",
     url: `${siteConfig.url}/docs/route-discovery`,
   },
@@ -33,7 +33,7 @@ export default function RouteDiscoveryPage() {
           Route Discovery Engine
         </h1>
         <p className="text-base text-[var(--muted)] leading-relaxed">
-          API Route Explorer inspects your backend source files using static Abstract Syntax Tree (AST) analysis. This enables fast, accurate discovery without executing server code or connecting to databases.
+          API Routes Explorer inspects your backend source files using static Abstract Syntax Tree (AST) analysis. This enables fast, accurate discovery without executing server code or connecting to databases.
         </p>
       </div>
 
@@ -43,7 +43,7 @@ export default function RouteDiscoveryPage() {
           Traditional API explorers often require starting the backend server and importing routing modules at runtime. This poses security and stability risks if database drivers fail to connect or required environment variables are absent.
         </p>
         <p className="text-xs sm:text-sm text-[var(--muted)] leading-relaxed">
-          API Route Explorer parses JavaScript and TypeScript source tokens statically:
+          API Routes Explorer parses JavaScript and TypeScript source tokens statically:
         </p>
         <ul className="space-y-2 text-xs sm:text-sm text-[var(--foreground)]">
           <li>• <strong>Comment Masking:</strong> Automatically ignores commented-out route declarations.</li>
@@ -55,7 +55,7 @@ export default function RouteDiscoveryPage() {
       <section className="space-y-4">
         <h2 className="text-xl font-bold text-[var(--foreground)]">Safe Exclusion Patterns</h2>
         <p className="text-xs sm:text-sm text-[var(--muted)] leading-relaxed">
-          To maintain sub-second scanning performance across large repositories, API Route Explorer excludes build artifacts and non-route directories by default:
+          To maintain sub-second scanning performance across large repositories, API Routes Explorer excludes build artifacts and non-route directories by default:
         </p>
         <CodeBlock
           code={`node_modules/

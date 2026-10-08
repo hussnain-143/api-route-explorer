@@ -7,7 +7,7 @@ import { serializeOpenApiToYaml, serializeOpenApiToJson } from '../openapi/openA
 import { COMMANDS, MESSAGES } from '../utils/constants';
 import { analyzeWorkspaceRoutes } from '../analysis/routeAnalyzer';
 
-suite('API Route Explorer — Sprint 15 MVP Integration & UX Suite', () => {
+suite('API Routes Explorer — Sprint 15 MVP Integration & UX Suite', () => {
   const sampleExpressRoute: ApiRoute = {
     method: 'GET',
     path: '/api/v1/users/:id',

@@ -21,7 +21,7 @@ import {
 } from '../httpClient/httpClientTypes';
 import { COMMANDS } from '../utils/constants';
 
-suite('API Route Explorer — Sprint 13 HTTP Client Webview Suite', () => {
+suite('API Routes Explorer — Sprint 13 HTTP Client Webview Suite', () => {
   let server: http.Server;
   let serverPort: number;
   let serverBaseUrl: string;

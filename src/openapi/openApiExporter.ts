@@ -44,7 +44,7 @@ export async function resolveWorkspaceOpenApiOptions(): Promise<OpenApiGeneratio
   }
 
   return {
-    title: title || 'API Route Explorer API',
+    title: title || 'API Routes Explorer API',
     version: version || '1.0.0',
     description: description || 'OpenAPI 3.0.3 specification generated from static API route discovery.',
     baseUrl: baseUrl ? baseUrl.replace(/\/+$/, '') : undefined,
@@ -149,7 +149,7 @@ export async function showExportOpenApiDialog(
         },
       ],
       {
-        title: 'API Route Explorer: Export OpenAPI Specification',
+        title: 'API Routes Explorer: Export OpenAPI Specification',
         placeHolder: 'Select specification format',
       }
     );

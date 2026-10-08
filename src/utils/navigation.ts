@@ -36,7 +36,7 @@ export async function openRoute(route: ApiRoute): Promise<void> {
       vscode.TextEditorRevealType.InCenter
     );
   } catch (error) {
-    console.error(`[API Route Explorer] Could not open route source file: ${route.filePath}`, error);
+    console.error(`[API Routes Explorer] Could not open route source file: ${route.filePath}`, error);
     vscode.window.showErrorMessage(MESSAGES.FILE_NOT_FOUND);
   }
 }
@@ -59,7 +59,7 @@ export async function openFile(filePath: string): Promise<void> {
       preserveFocus: false,
     });
   } catch (error) {
-    console.error(`[API Route Explorer] Could not open file: ${filePath}`, error);
+    console.error(`[API Routes Explorer] Could not open file: ${filePath}`, error);
     vscode.window.showErrorMessage(MESSAGES.FILE_NOT_FOUND);
   }
 }

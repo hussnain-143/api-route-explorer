@@ -5,12 +5,12 @@ import { CodeBlock } from "@/components/CodeBlock";
 export const metadata: Metadata = {
   title: "Framework Support — Express, Next.js, Fastify & NestJS",
   description:
-    "Discover how API Route Explorer automatically detects routes across Express, Next.js App & Pages Router, Fastify, and NestJS.",
+    "Discover how API Routes Explorer automatically detects routes across Express, Next.js App & Pages Router, Fastify, and NestJS.",
   alternates: {
     canonical: `${siteConfig.url}/frameworks`,
   },
   openGraph: {
-    title: "Supported Backend Frameworks — API Route Explorer",
+    title: "Supported Backend Frameworks — API Routes Explorer",
     description:
       "Native AST parsing for Express, Next.js App/Pages Router, Fastify, and NestJS directly inside VS Code.",
     url: `${siteConfig.url}/frameworks`,
@@ -29,7 +29,7 @@ export default function FrameworksPage() {
           Built for modern backend frameworks.
         </h1>
         <p className="text-base sm:text-lg text-[var(--muted)] leading-relaxed">
-          API Route Explorer includes dedicated AST parsers that understand each framework&apos;s idiosyncratic routing semantics, from file-based conventions to TypeScript decorators.
+          API Routes Explorer includes dedicated AST parsers that understand each framework&apos;s idiosyncratic routing semantics, from file-based conventions to TypeScript decorators.
         </p>
       </div>
 
@@ -237,7 +237,7 @@ export class UsersController {
       <div className="p-8 rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)] text-center space-y-3">
         <h3 className="text-lg font-bold text-[var(--foreground)]">Looking for another framework?</h3>
         <p className="text-xs text-[var(--muted)] max-w-xl mx-auto">
-          API Route Explorer is designed with an extensible scanner engine. Support for Koa, Hono, Elysia, and Spring Boot can be added based on community feedback.
+          API Routes Explorer is designed with an extensible scanner engine. Support for Koa, Hono, Elysia, and Spring Boot can be added based on community feedback.
         </p>
         <div className="pt-2">
           <a

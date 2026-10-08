@@ -796,7 +796,7 @@ export class HttpClientPanel {
   <div class="container">
     <div class="header-bar">
       <div class="header-title">
-        <span>⚡ API Route Explorer — HTTP Client</span>
+        <span>⚡ API Routes Explorer — HTTP Client</span>
       </div>
       <div class="header-meta" id="header-meta"></div>
     </div>

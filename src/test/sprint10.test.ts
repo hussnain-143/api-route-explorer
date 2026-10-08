@@ -25,7 +25,7 @@ import {
 import { getRouteKey } from '../analysis/routeRelationshipAnalyzer';
 import { COMMANDS } from '../utils/constants';
 
-suite('API Route Explorer — Sprint 10 Developer Experience Suite', () => {
+suite('API Routes Explorer — Sprint 10 Developer Experience Suite', () => {
   const sampleRoutes: ApiRoute[] = [
     {
       method: 'GET',

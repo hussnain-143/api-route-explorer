@@ -7,12 +7,12 @@ import { CodeBlock } from "@/components/CodeBlock";
 export const metadata: Metadata = {
   title: "Route Analysis & Health — Collision & Shadowing Diagnostics",
   description:
-    "Learn how API Route Explorer performs static route validation, finding duplicate endpoints and shadowing bugs in VS Code.",
+    "Learn how API Routes Explorer performs static route validation, finding duplicate endpoints and shadowing bugs in VS Code.",
   alternates: {
     canonical: `${siteConfig.url}/docs/route-analysis`,
   },
   openGraph: {
-    title: "Route Analysis & Health — API Route Explorer Docs",
+    title: "Route Analysis & Health — API Routes Explorer Docs",
     description: "Detect duplicate endpoints, route shadowing, and missing handlers directly inside VS Code.",
     url: `${siteConfig.url}/docs/route-analysis`,
   },
@@ -33,7 +33,7 @@ export default function RouteAnalysisPage() {
           Route Analysis &amp; Health
         </h1>
         <p className="text-base text-[var(--muted)] leading-relaxed">
-          API Route Explorer performs static route validation, catching duplicates, shadowing conflicts, and mounting errors before runtime.
+          API Routes Explorer performs static route validation, catching duplicates, shadowing conflicts, and mounting errors before runtime.
         </p>
       </div>
 
@@ -68,7 +68,7 @@ router.get('/users/:id', getUserById);
 router.get('/users/me', getCurrentUser);`}
         />
         <p className="text-xs sm:text-sm text-[var(--muted)] leading-relaxed">
-          API Route Explorer&apos;s conflict detector analyzes parameter tokens and warns you when a static endpoint is shadowed by an earlier parameterized declaration.
+          API Routes Explorer&apos;s conflict detector analyzes parameter tokens and warns you when a static endpoint is shadowed by an earlier parameterized declaration.
         </p>
       </section>
 

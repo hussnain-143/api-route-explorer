@@ -1,6 +1,6 @@
-# Support & Community for API Route Explorer
+# Support & Community for API Routes Explorer
 
-Welcome to the **API Route Explorer** support page! If you have encountered an issue, have a question, or wish to suggest an enhancement, please follow the channels below.
+Welcome to the **API Routes Explorer** support page! If you have encountered an issue, have a question, or wish to suggest an enhancement, please follow the channels below.
 
 ---
 
@@ -46,5 +46,5 @@ If you discover a security vulnerability or sensitive data handling concern:
 
 ## 5. Community & Open Source
 
-API Route Explorer is an open-source project created by **[Hussnain Ahmed](https://github.com/hussnain-143)** and licensed under the [MIT License](LICENSE).
+API Routes Explorer is an open-source project created by **[Hussnain Ahmed](https://github.com/hussnain-143)** and licensed under the [MIT License](LICENSE).
 Contributions, feedback, and star support on [GitHub](https://github.com/hussnain-143/api-route-explorer) are greatly appreciated!

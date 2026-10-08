@@ -3,14 +3,14 @@ import { siteConfig } from "@/lib/site-config";
 import { CodeBlock } from "@/components/CodeBlock";
 
 export const metadata: Metadata = {
-  title: "Install API Route Explorer — VS Code Marketplace & CLI",
+  title: "Install API Routes Explorer — VS Code Marketplace & CLI",
   description:
-    "Install API Route Explorer for Visual Studio Code via Marketplace, CLI command, or offline VSIX package.",
+    "Install API Routes Explorer for Visual Studio Code via Marketplace, CLI command, or offline VSIX package.",
   alternates: {
     canonical: `${siteConfig.url}/install`,
   },
   openGraph: {
-    title: "Install API Route Explorer for VS Code",
+    title: "Install API Routes Explorer for VS Code",
     description: "One-click install from the VS Code Marketplace or install using the VS Code CLI.",
     url: `${siteConfig.url}/install`,
   },
@@ -25,7 +25,7 @@ export default function InstallPage() {
           Installation Guide
         </div>
         <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[var(--foreground)]">
-          Install API Route Explorer
+          Install API Routes Explorer
         </h1>
         <p className="text-base sm:text-lg text-[var(--muted)] leading-relaxed">
           Get up and running in under 60 seconds. Free, open source, and available across all VS Code compatible editors.
@@ -86,7 +86,7 @@ export default function InstallPage() {
           For restricted corporate or air-gapped environments without internet access, download the pre-compiled <code>.vsix</code> binary from GitHub Releases:
         </p>
         <CodeBlock
-          code={`code --install-extension api-route-explorer-${siteConfig.version}.vsix --force`}
+          code={`code --install-extension api-routes-explorer-${siteConfig.version}.vsix --force`}
           language="bash"
           title="Install from local VSIX"
         />

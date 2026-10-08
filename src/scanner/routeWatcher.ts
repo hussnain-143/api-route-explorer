@@ -101,11 +101,11 @@ export function createRouteFileWatcher(
         const result = onTriggerScan(batchedEvents);
         if (result instanceof Promise) {
           result.catch((err) => {
-            console.error('[API Route Explorer] Auto-refresh scan error:', err);
+            console.error('[API Routes Explorer] Auto-refresh scan error:', err);
           });
         }
       } catch (err) {
-        console.error('[API Route Explorer] Auto-refresh scan error:', err);
+        console.error('[API Routes Explorer] Auto-refresh scan error:', err);
       }
     }, debounceMs);
   };

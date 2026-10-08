@@ -4,7 +4,7 @@ import { MissingHandlerWarning } from './handlerAnalyzer';
 import { RouteConflict } from './analysisTypes';
 
 /**
- * Manages VS Code diagnostics for API Route Explorer.
+ * Manages VS Code diagnostics for API Routes Explorer.
  * Publishes diagnostics for duplicate routes, possible missing handlers, and route conflicts/shadowing.
  */
 export class RouteDiagnosticsManager implements vscode.Disposable {
@@ -42,7 +42,7 @@ export class RouteDiagnosticsManager implements vscode.Disposable {
           `Duplicate route: ${route.method} ${route.path}`,
           vscode.DiagnosticSeverity.Error
         );
-        diagnostic.source = 'API Route Explorer';
+        diagnostic.source = 'API Routes Explorer';
         diagnostic.code = 'duplicate-route';
 
         const otherDuplicates = group.routes.filter((r) => r !== route);
@@ -82,7 +82,7 @@ export class RouteDiagnosticsManager implements vscode.Disposable {
         warning.message,
         vscode.DiagnosticSeverity.Warning
       );
-      diagnostic.source = 'API Route Explorer';
+      diagnostic.source = 'API Routes Explorer';
       diagnostic.code = 'missing-handler';
 
       let entry = diagnosticsByUri.get(uriKey);
@@ -108,7 +108,7 @@ export class RouteDiagnosticsManager implements vscode.Disposable {
         conflict.reason,
         vscode.DiagnosticSeverity.Warning
       );
-      diagnostic.source = 'API Route Explorer';
+      diagnostic.source = 'API Routes Explorer';
       diagnostic.code = conflict.isShadowing ? 'route-shadowing' : 'route-conflict';
 
       if (conflict.conflictingRoute) {

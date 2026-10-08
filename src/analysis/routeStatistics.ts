@@ -179,7 +179,7 @@ export async function showRouteStatisticsModal(
     return;
   }
   const quickPick = vscode.window.createQuickPick();
-  quickPick.title = 'API Route Explorer: Statistics';
+  quickPick.title = 'API Routes Explorer: Statistics';
   quickPick.placeholder = `Total Routes: ${stats.totalRoutes} | Healthy: ${stats.healthyCount} | Warnings: ${stats.warningCount} | Errors: ${stats.errorCount}`;
 
   interface ActionItem extends vscodeTypes.QuickPickItem {

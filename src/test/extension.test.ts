@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { RouteTreeProvider } from '../providers/routeTreeProvider';
 import { COMMANDS, MESSAGES } from '../utils/constants';
 
-suite('API Route Explorer — Extension & Scanner Suite', () => {
+suite('API Routes Explorer — Extension & Scanner Suite', () => {
   test('Commands are registered', async () => {
     const allCommands = await vscode.commands.getCommands(true);
 

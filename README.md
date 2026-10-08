@@ -1,4 +1,4 @@
-# API Route Explorer
+# API Routes Explorer
 
 > **Discover → Analyze → Test → Response → Document API routes directly inside VS Code.**
 
@@ -9,7 +9,7 @@
 [![Dependencies: 0](https://img.shields.io/badge/dependencies-0-success.svg)](package.json)
 [![Author: Hussnain Ahmed](https://img.shields.io/badge/Author-Hussnain%20Ahmed-blue.svg)](https://github.com/hussnain-143)
 
-**API Route Explorer** is a developer-focused VS Code extension that automatically discovers, analyzes, tests, and documents backend API routes directly from your editor. Stop context switching between code, terminal windows, Postman, and Swagger docs.
+**API Routes Explorer** is a developer-focused VS Code extension that automatically discovers, analyzes, tests, and documents backend API routes directly from your editor. Stop context switching between code, terminal windows, Postman, and Swagger docs.
 
 ---
 
@@ -33,14 +33,14 @@ Open Project ──▶ Discover Routes ──▶ Analyze Health ──▶ Test i
 *Explore all backend API endpoints categorized by file with HTTP method icons, route paths, and direct source line navigation:*
 
 <p align="center">
-  <img src="resources/screenshots/route-explorer-tree.png" alt="API Route Explorer TreeView" width="650" />
+  <img src="resources/screenshots/route-explorer-tree.png" alt="API Routes Explorer TreeView" width="650" />
 </p>
 
 ### 📊 Real-time Route Statistics & Breakdown
 *Instant route metrics showing breakdown across HTTP methods, duplicate collisions, and shared multi-method paths:*
 
 <p align="center">
-  <img src="resources/screenshots/route-statistics.png" alt="API Route Explorer Statistics" width="650" />
+  <img src="resources/screenshots/route-statistics.png" alt="API Routes Explorer Statistics" width="650" />
 </p>
 
 ---
@@ -110,13 +110,13 @@ Open Project ──▶ Discover Routes ──▶ Analyze Health ──▶ Test i
 2. Press `Cmd+P` (macOS) or `Ctrl+P` (Windows/Linux).
 3. Type:
    ```text
-   ext install hussnain-143.vscode-api-route-explorer
+   ext install hussnain-143.api-routes-explorer
    ```
 
 ### From VSIX Package
-Download the latest `vscode-api-route-explorer-1.5.1.vsix` from [GitHub Releases](https://github.com/hussnain-143/api-route-explorer/releases) and run:
+Download the latest `api-routes-explorer-1.5.1.vsix` from [GitHub Releases](https://github.com/hussnain-143/api-route-explorer/releases) and run:
 ```bash
-code --install-extension vscode-api-route-explorer-1.5.1.vsix --force
+code --install-extension api-routes-explorer-1.5.1.vsix --force
 ```
 
 ---
@@ -128,7 +128,7 @@ code --install-extension vscode-api-route-explorer-1.5.1.vsix --force
 ```
 
 1. **Open Backend Project**: Open any Express, Next.js, Fastify, or NestJS project in VS Code.
-2. **Open Extension**: Click the **API Route Explorer** icon in the Activity Bar.
+2. **Open Extension**: Click the **API Routes Explorer** icon in the Activity Bar.
 3. **Explore Endpoints**: View your discovered routes grouped by file or framework.
 4. **Analyze Route**: Click **Analyze** to check health, route diagnostics, and middleware.
 5. **Test in HTTP Client**: Click **Test API** to launch the built-in HTTP Client. Fill dynamic parameters and click **Send**.
@@ -139,7 +139,7 @@ code --install-extension vscode-api-route-explorer-1.5.1.vsix --force
 
 ## Configuration Settings
 
-Customize API Route Explorer in your VS Code `settings.json`:
+Customize API Routes Explorer in your VS Code `settings.json`:
 
 ```json
 {
@@ -157,7 +157,7 @@ Customize API Route Explorer in your VS Code `settings.json`:
 
 ## Security & Privacy Policy
 
-API Route Explorer was built on a **privacy-first** foundation:
+API Routes Explorer was built on a **privacy-first** foundation:
 - **No telemetry or data collection**: Zero external network requests are made by the extension core.
 - **Local network execution**: HTTP Client requests are dispatched strictly from your local Node.js environment to the target server you configure.
 - **No secret harvesting**: Secret files (`.env`, `.env.local`, `.pem`) are intentionally ignored by the scanner.
@@ -186,5 +186,5 @@ Developed and maintained by **Hussnain Ahmed**:
 
 ## License
 
-API Route Explorer is open-source software licensed under the [MIT License](LICENSE).  
-Copyright (c) 2026 Hussnain Ahmed and API Route Explorer Contributors.
+API Routes Explorer is open-source software licensed under the [MIT License](LICENSE).  
+Copyright (c) 2026 Hussnain Ahmed and API Routes Explorer Contributors.

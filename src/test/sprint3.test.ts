@@ -18,7 +18,7 @@ import {
 import { openFile, openRoute } from '../utils/navigation';
 import { COMMANDS } from '../utils/constants';
 
-suite('API Route Explorer — Sprint 3 Developer UX & Navigation Suite', function () {
+suite('API Routes Explorer — Sprint 3 Developer UX & Navigation Suite', function () {
   this.timeout(10000);
 
   const sampleRoute: ApiRoute = {

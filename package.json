@@ -1,6 +1,6 @@
 {
-  "name": "vscode-api-route-explorer",
-  "displayName": "API Route Explorer",
+  "name": "api-routes-explorer",
+  "displayName": "API Routes Explorer",
   "description": "Discover, analyze, search, and navigate API routes directly inside VS Code.",
   "version": "1.5.1",
   "publisher": "hussnain-143",
@@ -41,7 +41,7 @@
   "main": "./out/extension.js",
   "contributes": {
     "configuration": {
-      "title": "API Route Explorer",
+      "title": "API Routes Explorer",
       "properties": {
         "apiRouteExplorer.defaultGrouping": {
           "type": "string",
@@ -58,7 +58,7 @@
             "Group routes by health status (Healthy, Warnings, Errors)"
           ],
           "default": "file",
-          "description": "Default grouping mode for the API Route Explorer TreeView."
+          "description": "Default grouping mode for the API Routes Explorer TreeView."
         },
         "apiRouteExplorer.baseUrl": {
           "type": "string",
@@ -104,7 +104,7 @@
       "activitybar": [
         {
           "id": "apiRouteExplorer",
-          "title": "API Route Explorer",
+          "title": "API Routes Explorer",
           "icon": "resources/icons/activity-bar.svg"
         }
       ]
@@ -134,137 +134,137 @@
       {
         "command": "apiRouteExplorer.scan",
         "title": "Scan Routes",
-        "category": "API Route Explorer"
+        "category": "API Routes Explorer"
       },
       {
         "command": "apiRouteExplorer.refresh",
         "title": "Refresh Routes",
-        "category": "API Route Explorer",
+        "category": "API Routes Explorer",
         "icon": "$(refresh)"
       },
       {
         "command": "apiRouteExplorer.searchRoutes",
         "title": "Search Routes",
-        "category": "API Route Explorer",
+        "category": "API Routes Explorer",
         "icon": "$(search)"
       },
       {
         "command": "apiRouteExplorer.openRoute",
         "title": "Open Route",
-        "category": "API Route Explorer",
+        "category": "API Routes Explorer",
         "icon": "$(go-to-file)"
       },
       {
         "command": "apiRouteExplorer.openFile",
         "title": "Open File",
-        "category": "API Route Explorer",
+        "category": "API Routes Explorer",
         "icon": "$(go-to-file)"
       },
       {
         "command": "apiRouteExplorer.copyRoute",
         "title": "Copy Route",
-        "category": "API Route Explorer",
+        "category": "API Routes Explorer",
         "icon": "$(clippy)"
       },
       {
         "command": "apiRouteExplorer.copyRoutePath",
         "title": "Copy Route Path",
-        "category": "API Route Explorer",
+        "category": "API Routes Explorer",
         "icon": "$(copy)"
       },
       {
         "command": "apiRouteExplorer.copyCurl",
         "title": "Copy as cURL",
-        "category": "API Route Explorer",
+        "category": "API Routes Explorer",
         "icon": "$(terminal)"
       },
       {
         "command": "apiRouteExplorer.copyRouteUrl",
         "title": "Copy Route URL",
-        "category": "API Route Explorer",
+        "category": "API Routes Explorer",
         "icon": "$(link)"
       },
       {
         "command": "apiRouteExplorer.copyRouteDefinition",
         "title": "Copy Route Definition",
-        "category": "API Route Explorer",
+        "category": "API Routes Explorer",
         "icon": "$(quote)"
       },
       {
         "command": "apiRouteExplorer.filterByMethod",
         "title": "Filter Routes by Method",
-        "category": "API Route Explorer",
+        "category": "API Routes Explorer",
         "icon": "$(filter)"
       },
       {
         "command": "apiRouteExplorer.filterRoutes",
         "title": "Filter Routes...",
-        "category": "API Route Explorer",
+        "category": "API Routes Explorer",
         "icon": "$(filter)"
       },
       {
         "command": "apiRouteExplorer.groupBy",
         "title": "Group Routes By...",
-        "category": "API Route Explorer",
+        "category": "API Routes Explorer",
         "icon": "$(list-tree)"
       },
       {
         "command": "apiRouteExplorer.searchSimilarRoutes",
         "title": "Search Similar Routes",
-        "category": "API Route Explorer",
+        "category": "API Routes Explorer",
         "icon": "$(search)"
       },
       {
         "command": "apiRouteExplorer.exportRoutes",
         "title": "Export Routes...",
-        "category": "API Route Explorer",
+        "category": "API Routes Explorer",
         "icon": "$(export)"
       },
       {
         "command": "apiRouteExplorer.statusBarMenu",
         "title": "API Route Explorer Menu",
-        "category": "API Route Explorer"
+        "category": "API Routes Explorer"
       },
       {
         "command": "apiRouteExplorer.showStatistics",
         "title": "Show Route Statistics",
-        "category": "API Route Explorer",
+        "category": "API Routes Explorer",
         "icon": "$(graph)"
       },
       {
         "command": "apiRouteExplorer.exportOpenApi",
         "title": "Export OpenAPI Specification...",
-        "category": "API Route Explorer",
+        "category": "API Routes Explorer",
         "icon": "$(file-code)"
       },
       {
         "command": "apiRouteExplorer.exportOpenApiYaml",
         "title": "Export OpenAPI Specification (YAML)",
-        "category": "API Route Explorer",
+        "category": "API Routes Explorer",
         "icon": "$(file-code)"
       },
       {
         "command": "apiRouteExplorer.exportOpenApiJson",
         "title": "Export OpenAPI Specification (JSON)",
-        "category": "API Route Explorer",
+        "category": "API Routes Explorer",
         "icon": "$(json)"
       },
       {
         "command": "apiRouteExplorer.openHttpClient",
         "title": "Test API",
-        "category": "API Route Explorer",
+        "category": "API Routes Explorer",
         "icon": "$(send)"
       },
       {
         "command": "apiRouteExplorer.analyzeRoute",
         "title": "Analyze Route",
-        "category": "API Route Explorer",
+        "category": "API Routes Explorer",
         "icon": "$(pulse)"
       },
       {
         "command": "apiRouteExplorer.viewRouteOpenApi",
         "title": "View OpenAPI Operation",
-        "category": "API Route Explorer",
+        "category": "API Routes Explorer",
         "icon": "$(file-code)"
       }
     ],

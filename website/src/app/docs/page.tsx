@@ -6,13 +6,13 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 export const metadata: Metadata = {
   title: "Documentation Overview — Architecture & Concepts",
   description:
-    "Official documentation for API Route Explorer. Learn how AST scanning, route tree providers, HTTP testing, and OpenAPI generation work in VS Code.",
+    "Official documentation for API Routes Explorer. Learn how AST scanning, route tree providers, HTTP testing, and OpenAPI generation work in VS Code.",
   alternates: {
     canonical: `${siteConfig.url}/docs`,
   },
   openGraph: {
-    title: "API Route Explorer Documentation — Introduction",
-    description: "Architectural overview and core concepts for API Route Explorer.",
+    title: "API Routes Explorer Documentation — Introduction",
+    description: "Architectural overview and core concepts for API Routes Explorer.",
     url: `${siteConfig.url}/docs`,
   },
 };
@@ -24,10 +24,10 @@ export default function DocsIndexPage() {
 
       <div className="space-y-4">
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--foreground)]">
-          API Route Explorer Documentation
+          API Routes Explorer Documentation
         </h1>
         <p className="text-base text-[var(--muted)] leading-relaxed">
-          Welcome to the official developer documentation for API Route Explorer. Discover how to inspect, analyze, test, and document backend routes directly inside Visual Studio Code.
+          Welcome to the official developer documentation for API Routes Explorer. Discover how to inspect, analyze, test, and document backend routes directly inside Visual Studio Code.
         </p>
       </div>
 
@@ -82,7 +82,7 @@ export default function DocsIndexPage() {
       <section className="space-y-4 pt-6 border-t border-[var(--surface-border)]">
         <h2 className="text-2xl font-bold text-[var(--foreground)]">Core Architecture</h2>
         <p className="text-xs sm:text-sm text-[var(--muted)] leading-relaxed">
-          API Route Explorer is designed with modular boundaries ensuring separation between static AST inspection, diagnostic health calculation, and interactive Webview clients:
+          API Routes Explorer is designed with modular boundaries ensuring separation between static AST inspection, diagnostic health calculation, and interactive Webview clients:
         </p>
         <div className="p-5 rounded-2xl bg-[#030508] border border-[var(--surface-border)] text-xs font-mono text-emerald-400 leading-relaxed overflow-x-auto whitespace-pre">
 {`VS Code Workspace

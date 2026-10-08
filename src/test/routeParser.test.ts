@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import { parseExpressRoutes, LineIndex, maskComments } from '../scanner/routeParser';
 
-suite('API Route Explorer — Express Route Parser Suite', () => {
+suite('API Routes Explorer — Express Route Parser Suite', () => {
   test('LineIndex accurately converts offsets to 0-based line and column', () => {
     const source = 'line0\n    line1\r\nline2';
     const index = new LineIndex(source);

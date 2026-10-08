@@ -21,7 +21,7 @@ import {
   RouteFileGroupItem,
 } from '../providers/routeTreeProvider';
 
-suite('API Route Explorer — Sprint 8 Performance & Large Project Suite', () => {
+suite('API Routes Explorer — Sprint 8 Performance & Large Project Suite', () => {
   suite('RouteIndex In-Memory Indexing', () => {
     test('Indexes routes and enables fast lookups across multiple dimensions', () => {
       const index = new RouteIndex();

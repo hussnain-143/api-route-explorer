@@ -6,7 +6,7 @@ import { defaultFrameworkRegistry } from '../frameworks/frameworkRegistry';
 import { normalizeRoutePath } from '../analysis/duplicateDetector';
 import { ApiRoute } from '../models/route';
 
-suite('API Route Explorer — Sprint 9 v1.0 Release Readiness Suite', () => {
+suite('API Routes Explorer — Sprint 9 v1.0 Release Readiness Suite', () => {
   suite('Release Metadata & Configuration Integrity', () => {
     test('All contributed command IDs exist in COMMANDS constant registry', () => {
       const packageJson = require('../../package.json');
@@ -25,7 +25,7 @@ suite('API Route Explorer — Sprint 9 v1.0 Release Readiness Suite', () => {
     test('Package metadata satisfies production marketplace requirements', () => {
       const pkg = require('../../package.json');
       assert.ok(/^\d+\.\d+\.\d+$/.test(pkg.version), `Version should be valid release version, got ${pkg.version}`);
-      assert.strictEqual(pkg.name, 'api-route-explorer');
+      assert.strictEqual(pkg.name, 'api-routes-explorer');
       assert.strictEqual(pkg.publisher, 'hussnain-143');
       assert.strictEqual(pkg.license, 'MIT');
       assert.ok(pkg.description && pkg.description.includes('API routes'));

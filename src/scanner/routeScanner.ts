@@ -204,11 +204,11 @@ export async function scanWorkspaceDetailed(
         }
       } catch (fileError) {
         // Safe error handling: log diagnostic information and proceed without crashing
-        console.warn(`[API Route Explorer] Could not process file: ${uri.fsPath}`, fileError);
+        console.warn(`[API Routes Explorer] Could not process file: ${uri.fsPath}`, fileError);
       }
     }
   } catch (error) {
-    console.error('[API Route Explorer] Workspace scan failed:', error);
+    console.error('[API Routes Explorer] Workspace scan failed:', error);
     return { routes: [], fileSources, routeIndex, cancelled: false };
   }
 

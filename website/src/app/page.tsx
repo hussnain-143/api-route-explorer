@@ -27,7 +27,7 @@ export default function HomePage() {
 
           {/* Subheading */}
           <p className="text-base sm:text-lg lg:text-xl text-[var(--muted)] max-w-2xl mx-auto leading-relaxed">
-            API Route Explorer discovers, analyzes, tests, and documents backend API routes directly inside VS Code.
+            API Routes Explorer discovers, analyzes, tests, and documents backend API routes directly inside VS Code.
           </p>
 
           {/* CTA Buttons */}
@@ -120,10 +120,10 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* The API Route Explorer Way */}
+            {/* The API Routes Explorer Way */}
             <div className="p-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 space-y-4 text-xs font-mono">
               <div className="text-emerald-400 font-semibold uppercase tracking-wider text-[11px]">
-                With API Route Explorer
+                With API Routes Explorer
               </div>
               <div className="space-y-2 text-[var(--foreground)]">
                 <div className="flex items-center gap-2">
@@ -324,7 +324,7 @@ export default function HomePage() {
               Your code stays on your machine.
             </h2>
             <p className="text-xs sm:text-sm text-[var(--muted)] leading-relaxed">
-              API Route Explorer operates exclusively within your local VS Code environment. We believe developer tools should respect your proprietary code and workspace confidentiality.
+              API Routes Explorer operates exclusively within your local VS Code environment. We believe developer tools should respect your proprietary code and workspace confidentiality.
             </p>
           </div>
 

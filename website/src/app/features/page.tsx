@@ -6,12 +6,12 @@ import { CodeBlock } from "@/components/CodeBlock";
 export const metadata: Metadata = {
   title: "Features — Route Intelligence, HTTP Client & OpenAPI",
   description:
-    "Explore the complete feature set of API Route Explorer: route discovery, multi-dimensional grouping, conflict analysis, native HTTP client, and OpenAPI 3.0.3 generation.",
+    "Explore the complete feature set of API Routes Explorer: route discovery, multi-dimensional grouping, conflict analysis, native HTTP client, and OpenAPI 3.0.3 generation.",
   alternates: {
     canonical: `${siteConfig.url}/features`,
   },
   openGraph: {
-    title: "API Route Explorer Features — Discover, Analyze & Test APIs",
+    title: "API Routes Explorer Features — Discover, Analyze & Test APIs",
     description:
       "Deep dive into Route Discovery, Native HTTP Client Webview, and OpenAPI 3.0.3 export directly in VS Code.",
     url: `${siteConfig.url}/features`,
@@ -30,7 +30,7 @@ export default function FeaturesPage() {
           Everything you need to navigate and test backend APIs.
         </h1>
         <p className="text-base sm:text-lg text-[var(--muted)] leading-relaxed">
-          API Route Explorer replaces fragmented toolchains with an integrated, local-first workflow built directly into Visual Studio Code.
+          API Routes Explorer replaces fragmented toolchains with an integrated, local-first workflow built directly into Visual Studio Code.
         </p>
       </div>
 
@@ -80,14 +80,14 @@ export default function FeaturesPage() {
             Static Analysis &amp; Conflict Detection
           </h2>
           <p className="text-sm text-[var(--muted)] leading-relaxed">
-            Detect routing bugs before starting your server. API Route Explorer identifies shadowing conflicts, ambiguous parameter patterns, and duplicate routes directly in the VS Code Problems panel.
+            Detect routing bugs before starting your server. API Routes Explorer identifies shadowing conflicts, ambiguous parameter patterns, and duplicate routes directly in the VS Code Problems panel.
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           <div className="space-y-4 text-xs text-[var(--muted)] leading-relaxed">
             <p>
-              When parameterized routes like <code>/users/:id</code> precede static routes like <code>/users/me</code>, incoming requests may be hijacked. API Route Explorer alerts you to these ordering issues statically.
+              When parameterized routes like <code>/users/:id</code> precede static routes like <code>/users/me</code>, incoming requests may be hijacked. API Routes Explorer alerts you to these ordering issues statically.
             </p>
             <ul className="space-y-2 text-[var(--foreground)]">
               <li>• <strong>Shadowing Warnings:</strong> Detects static endpoints hidden behind dynamic tokens.</li>
@@ -103,7 +103,7 @@ export default function FeaturesPage() {
 router.get('/users/:id', getUserById);
 
 // 2. Static route shadowed by /:id pattern!
-// ⚠️ API Route Explorer Diagnostic: Route '/users/me' is shadowed by '/users/:id'
+// ⚠️ API Routes Explorer Diagnostic: Route '/users/me' is shadowed by '/users/:id'
 router.get('/users/me', getCurrentUser);`}
           />
         </div>

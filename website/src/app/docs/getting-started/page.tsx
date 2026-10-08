@@ -7,12 +7,12 @@ import { CodeBlock } from "@/components/CodeBlock";
 export const metadata: Metadata = {
   title: "Getting Started — Quick Start Guide",
   description:
-    "Get started with API Route Explorer in under two minutes. Step-by-step instructions for installation, scanning, testing, and OpenAPI generation.",
+    "Get started with API Routes Explorer in under two minutes. Step-by-step instructions for installation, scanning, testing, and OpenAPI generation.",
   alternates: {
     canonical: `${siteConfig.url}/docs/getting-started`,
   },
   openGraph: {
-    title: "Getting Started — API Route Explorer",
+    title: "Getting Started — API Routes Explorer",
     description: "Learn how to install and scan your first backend project in VS Code.",
     url: `${siteConfig.url}/docs/getting-started`,
   },
@@ -30,10 +30,10 @@ export default function GettingStartedPage() {
 
       <div className="space-y-4">
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--foreground)]">
-          Getting Started with API Route Explorer
+          Getting Started with API Routes Explorer
         </h1>
         <p className="text-base text-[var(--muted)] leading-relaxed">
-          Learn how to install API Route Explorer, scan your backend routes, and start testing in under two minutes.
+          Learn how to install API Routes Explorer, scan your backend routes, and start testing in under two minutes.
         </p>
       </div>
 
@@ -44,7 +44,7 @@ export default function GettingStartedPage() {
         </div>
         <h2 className="text-lg font-bold text-[var(--foreground)]">Install the Extension</h2>
         <p className="text-xs sm:text-sm text-[var(--muted)] leading-relaxed">
-          Open the VS Code Extension view (<kbd className="px-1.5 py-0.5 rounded bg-[var(--surface-elevated)] border border-[var(--surface-border)] text-xs">Cmd+Shift+X</kbd>), search for <strong>API Route Explorer</strong>, and click <strong>Install</strong>. Alternatively, install via terminal:
+          Open the VS Code Extension view (<kbd className="px-1.5 py-0.5 rounded bg-[var(--surface-elevated)] border border-[var(--surface-border)] text-xs">Cmd+Shift+X</kbd>), search for <strong>API Routes Explorer</strong>, and click <strong>Install</strong>. Alternatively, install via terminal:
         </p>
         <CodeBlock code={siteConfig.install.cli} language="bash" />
       </section>
@@ -56,7 +56,7 @@ export default function GettingStartedPage() {
         </div>
         <h2 className="text-lg font-bold text-[var(--foreground)]">Open Your Backend Project</h2>
         <p className="text-xs sm:text-sm text-[var(--muted)] leading-relaxed">
-          Open any Node.js or TypeScript workspace utilizing <strong>Express</strong>, <strong>Next.js</strong>, <strong>Fastify</strong>, or <strong>NestJS</strong>. API Route Explorer activates automatically when it detects backend route declarations.
+          Open any Node.js or TypeScript workspace utilizing <strong>Express</strong>, <strong>Next.js</strong>, <strong>Fastify</strong>, or <strong>NestJS</strong>. API Routes Explorer activates automatically when it detects backend route declarations.
         </p>
       </section>
 
@@ -67,7 +67,7 @@ export default function GettingStartedPage() {
         </div>
         <h2 className="text-lg font-bold text-[var(--foreground)]">Discover Routes</h2>
         <p className="text-xs sm:text-sm text-[var(--muted)] leading-relaxed">
-          Click the <strong>API Route Explorer</strong> icon in the Activity Bar. If this is your first time opening the project, click <strong>Discover Routes</strong>. The offline AST engine will parse your project files and display every discovered route in a tree.
+          Click the <strong>API Routes Explorer</strong> icon in the Activity Bar. If this is your first time opening the project, click <strong>Discover Routes</strong>. The offline AST engine will parse your project files and display every discovered route in a tree.
         </p>
       </section>
 

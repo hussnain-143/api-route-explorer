@@ -72,5 +72,5 @@ export const MESSAGES = {
   FILE_NOT_FOUND: 'Route source file no longer exists or could not be opened.',
   SCAN_FAILED_TITLE: 'Route scanning failed.',
   SCAN_FAILED_BODY: 'An error occurred while discovering routes.',
-  FIRST_RUN_WELCOME: 'API Route Explorer: Discover your API routes. Analyze your backend. Test endpoints. Generate OpenAPI documentation.',
+  FIRST_RUN_WELCOME: 'API Routes Explorer: Discover your API routes. Analyze your backend. Test endpoints. Generate OpenAPI documentation.',
 } as const;

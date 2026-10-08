@@ -30,7 +30,7 @@ import {
   AnalysisCategoryItem,
 } from '../providers/routeAnalysisProvider';
 
-suite('API Route Explorer — Sprint 7 Advanced Route Intelligence Suite', () => {
+suite('API Routes Explorer — Sprint 7 Advanced Route Intelligence Suite', () => {
   // 1. Route Conflict & Overlap Tests
   suite('Conflict & Overlap Detection', () => {
     test('Detects potential conflict between static and dynamic parameter segments', () => {

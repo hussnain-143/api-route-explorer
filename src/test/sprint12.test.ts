@@ -21,7 +21,7 @@ import {
 } from '../openapi/openApiExporter';
 import { COMMANDS } from '../utils/constants';
 
-suite('API Route Explorer — Sprint 12 OpenAPI Specification Generation Suite', () => {
+suite('API Routes Explorer — Sprint 12 OpenAPI Specification Generation Suite', () => {
   const sampleRoutes: ApiRoute[] = [
     {
       method: 'GET',
@@ -310,7 +310,7 @@ suite('API Route Explorer — Sprint 12 OpenAPI Specification Generation Suite',
       const parsed = JSON.parse(jsonStr);
 
       assert.strictEqual(parsed.openapi, '3.0.3');
-      assert.strictEqual(parsed.info.title, 'API Route Explorer API');
+      assert.strictEqual(parsed.info.title, 'API Routes Explorer API');
       assert.ok(parsed.paths['/api/v1/users']);
     });
 

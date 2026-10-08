@@ -376,7 +376,7 @@ export class RoutePlaceholderItem extends vscode.TreeItem {
 }
 
 /**
- * TreeDataProvider implementing the API Route Explorer hierarchy:
+ * TreeDataProvider implementing the API Routes Explorer hierarchy:
  * Supports dynamic grouping by File, Framework, Method, or Health.
  */
 export class RouteTreeProvider implements vscode.TreeDataProvider<vscode.TreeItem> {
