@@ -2,7 +2,15 @@
 
 All notable changes to the "api-route-explorer" extension will be documented in this file.
 
-## [1.5.0-rc] - Sprint 16: Release Candidate & Public Website Preparation
+## [1.5.1] - 2026-10-08
+
+### Fixed & Enhanced
+- **Branding & Visual Polish**:
+  - Re-rendered pure transparent vector logo icon eliminating white background extrusion.
+  - Aligned website, marketplace, and activity bar icons with high-contrast emerald & teal routing mark.
+  - Standardized UI tag color tokens to brand emerald palette.
+
+## [1.5.0] - Sprint 16: Public Release Ready
 
 ### Hardened & Prepared for Public Release
 - **Release Candidate Verification**:

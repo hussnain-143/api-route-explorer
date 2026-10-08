@@ -18,10 +18,21 @@ export const metadata: Metadata = {
 export default function ChangelogPage() {
   const releases = [
     {
+      version: "v1.5.1",
+      date: "October 2026",
+      title: "Clean Icon Alpha & Brand Polish",
+      badge: "Latest Release",
+      highlights: [
+        "Re-rendered lossless vector icon eliminating white background artifacts.",
+        "Unified all page badges, tags, and status pills to the emerald theme.",
+        "Added author attribution in header and footer across all pages.",
+      ],
+    },
+    {
       version: "v1.5.0",
       date: "October 2026",
       title: "Public Launch & Ecosystem Release",
-      badge: "Latest Release",
+      badge: undefined,
       highlights: [
         "Official public launch across VS Code Marketplace and Open VSX.",
         "Production website with dedicated documentation hub and framework guides.",
