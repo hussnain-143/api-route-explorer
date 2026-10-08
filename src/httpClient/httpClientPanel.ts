@@ -241,22 +241,30 @@ export class HttpClientPanel {
   <title>HTTP Client</title>
   <style>
     :root {
-      --bg: var(--vscode-editor-background);
-      --fg: var(--vscode-editor-foreground);
-      --input-bg: var(--vscode-input-background);
-      --input-fg: var(--vscode-input-foreground);
-      --input-border: var(--vscode-input-border, rgba(128, 128, 128, 0.3));
-      --btn-bg: var(--vscode-button-background);
-      --btn-fg: var(--vscode-button-foreground);
-      --btn-hover: var(--vscode-button-hoverBackground);
+      --bg: var(--vscode-editor-background, #1e1e1e);
+      --fg: var(--vscode-editor-foreground, #cccccc);
+      --input-bg: var(--vscode-input-background, #252526);
+      --input-fg: var(--vscode-input-foreground, #cccccc);
+      --input-border: var(--vscode-input-border, rgba(128, 128, 128, 0.25));
+      --btn-bg: var(--vscode-button-background, #0e639c);
+      --btn-fg: var(--vscode-button-foreground, #ffffff);
+      --btn-hover: var(--vscode-button-hoverBackground, #1177bb);
       --btn-sec-bg: var(--vscode-button-secondaryBackground, #3a3d41);
       --btn-sec-fg: var(--vscode-button-secondaryForeground, #ffffff);
       --btn-sec-hover: var(--vscode-button-secondaryHoverBackground, #45494e);
-      --panel-border: var(--vscode-panel-border, rgba(128, 128, 128, 0.2));
+      --panel-border: var(--vscode-panel-border, rgba(128, 128, 128, 0.18));
       --badge-bg: var(--vscode-badge-background, #4d4d4d);
       --badge-fg: var(--vscode-badge-foreground, #ffffff);
       --font-family: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
       --code-font: var(--vscode-editor-font-family, Menlo, Monaco, "Courier New", monospace);
+
+      --color-emerald: #10B981;
+      --color-emerald-bg: rgba(16, 185, 129, 0.15);
+      --color-emerald-border: rgba(16, 185, 129, 0.35);
+      --color-blue: #3B82F6;
+      --color-amber: #F59E0B;
+      --color-violet: #8B5CF6;
+      --color-rose: #EF4444;
     }
 
     * {
@@ -270,55 +278,107 @@ export class HttpClientPanel {
       color: var(--fg);
       font-family: var(--font-family);
       font-size: 13px;
-      line-height: 1.4;
-      padding: 16px;
+      line-height: 1.45;
+      padding: 16px 20px;
       overflow-y: auto;
     }
 
     .container {
-      max-width: 920px;
+      max-width: 960px;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
       gap: 16px;
     }
 
+    /* Top Brand Header */
     .header-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid var(--panel-border);
       padding-bottom: 12px;
+      border-bottom: 1px solid var(--panel-border);
     }
 
-    .header-title {
-      font-size: 14px;
-      font-weight: 600;
+    .header-left {
       display: flex;
       align-items: center;
       gap: 8px;
+    }
+
+    .brand-icon {
+      color: var(--color-emerald);
+      font-size: 16px;
+      line-height: 1;
+      filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.4));
+    }
+
+    .header-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      color: var(--fg);
+    }
+
+    .header-badge {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: var(--color-emerald-bg);
+      color: var(--color-emerald);
+      border: 1px solid var(--color-emerald-border);
+      border-radius: 9999px;
+      padding: 2px 7px;
     }
 
     .header-meta {
       font-size: 11px;
-      opacity: 0.7;
+      opacity: 0.65;
+      font-family: var(--code-font);
     }
 
-    .route-context-bar {
-      background: var(--input-bg);
-      border: 1px solid var(--panel-border);
-      border-left: 3px solid var(--btn-bg);
-      border-radius: 6px;
-      padding: 10px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .route-context-top {
+    .header-right {
       display: flex;
       align-items: center;
       gap: 8px;
+    }
+
+    .shortcut-pill {
+      font-size: 11px;
+      opacity: 0.6;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    kbd {
+      background: rgba(128, 128, 128, 0.18);
+      border: 1px solid rgba(128, 128, 128, 0.3);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 10px;
+      font-family: var(--code-font);
+    }
+
+    /* Route Context Banner (Hero Card) */
+    .route-context-bar {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+      border: 1px solid var(--panel-border);
+      border-left: 3px solid var(--color-emerald);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .route-context-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       flex-wrap: wrap;
     }
 
@@ -326,11 +386,12 @@ export class HttpClientPanel {
       font-size: 10px;
       font-weight: 700;
       text-transform: uppercase;
-      padding: 2px 6px;
-      border-radius: 3px;
+      padding: 3px 8px;
+      border-radius: 4px;
       background: var(--badge-bg);
       color: var(--badge-fg);
-      letter-spacing: 0.5px;
+      letter-spacing: 0.6px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .route-context-signature {
@@ -344,8 +405,7 @@ export class HttpClientPanel {
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 12px;
-      color: var(--fg);
+      font-size: 11px;
       opacity: 0.85;
     }
 
@@ -356,102 +416,176 @@ export class HttpClientPanel {
       cursor: pointer;
       font-family: var(--code-font);
       font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
       text-decoration: underline;
-      padding: 0;
+      padding: 2px 4px;
+      border-radius: 3px;
+      transition: background 0.15s ease;
     }
 
     .source-link-btn:hover {
-      color: var(--vscode-textLink-activeForeground, #3794ff);
+      background: rgba(55, 148, 255, 0.1);
+      color: var(--vscode-textLink-activeForeground, #58a6ff);
     }
 
+    /* Omni Request Bar */
     .request-bar {
       display: flex;
+      align-items: stretch;
       gap: 8px;
+    }
+
+    .omni-input-group {
+      flex: 1;
+      display: flex;
       align-items: center;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 6px;
+      overflow: hidden;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .omni-input-group:focus-within {
+      border-color: var(--color-emerald);
+      box-shadow: 0 0 0 1px var(--color-emerald);
     }
 
     .method-select {
-      background: var(--input-bg);
+      background: transparent;
       color: var(--input-fg);
-      border: 1px solid var(--input-border);
-      padding: 7px 10px;
-      border-radius: 4px;
+      border: none;
+      padding: 8px 12px;
       font-family: var(--code-font);
-      font-weight: 700;
+      font-weight: 800;
       font-size: 12px;
       cursor: pointer;
+      outline: none;
+      letter-spacing: 0.5px;
     }
 
-    .method-select[data-method="GET"] { color: #10B981; }
-    .method-select[data-method="POST"] { color: #3B82F6; }
-    .method-select[data-method="PUT"] { color: #F59E0B; }
-    .method-select[data-method="PATCH"] { color: #8B5CF6; }
-    .method-select[data-method="DELETE"] { color: #EF4444; }
+    .method-select[data-method="GET"] { color: var(--color-emerald); }
+    .method-select[data-method="POST"] { color: var(--color-blue); }
+    .method-select[data-method="PUT"] { color: var(--color-amber); }
+    .method-select[data-method="PATCH"] { color: var(--color-violet); }
+    .method-select[data-method="DELETE"] { color: var(--color-rose); }
     .method-select[data-method="HEAD"],
     .method-select[data-method="OPTIONS"] { color: #9CA3AF; }
 
+    .omni-divider {
+      width: 1px;
+      height: 20px;
+      background: var(--panel-border);
+    }
+
     .url-input {
       flex: 1;
-      background: var(--input-bg);
+      background: transparent;
       color: var(--input-fg);
-      border: 1px solid var(--input-border);
-      padding: 7px 10px;
-      border-radius: 4px;
+      border: none;
+      padding: 8px 12px;
       font-family: var(--code-font);
       font-size: 12px;
+      outline: none;
     }
 
-    .url-input:focus, .method-select:focus, textarea:focus, input[type="text"]:focus {
-      outline: 1px solid var(--vscode-focusBorder, #007fd4);
+    .url-input::placeholder {
+      opacity: 0.45;
     }
 
-    .btn {
-      padding: 7px 14px;
+    .btn-omni-copy {
+      background: transparent;
       border: none;
-      border-radius: 4px;
+      color: var(--fg);
+      opacity: 0.7;
+      padding: 6px 12px;
       cursor: pointer;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 500;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      transition: background 0.1s ease;
-      white-space: nowrap;
+      gap: 4px;
+      transition: opacity 0.15s, background 0.15s;
     }
 
-    .btn-primary {
-      background: var(--btn-bg);
-      color: var(--btn-fg);
+    .btn-omni-copy:hover {
+      opacity: 1;
+      background: rgba(128, 128, 128, 0.12);
     }
-    .btn-primary:hover {
-      background: var(--btn-hover);
+
+    /* Buttons */
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.08s ease, filter 0.15s ease, background 0.15s ease;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-send {
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      color: #ffffff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 10px rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-send:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 0 14px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-send .btn-badge {
+      background: rgba(0, 0, 0, 0.2);
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-family: var(--code-font);
+      font-weight: 500;
     }
 
     .btn-secondary {
       background: var(--btn-sec-bg);
       color: var(--btn-sec-fg);
+      border: 1px solid var(--panel-border);
     }
+
     .btn-secondary:hover {
       background: var(--btn-sec-hover);
     }
 
     .btn-cancel {
-      background: #EF4444;
+      background: var(--color-rose);
       color: #ffffff;
     }
+
     .btn-cancel:hover {
       background: #DC2626;
     }
 
     .btn-sm {
-      padding: 4px 8px;
+      padding: 4px 10px;
       font-size: 11px;
+      border-radius: 4px;
     }
 
+    /* Tab Bar */
     .tab-bar {
       display: flex;
       border-bottom: 1px solid var(--panel-border);
-      gap: 4px;
+      gap: 6px;
+      margin-top: 4px;
     }
 
     .tab-btn {
@@ -459,14 +593,15 @@ export class HttpClientPanel {
       border: none;
       border-bottom: 2px solid transparent;
       color: var(--fg);
-      opacity: 0.7;
-      padding: 6px 12px;
+      opacity: 0.65;
+      padding: 8px 14px;
       cursor: pointer;
       font-size: 12px;
       font-weight: 500;
       display: inline-flex;
       align-items: center;
       gap: 6px;
+      transition: opacity 0.15s, border-color 0.15s;
     }
 
     .tab-btn:hover {
@@ -475,7 +610,8 @@ export class HttpClientPanel {
 
     .tab-btn.active {
       opacity: 1;
-      border-bottom-color: var(--vscode-focusBorder, #007fd4);
+      border-bottom-color: var(--color-emerald);
+      color: var(--fg);
       font-weight: 600;
     }
 
@@ -483,38 +619,46 @@ export class HttpClientPanel {
       background: var(--badge-bg);
       color: var(--badge-fg);
       font-size: 10px;
-      border-radius: 10px;
+      font-weight: 600;
+      border-radius: 9999px;
       padding: 1px 6px;
+      line-height: 1.2;
     }
 
     .tab-content {
       display: none;
-      padding-top: 8px;
+      padding-top: 10px;
     }
 
     .tab-content.active {
       display: block;
     }
 
+    /* Cards */
     .card {
+      background: rgba(255, 255, 255, 0.02);
       border: 1px solid var(--panel-border);
-      border-radius: 6px;
-      padding: 12px;
+      border-radius: 8px;
+      padding: 14px;
     }
 
     .section-title {
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      opacity: 0.8;
+      letter-spacing: 0.6px;
+      opacity: 0.75;
       margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
+    /* Parameter rows */
     .param-row {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       margin-bottom: 8px;
     }
 
@@ -523,13 +667,22 @@ export class HttpClientPanel {
     }
 
     .param-label {
-      width: 140px;
+      width: 150px;
       font-family: var(--code-font);
       font-size: 12px;
       font-weight: 600;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .param-label .opt-tag {
+      font-size: 10px;
+      opacity: 0.6;
+      font-weight: normal;
     }
 
     .param-input {
@@ -537,21 +690,24 @@ export class HttpClientPanel {
       background: var(--input-bg);
       color: var(--input-fg);
       border: 1px solid var(--input-border);
-      padding: 5px 8px;
-      border-radius: 4px;
+      padding: 6px 10px;
+      border-radius: 5px;
       font-family: var(--code-font);
       font-size: 12px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .param-input:focus {
+      border-color: var(--color-emerald);
     }
 
     .param-input.invalid {
-      border-color: #EF4444;
-      outline: 1px solid #EF4444;
+      border-color: var(--color-rose);
+      box-shadow: 0 0 0 1px var(--color-rose);
     }
 
-    .table-container {
-      width: 100%;
-    }
-
+    /* Tables */
     .kv-table {
       width: 100%;
       border-collapse: collapse;
@@ -560,17 +716,23 @@ export class HttpClientPanel {
     .kv-table th {
       text-align: left;
       font-size: 11px;
-      opacity: 0.7;
-      padding: 6px 4px;
+      font-weight: 600;
+      opacity: 0.6;
+      padding: 6px 8px;
       border-bottom: 1px solid var(--panel-border);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .kv-table td {
-      padding: 4px;
+      padding: 5px 4px;
     }
 
     .kv-checkbox {
       cursor: pointer;
+      accent-color: var(--color-emerald);
+      width: 14px;
+      height: 14px;
     }
 
     .kv-input {
@@ -578,67 +740,120 @@ export class HttpClientPanel {
       background: var(--input-bg);
       color: var(--input-fg);
       border: 1px solid var(--input-border);
-      padding: 5px 8px;
+      padding: 6px 10px;
       border-radius: 4px;
       font-family: var(--code-font);
       font-size: 12px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .kv-input:focus {
+      border-color: var(--color-emerald);
     }
 
     .btn-icon {
       background: transparent;
       border: none;
       color: var(--fg);
-      opacity: 0.6;
+      opacity: 0.5;
       cursor: pointer;
       padding: 4px 6px;
       border-radius: 4px;
+      font-size: 13px;
+      line-height: 1;
+      transition: opacity 0.15s, color 0.15s;
     }
 
     .btn-icon:hover {
       opacity: 1;
-      background: rgba(128, 128, 128, 0.15);
+      color: var(--color-rose);
     }
 
+    /* Body Editor */
     .body-editor {
       width: 100%;
-      min-height: 180px;
+      min-height: 200px;
       background: var(--input-bg);
       color: var(--input-fg);
       border: 1px solid var(--input-border);
-      border-radius: 4px;
-      padding: 8px;
+      border-radius: 6px;
+      padding: 10px 12px;
       font-family: var(--code-font);
       font-size: 12px;
       resize: vertical;
-      line-height: 1.4;
+      line-height: 1.5;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .body-editor:focus {
+      border-color: var(--color-emerald);
     }
 
     .body-toolbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 6px;
+      margin-top: 8px;
       font-size: 11px;
-      opacity: 0.7;
     }
 
+    .body-toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .json-valid-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 500;
+      font-size: 11px;
+    }
+
+    .json-valid-indicator.valid { color: var(--color-emerald); }
+    .json-valid-indicator.invalid { color: var(--color-rose); }
+    .json-valid-indicator.empty { opacity: 0.6; }
+
+    .quick-snippet-btn {
+      background: transparent;
+      border: 1px dashed var(--panel-border);
+      color: var(--fg);
+      opacity: 0.7;
+      padding: 2px 7px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-family: var(--code-font);
+      cursor: pointer;
+    }
+
+    .quick-snippet-btn:hover {
+      opacity: 1;
+      border-color: var(--color-emerald);
+      color: var(--color-emerald);
+    }
+
+    /* cURL Preview */
     .curl-preview {
-      background: var(--input-bg);
+      background: rgba(0, 0, 0, 0.25);
       border: 1px solid var(--panel-border);
-      border-radius: 4px;
+      border-radius: 6px;
       padding: 12px;
       font-family: var(--code-font);
       font-size: 12px;
+      line-height: 1.45;
       white-space: pre-wrap;
       word-break: break-all;
       color: var(--fg);
-      max-height: 300px;
+      max-height: 320px;
       overflow-y: auto;
     }
 
-    /* Response section */
+    /* Response Section */
     .response-section {
-      margin-top: 8px;
+      margin-top: 12px;
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -652,15 +867,25 @@ export class HttpClientPanel {
       padding-bottom: 8px;
     }
 
+    .response-title {
+      font-weight: 700;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     .response-meta {
       display: flex;
       align-items: center;
       gap: 10px;
+      flex-wrap: wrap;
     }
 
     .status-badge {
       display: inline-flex;
       align-items: center;
+      gap: 5px;
       font-weight: 700;
       font-size: 12px;
       padding: 3px 8px;
@@ -668,81 +893,129 @@ export class HttpClientPanel {
       font-family: var(--code-font);
     }
 
-    .status-2xx { background: rgba(16, 185, 129, 0.2); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.4); }
-    .status-3xx { background: rgba(59, 130, 246, 0.2); color: #3B82F6; border: 1px solid rgba(59, 130, 246, 0.4); }
-    .status-4xx { background: rgba(245, 158, 11, 0.2); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.4); }
-    .status-5xx { background: rgba(239, 68, 68, 0.2); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.4); }
+    .status-dot {
+      font-size: 9px;
+      line-height: 1;
+    }
 
-    .metric-item {
+    .status-2xx {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--color-emerald);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .status-3xx {
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--color-blue);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+    }
+
+    .status-4xx {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--color-amber);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .status-5xx {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--color-rose);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+
+    .metric-chip {
       font-size: 11px;
-      opacity: 0.8;
       font-family: var(--code-font);
+      background: rgba(128, 128, 128, 0.12);
+      border: 1px solid var(--panel-border);
+      padding: 3px 7px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      opacity: 0.9;
     }
 
     .response-body-pre {
-      background: var(--input-bg);
+      background: rgba(0, 0, 0, 0.25);
       border: 1px solid var(--panel-border);
-      border-radius: 4px;
-      padding: 12px;
-      max-height: 420px;
+      border-radius: 6px;
+      padding: 14px;
+      max-height: 440px;
       overflow: auto;
       font-family: var(--code-font);
       font-size: 12px;
+      line-height: 1.5;
       white-space: pre-wrap;
       word-break: break-word;
     }
 
-    .alert {
-      padding: 12px;
-      border-radius: 6px;
+    .empty-state {
+      text-align: center;
+      padding: 36px 20px;
+      opacity: 0.7;
       font-size: 12px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      align-items: center;
+      gap: 8px;
     }
 
-    .alert-error {
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.4);
-      color: #EF4444;
+    .empty-state-icon {
+      font-size: 28px;
+      line-height: 1;
+      opacity: 0.8;
     }
 
+    .empty-state-title {
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--fg);
+    }
+
+    .empty-state-sub {
+      font-size: 11px;
+      opacity: 0.7;
+      max-width: 320px;
+    }
+
+    /* Error Card */
     .error-card {
-      border: 1px solid rgba(239, 68, 68, 0.4);
+      border: 1px solid rgba(239, 68, 68, 0.35);
       background: rgba(239, 68, 68, 0.08);
-      border-radius: 6px;
-      padding: 14px;
+      border-radius: 8px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
     }
 
     .error-card-title {
       font-size: 13px;
       font-weight: 700;
-      color: #EF4444;
+      color: var(--color-rose);
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .error-card-url-title {
       font-size: 11px;
       opacity: 0.8;
-      margin-top: 2px;
     }
 
     .error-card-url {
       font-family: var(--code-font);
       font-size: 12px;
-      background: rgba(0, 0, 0, 0.2);
-      padding: 5px 8px;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 6px 10px;
       border-radius: 4px;
       word-break: break-all;
     }
 
     .error-card-causes-title {
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
       opacity: 0.9;
-      margin-top: 4px;
     }
 
     .error-card-causes {
@@ -750,7 +1023,7 @@ export class HttpClientPanel {
       padding-left: 0;
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 4px;
     }
 
     .error-card-causes li {
@@ -759,7 +1032,6 @@ export class HttpClientPanel {
     }
 
     .error-card-code-wrap {
-      margin-top: 4px;
       font-size: 11px;
       opacity: 0.8;
     }
@@ -767,81 +1039,104 @@ export class HttpClientPanel {
     .error-card-code {
       font-family: var(--code-font);
       font-weight: 600;
-      color: #EF4444;
+      color: var(--color-rose);
+      background: rgba(239, 68, 68, 0.15);
+      padding: 1px 6px;
+      border-radius: 3px;
+    }
+
+    .alert {
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .alert-error {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: var(--color-rose);
     }
 
     .spinner {
       display: inline-block;
-      width: 14px;
-      height: 14px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
+      width: 12px;
+      height: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.35);
       border-radius: 50%;
-      border-top-color: currentColor;
+      border-top-color: #ffffff;
       animation: spin 0.8s linear infinite;
     }
 
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
-
-    .empty-state {
-      text-align: center;
-      padding: 24px 16px;
-      opacity: 0.6;
-      font-size: 12px;
-    }
   </style>
 </head>
 <body>
   <div class="container">
+    <!-- Top Brand Header -->
     <div class="header-bar">
-      <div class="header-title">
-        <span>⚡ API Routes Explorer — HTTP Client</span>
+      <div class="header-left">
+        <span class="brand-icon">⚡</span>
+        <span class="header-title">API Routes Explorer</span>
+        <span class="header-badge">HTTP Client</span>
+        <span class="header-meta" id="header-meta"></span>
       </div>
-      <div class="header-meta" id="header-meta"></div>
+      <div class="header-right">
+        <span class="shortcut-pill"><kbd>⌘↵</kbd> / <kbd>Ctrl+↵</kbd> to Send</span>
+      </div>
     </div>
 
-    <!-- Route Context Banner -->
+    <!-- Route Context Banner (Hero Card) -->
     <div class="route-context-bar" id="route-context-bar" style="display: none;">
-      <div class="route-context-top">
+      <div class="route-context-left">
         <span class="route-context-badge" id="route-context-badge">API</span>
         <span class="route-context-signature" id="route-context-signature"></span>
       </div>
       <div class="route-context-source" id="route-context-source">
         <span>Source:</span>
-        <button type="button" class="source-link-btn" id="btn-jump-code" title="Jump to route definition in code"></button>
+        <button type="button" class="source-link-btn" id="btn-jump-code" title="Jump to route definition in code">
+          <span id="jump-code-text">Open file</span> ↗
+        </button>
       </div>
     </div>
 
-    <!-- Request Row -->
+    <!-- Omni Request Bar -->
     <div class="request-bar">
-      <select id="method-select" class="method-select" data-method="GET">
-        <option value="GET">GET</option>
-        <option value="POST">POST</option>
-        <option value="PUT">PUT</option>
-        <option value="PATCH">PATCH</option>
-        <option value="DELETE">DELETE</option>
-        <option value="HEAD">HEAD</option>
-        <option value="OPTIONS">OPTIONS</option>
-      </select>
+      <div class="omni-input-group">
+        <select id="method-select" class="method-select" data-method="GET">
+          <option value="GET">GET</option>
+          <option value="POST">POST</option>
+          <option value="PUT">PUT</option>
+          <option value="PATCH">PATCH</option>
+          <option value="DELETE">DELETE</option>
+          <option value="HEAD">HEAD</option>
+          <option value="OPTIONS">OPTIONS</option>
+        </select>
+        <div class="omni-divider"></div>
+        <input type="text" id="url-input" class="url-input" spellcheck="false" placeholder="http://localhost:3000/api/v1/..." />
+        <button id="btn-copy-url" class="btn-omni-copy" title="Copy Request URL">
+          <span>📋</span>
+          <span id="copy-url-label">Copy URL</span>
+        </button>
+      </div>
 
-      <input type="text" id="url-input" class="url-input" placeholder="http://localhost:5000/api/v1/..." />
-
-      <button id="btn-copy-url" class="btn btn-secondary btn-sm" title="Copy Request URL">
-        Copy URL
-      </button>
-
-      <button id="btn-send" class="btn btn-primary">
+      <button id="btn-send" class="btn btn-send" title="Send Request (⌘↵ / Ctrl+↵)">
         <span id="send-spinner" style="display:none;" class="spinner"></span>
+        <span id="send-icon">➤</span>
         <span id="send-label">Send</span>
+        <span class="btn-badge">⌘↵</span>
       </button>
 
       <button id="btn-cancel" class="btn btn-cancel" style="display:none;" title="Cancel running request">
-        Cancel Request
+        ✕ Cancel
       </button>
 
       <button id="btn-reset" class="btn btn-secondary" title="Reset to route default">
-        Reset
+        ↺ Reset
       </button>
     </div>
 
@@ -869,7 +1164,11 @@ export class HttpClientPanel {
       <div id="path-params-wrapper" style="margin-bottom: 14px;">
         <div class="section-title">Path Parameters</div>
         <div id="path-params-list" class="card">
-          <div class="empty-state">No path parameters detected for this route.</div>
+          <div class="empty-state">
+            <span class="empty-state-icon">✨</span>
+            <div class="empty-state-title">No dynamic path parameters</div>
+            <div class="empty-state-sub">This route does not require dynamic URL parameters.</div>
+          </div>
         </div>
       </div>
 
@@ -886,7 +1185,7 @@ export class HttpClientPanel {
           </thead>
           <tbody id="query-table-body"></tbody>
         </table>
-        <div style="margin-top: 8px;">
+        <div style="margin-top: 10px;">
           <button id="btn-add-query" class="btn btn-secondary btn-sm">+ Add Parameter</button>
         </div>
       </div>
@@ -906,7 +1205,7 @@ export class HttpClientPanel {
           </thead>
           <tbody id="headers-table-body"></tbody>
         </table>
-        <div style="margin-top: 8px;">
+        <div style="margin-top: 10px;">
           <button id="btn-add-header" class="btn btn-secondary btn-sm">+ Add Header</button>
         </div>
       </div>
@@ -915,10 +1214,14 @@ export class HttpClientPanel {
     <!-- Tab 3: Body -->
     <div id="tab-body" class="tab-content">
       <div class="card">
-        <textarea id="body-input" class="body-editor" placeholder='{\n  "key": "value"\n}'></textarea>
+        <textarea id="body-input" class="body-editor" spellcheck="false" placeholder='{\n  "key": "value"\n}'></textarea>
         <div class="body-toolbar">
-          <span>JSON syntax is validated before sending.</span>
-          <button id="btn-format-json" class="btn btn-secondary btn-sm">Format JSON</button>
+          <div class="body-toolbar-left">
+            <span id="json-valid-indicator" class="json-valid-indicator empty">JSON Body (optional)</span>
+            <button type="button" class="quick-snippet-btn" id="btn-snippet-obj">{ } Object</button>
+            <button type="button" class="quick-snippet-btn" id="btn-snippet-arr">[ ] Array</button>
+          </div>
+          <button id="btn-format-json" class="btn btn-secondary btn-sm">{ } Format JSON</button>
         </div>
       </div>
     </div>
@@ -937,18 +1240,22 @@ export class HttpClientPanel {
     <!-- Response Section -->
     <div class="response-section">
       <div class="response-header">
-        <div style="font-weight: 600; font-size: 13px;">Response</div>
+        <div class="response-title">
+          <span>Response</span>
+        </div>
         <div id="response-meta" class="response-meta" style="display: none;">
           <span id="response-status" class="status-badge"></span>
-          <span id="response-time" class="metric-item"></span>
-          <span id="response-size" class="metric-item"></span>
+          <span id="response-time" class="metric-chip"></span>
+          <span id="response-size" class="metric-chip"></span>
           <button id="btn-copy-response" class="btn btn-secondary btn-sm">Copy Body</button>
           <button id="btn-copy-res-headers" class="btn btn-secondary btn-sm">Copy Headers</button>
         </div>
       </div>
 
       <div id="response-empty" class="card empty-state">
-        Send a request to inspect response status, headers, and body.
+        <span class="empty-state-icon">🚀</span>
+        <div class="empty-state-title">Ready to test endpoint</div>
+        <div class="empty-state-sub">Press Send or <strong>⌘↵ / Ctrl+↵</strong> to execute and inspect status, headers, and body.</div>
       </div>
 
       <!-- Developer-facing Error Card -->
@@ -992,19 +1299,26 @@ export class HttpClientPanel {
     let queryParams = [];
     let headers = [];
     let isSending = false;
+    let sendStartTime = 0;
+    let sendTimerInterval = null;
     let lastResponseHeaders = {};
 
     // Elements
     const methodSelect = document.getElementById('method-select');
     const urlInput = document.getElementById('url-input');
     const btnCopyUrl = document.getElementById('btn-copy-url');
+    const copyUrlLabel = document.getElementById('copy-url-label');
     const btnSend = document.getElementById('btn-send');
+    const sendIcon = document.getElementById('send-icon');
     const btnCancel = document.getElementById('btn-cancel');
     const sendSpinner = document.getElementById('send-spinner');
     const sendLabel = document.getElementById('send-label');
     const btnReset = document.getElementById('btn-reset');
     const bodyInput = document.getElementById('body-input');
     const btnFormatJson = document.getElementById('btn-format-json');
+    const jsonValidIndicator = document.getElementById('json-valid-indicator');
+    const btnSnippetObj = document.getElementById('btn-snippet-obj');
+    const btnSnippetArr = document.getElementById('btn-snippet-arr');
     const validationError = document.getElementById('validation-error');
     const headerMeta = document.getElementById('header-meta');
 
@@ -1013,6 +1327,7 @@ export class HttpClientPanel {
     const routeContextSignature = document.getElementById('route-context-signature');
     const routeContextSource = document.getElementById('route-context-source');
     const btnJumpCode = document.getElementById('btn-jump-code');
+    const jumpCodeText = document.getElementById('jump-code-text');
 
     const pathParamsWrapper = document.getElementById('path-params-wrapper');
     const pathParamsList = document.getElementById('path-params-list');
@@ -1039,6 +1354,16 @@ export class HttpClientPanel {
     const btnCopyResponse = document.getElementById('btn-copy-response');
     const btnCopyResHeaders = document.getElementById('btn-copy-res-headers');
 
+    // Global keyboard shortcut: Cmd+Enter or Ctrl+Enter to trigger Send
+    window.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        e.preventDefault();
+        if (!isSending) {
+          sendRequest();
+        }
+      }
+    });
+
     // Method change style
     methodSelect.addEventListener('change', () => {
       methodSelect.setAttribute('data-method', methodSelect.value);
@@ -1051,8 +1376,42 @@ export class HttpClientPanel {
     });
 
     bodyInput.addEventListener('input', () => {
+      validateBodyJsonRealtime();
       updateCurlPreview();
     });
+
+    function validateBodyJsonRealtime() {
+      const val = bodyInput.value.trim();
+      if (!val) {
+        jsonValidIndicator.className = 'json-valid-indicator empty';
+        jsonValidIndicator.textContent = 'JSON Body (optional)';
+        return;
+      }
+      try {
+        JSON.parse(val);
+        jsonValidIndicator.className = 'json-valid-indicator valid';
+        jsonValidIndicator.textContent = '✓ Valid JSON';
+      } catch {
+        jsonValidIndicator.className = 'json-valid-indicator invalid';
+        jsonValidIndicator.textContent = '⚠ Invalid JSON';
+      }
+    }
+
+    if (btnSnippetObj) {
+      btnSnippetObj.addEventListener('click', () => {
+        bodyInput.value = '{\\n  "key": "value"\\n}';
+        validateBodyJsonRealtime();
+        updateCurlPreview();
+      });
+    }
+
+    if (btnSnippetArr) {
+      btnSnippetArr.addEventListener('click', () => {
+        bodyInput.value = '[\\n  {\\n    "id": 1\\n  }\\n]';
+        validateBodyJsonRealtime();
+        updateCurlPreview();
+      });
+    }
 
     // Sub-tab switching (Request)
     document.querySelectorAll('.tab-btn[data-tab]').forEach((btn) => {
@@ -1105,30 +1464,46 @@ export class HttpClientPanel {
         const parsed = JSON.parse(raw);
         bodyInput.value = JSON.stringify(parsed, null, 2);
         hideValidationError();
+        validateBodyJsonRealtime();
         updateCurlPreview();
       } catch (e) {
         showValidationError('Request body contains invalid JSON.');
+        validateBodyJsonRealtime();
       }
     });
+
+    function setTemporaryLabel(btn, tempText, originalText, duration = 1500) {
+      btn.textContent = tempText;
+      setTimeout(() => {
+        btn.textContent = originalText;
+      }, duration);
+    }
 
     btnCopyUrl.addEventListener('click', () => {
       const url = urlInput.value.trim();
       vscode.postMessage({ type: 'copyText', payload: { text: url, label: 'Request URL' } });
+      if (copyUrlLabel) {
+        copyUrlLabel.textContent = 'Copied!';
+        setTimeout(() => { copyUrlLabel.textContent = 'Copy URL'; }, 1500);
+      }
     });
 
     btnCopyResponse.addEventListener('click', () => {
       const text = responseBody.textContent || '';
       vscode.postMessage({ type: 'copyText', payload: { text, label: 'Response body' } });
+      setTemporaryLabel(btnCopyResponse, '✓ Copied!', 'Copy Body');
     });
 
     btnCopyResHeaders.addEventListener('click', () => {
       const lines = Object.entries(lastResponseHeaders).map(([k, v]) => k + ': ' + v).join('\\n');
       vscode.postMessage({ type: 'copyText', payload: { text: lines, label: 'Response headers' } });
+      setTemporaryLabel(btnCopyResHeaders, '✓ Copied!', 'Copy Headers');
     });
 
     btnCopyCurl.addEventListener('click', () => {
       const text = curlPreview.textContent || '';
       vscode.postMessage({ type: 'copyText', payload: { text, label: 'cURL command' } });
+      setTemporaryLabel(btnCopyCurl, '✓ Copied!', 'Copy cURL');
     });
 
     btnJumpCode.addEventListener('click', () => {
@@ -1161,7 +1536,7 @@ export class HttpClientPanel {
 
     function showValidationError(msg) {
       validationError.textContent = msg;
-      validationError.style.display = 'block';
+      validationError.style.display = 'flex';
     }
 
     function hideValidationError() {
@@ -1220,7 +1595,9 @@ export class HttpClientPanel {
 
       if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(config.method) && config.body && config.body.trim()) {
         cmd += ' \\\\\\n  -d \\'' + config.body.replace(/'/g, "'\\\\''") + '\\'';
-           curlPreview.textContent = cmd;
+      }
+
+      curlPreview.textContent = cmd;
     }
 
     function updateLiveUrlFromInputs() {
@@ -1324,7 +1701,12 @@ export class HttpClientPanel {
     function renderPathParams() {
       pathParamsList.innerHTML = '';
       if (!pathParams || pathParams.length === 0) {
-        pathParamsList.innerHTML = '<div class="empty-state">No path parameters detected for this route.</div>';
+        pathParamsList.innerHTML =
+          '<div class="empty-state">' +
+          '<span class="empty-state-icon">✨</span>' +
+          '<div class="empty-state-title">No dynamic path parameters</div>' +
+          '<div class="empty-state-sub">This route does not require dynamic URL parameters.</div>' +
+          '</div>';
         badgeParams.style.display = 'none';
         return;
       }
@@ -1338,7 +1720,7 @@ export class HttpClientPanel {
 
         const label = document.createElement('span');
         label.className = 'param-label';
-        label.textContent = param.name + (param.isOptional ? ' (optional)' : '');
+        label.innerHTML = escapeHtml(param.name) + (param.isOptional ? ' <span class="opt-tag">(optional)</span>' : '');
         label.title = param.name;
 
         const input = document.createElement('input');
@@ -1361,7 +1743,6 @@ export class HttpClientPanel {
         pathParamsList.appendChild(row);
       });
     }
-  }
 
     // Render Query parameters
     function renderQueryParams() {
@@ -1523,6 +1904,7 @@ export class HttpClientPanel {
           renderPathParams();
           renderQueryParams();
           renderHeaders();
+          validateBodyJsonRealtime();
           updateCurlPreview();
           hideValidationError();
 
@@ -1543,7 +1925,11 @@ export class HttpClientPanel {
 
             if (sFile) {
               const locText = sLine ? sFile + ':' + sLine : sFile;
-              btnJumpCode.textContent = locText;
+              if (jumpCodeText) {
+                jumpCodeText.textContent = locText;
+              } else {
+                btnJumpCode.textContent = locText;
+              }
               routeContextSource.style.display = 'flex';
             } else {
               routeContextSource.style.display = 'none';
@@ -1554,7 +1940,7 @@ export class HttpClientPanel {
           }
 
           // Reset response area
-          responseEmpty.style.display = 'block';
+          responseEmpty.style.display = 'flex';
           responseTabs.style.display = 'none';
           responseMeta.style.display = 'none';
           responseErrorCard.style.display = 'none';
@@ -1563,22 +1949,34 @@ export class HttpClientPanel {
 
         case 'requestStart': {
           isSending = true;
+          sendStartTime = Date.now();
           sendSpinner.style.display = 'inline-block';
+          if (sendIcon) sendIcon.style.display = 'none';
           sendLabel.textContent = 'Sending...';
-          btnSend.style.display = 'none';
+          btnSend.disabled = true;
           btnCancel.style.display = 'inline-flex';
           responseEmpty.style.display = 'none';
           responseErrorCard.style.display = 'none';
           responseTabs.style.display = 'none';
           responseMeta.style.display = 'none';
+
+          if (sendTimerInterval) clearInterval(sendTimerInterval);
+          sendTimerInterval = setInterval(() => {
+            const elapsed = Date.now() - sendStartTime;
+            sendLabel.textContent = 'Sending (' + elapsed + 'ms)...';
+          }, 100);
           break;
         }
 
         case 'response': {
           isSending = false;
+          if (sendTimerInterval) {
+            clearInterval(sendTimerInterval);
+            sendTimerInterval = null;
+          }
           sendSpinner.style.display = 'none';
+          if (sendIcon) sendIcon.style.display = 'inline';
           sendLabel.textContent = 'Send';
-          btnSend.style.display = 'inline-flex';
           btnSend.disabled = false;
           btnCancel.style.display = 'none';
 
@@ -1590,7 +1988,7 @@ export class HttpClientPanel {
           responseMeta.style.display = 'flex';
 
           // Status badge
-          responseStatus.textContent = data.status + ' ' + (data.statusText || '');
+          responseStatus.innerHTML = '<span class="status-dot">●</span> ' + escapeHtml(data.status + ' ' + (data.statusText || ''));
           responseStatus.className = 'status-badge';
           if (data.status >= 200 && data.status < 300) {
             responseStatus.classList.add('status-2xx');
@@ -1602,10 +2000,10 @@ export class HttpClientPanel {
             responseStatus.classList.add('status-5xx');
           }
 
-          // Timing and size
-          responseTime.textContent = data.timeMs + ' ms';
+          // Timing and size chips
+          responseTime.innerHTML = '⚡ ' + data.timeMs + ' ms';
           const sizeKb = (data.sizeBytes / 1024).toFixed(1);
-          responseSize.textContent = data.sizeBytes > 1024 ? sizeKb + ' KB' : data.sizeBytes + ' B';
+          responseSize.innerHTML = '📦 ' + (data.sizeBytes > 1024 ? sizeKb + ' KB' : data.sizeBytes + ' B');
 
           // Body (large response protection: limit pre render if > 250,000 chars)
           const rawBody = data.body || '';
@@ -1637,9 +2035,13 @@ export class HttpClientPanel {
 
         case 'error': {
           isSending = false;
+          if (sendTimerInterval) {
+            clearInterval(sendTimerInterval);
+            sendTimerInterval = null;
+          }
           sendSpinner.style.display = 'none';
+          if (sendIcon) sendIcon.style.display = 'inline';
           sendLabel.textContent = 'Send';
-          btnSend.style.display = 'inline-flex';
           btnSend.disabled = false;
           btnCancel.style.display = 'none';
 
@@ -1668,7 +2070,7 @@ export class HttpClientPanel {
           }
 
           responseErrorCard.innerHTML =
-            '<div class="error-card-title">Request Failed</div>' +
+            '<div class="error-card-title">⚠️ Request Failed</div>' +
             urlHtml +
             '<div style="font-size: 12px; margin-top: 4px;">' + escapeHtml(err.message || 'An error occurred during request execution.') + '</div>' +
             causesHtml +
