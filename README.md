@@ -2,7 +2,7 @@
 
 > **Discover → Analyze → Test → Response → Document API routes directly inside VS Code.**
 
-[![Version](https://img.shields.io/badge/version-1.5.0-emerald.svg)](https://github.com/hussnain-143/api-route-explorer/releases)
+[![Version](https://img.shields.io/badge/version-1.5.1-emerald.svg)](https://github.com/hussnain-143/api-route-explorer/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-teal.svg)](LICENSE)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.90.0-cyan.svg)](https://marketplace.visualstudio.com/items?itemName=hussnain-143.api-route-explorer)
 [![Tests: 250 passing](https://img.shields.io/badge/tests-250%20passing-success.svg)](https://github.com/hussnain-143/api-route-explorer)
@@ -114,9 +114,9 @@ Open Project ──▶ Discover Routes ──▶ Analyze Health ──▶ Test i
    ```
 
 ### From VSIX Package
-Download the latest `api-route-explorer-1.5.0.vsix` from [GitHub Releases](https://github.com/hussnain-143/api-route-explorer/releases) and run:
+Download the latest `api-route-explorer-1.5.1.vsix` from [GitHub Releases](https://github.com/hussnain-143/api-route-explorer/releases) and run:
 ```bash
-code --install-extension api-route-explorer-1.5.0.vsix --force
+code --install-extension api-route-explorer-1.5.1.vsix --force
 ```
 
 ---

@@ -51,7 +51,7 @@ export function ProductPreview() {
         </div>
         <div className="flex items-center gap-2 text-[11px] text-[var(--muted)]">
           <span className="px-2 py-0.5 rounded bg-[var(--surface-elevated)] border border-[var(--surface-border)]">
-            v1.5.0
+            v1.5.1
           </span>
         </div>
       </div>
