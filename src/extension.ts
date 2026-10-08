@@ -129,6 +129,8 @@ export function activate(context: vscode.ExtensionContext): void {
   const updateTreeViewDescription = (): void => {
     if (!currentAnalysis || currentAnalysis.routes.length === 0) {
       routesTreeView.description = undefined;
+      routesTreeView.badge = undefined;
+      analysisTreeView.badge = undefined;
       return;
     }
     const mode = routeTreeProvider.getGroupingMode();
@@ -150,6 +152,22 @@ export function activate(context: vscode.ExtensionContext): void {
     }
 
     routesTreeView.description = `${currentAnalysis.routes.length} routes (${currentAnalysis.statistics.totalFiles} files)${modeLabel}${activeFilterLabel}`;
+    routesTreeView.badge = {
+      value: currentAnalysis.routes.length,
+      tooltip: `${currentAnalysis.routes.length} API routes discovered across ${currentAnalysis.statistics.totalFiles} files`,
+    };
+
+    const issueCount =
+      (currentAnalysis.statistics.warningCount || 0) +
+      (currentAnalysis.statistics.errorCount || 0);
+    if (issueCount > 0) {
+      analysisTreeView.badge = {
+        value: issueCount,
+        tooltip: `${issueCount} warning(s) or issue(s) detected`,
+      };
+    } else {
+      analysisTreeView.badge = undefined;
+    }
   };
 
   const updateStatusBar = (): void => {

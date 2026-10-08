@@ -142,7 +142,12 @@ export class RouteFileGroupItem extends vscode.TreeItem {
 
     const countLabel = `${routes.length} route${routes.length === 1 ? '' : 's'}`;
     this.description = contextHint ? `${countLabel} • ${contextHint}` : countLabel;
-    this.iconPath = vscode.ThemeIcon.Folder;
+
+    const isFile = /\.(js|ts|mjs|cjs|jsx|tsx)$/i.test(label) || label.includes('.');
+    this.iconPath = isFile
+      ? new vscode.ThemeIcon('symbol-file', new vscode.ThemeColor('charts.blue'))
+      : vscode.ThemeIcon.Folder;
+
     this.tooltip = `${fullPath} (${countLabel})`;
     this.contextValue = CONTEXT_VALUES.FILE_GROUP;
   }
@@ -295,6 +300,8 @@ export class RouteTreeItem extends vscode.TreeItem {
 
     // Rich Markdown tooltip
     const tooltip = new vscode.MarkdownString();
+    tooltip.isTrusted = true;
+    tooltip.supportHtml = true;
     tooltip.appendMarkdown(`### \`${route.method}\` ${route.path}\n\n`);
     tooltip.appendMarkdown(`- **File**: \`${relativeFilePath}\`\n`);
     let fwName = 'Express';
