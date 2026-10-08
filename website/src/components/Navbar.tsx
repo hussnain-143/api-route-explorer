@@ -29,7 +29,7 @@ export function Navbar() {
             alt="API Route Explorer"
             width={34}
             height={34}
-            className="w-8.5 h-8.5 rounded-lg object-contain shadow-sm transition-transform group-hover:scale-105"
+            className="w-[34px] h-[34px] rounded-lg object-contain shadow-sm transition-transform group-hover:scale-105"
             priority
           />
           <div className="flex flex-col leading-tight">
