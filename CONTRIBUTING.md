@@ -1,6 +1,6 @@
-# Contributing to API Route Explorer
+# Contributing to API Routes Explorer
 
-Thank you for your interest in contributing to **API Route Explorer**! We welcome contributions to improve route detection accuracy, framework compatibility, and developer productivity inside VS Code.
+Thank you for your interest in contributing to **API Routes Explorer**! We welcome contributions to improve route detection accuracy, framework compatibility, and developer productivity inside VS Code.
 
 ---
 
@@ -12,7 +12,7 @@ Please maintain a welcoming, respectful, and professional environment for all co
 
 ## Architecture & Project Structure
 
-API Route Explorer is a pure TypeScript VS Code extension built with **zero runtime dependencies**:
+API Routes Explorer is a pure TypeScript VS Code extension built with **zero runtime dependencies**:
 
 ```text
 src/
@@ -60,7 +60,7 @@ src/
 4. **Launch Extension in Development Mode:**
    - Press `F5` in VS Code to launch the Extension Development Host.
    - Open a backend project (e.g. Express, Next.js, Fastify, or NestJS) in the new window.
-   - Open the **API Route Explorer** tab from the Activity Bar.
+   - Open the **API Routes Explorer** tab from the Activity Bar.
 
 ---
 
@@ -107,4 +107,4 @@ All contributions must adhere to the following standards:
 
 ## License
 
-By contributing to API Route Explorer, you agree that your contributions will be licensed under the project's [MIT License](LICENSE).
+By contributing to API Routes Explorer, you agree that your contributions will be licensed under the project's [MIT License](LICENSE).

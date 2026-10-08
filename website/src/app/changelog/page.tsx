@@ -4,13 +4,13 @@ import { siteConfig } from "@/lib/site-config";
 export const metadata: Metadata = {
   title: "Changelog — Release History & Version Timeline",
   description:
-    "Version history and release notes for API Route Explorer. Discover new features, framework enhancements, and performance optimizations.",
+    "Version history and release notes for API Routes Explorer. Discover new features, framework enhancements, and performance optimizations.",
   alternates: {
     canonical: `${siteConfig.url}/changelog`,
   },
   openGraph: {
-    title: "API Route Explorer Changelog — Version Timeline",
-    description: "Release notes for v1.5.0 and previous versions of API Route Explorer.",
+    title: "API Routes Explorer Changelog — Version Timeline",
+    description: "Release notes for v1.5.0 and previous versions of API Routes Explorer.",
     url: `${siteConfig.url}/changelog`,
   },
 };
@@ -110,7 +110,7 @@ export default function ChangelogPage() {
           Product Changelog
         </h1>
         <p className="text-base sm:text-lg text-[var(--muted)] leading-relaxed">
-          Stay up to date with the latest features, enhancements, and performance updates to API Route Explorer.
+          Stay up to date with the latest features, enhancements, and performance updates to API Routes Explorer.
         </p>
       </div>
 

@@ -16,7 +16,7 @@ import { findDuplicateRoutes, findSharedPathGroups } from '../analysis/duplicate
 import { calculateRouteStatistics, formatRouteStatistics } from '../analysis/routeStatistics';
 import { createRouteQuickPickItem } from '../scanner/routeSearch';
 
-suite('API Route Explorer — Sprint 5 Multi-Framework & Next.js Suite', function () {
+suite('API Routes Explorer — Sprint 5 Multi-Framework & Next.js Suite', function () {
   this.timeout(10000);
 
   // =========================================================================

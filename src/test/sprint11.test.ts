@@ -19,7 +19,7 @@ import { RouteConflict } from '../analysis/analysisTypes';
 import { isIgnoredFile } from '../scanner/routeWatcher';
 import { COMMANDS } from '../utils/constants';
 
-suite('API Route Explorer — Sprint 11 Product Refinement & Stability Suite', () => {
+suite('API Routes Explorer — Sprint 11 Product Refinement & Stability Suite', () => {
   const sampleRoutes: ApiRoute[] = [
     {
       method: 'GET',

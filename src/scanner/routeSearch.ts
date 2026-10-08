@@ -82,7 +82,7 @@ export async function showRouteQuickPick(
   }
 
   const quickPick = vscode.window.createQuickPick<RouteQuickPickItem>();
-  quickPick.title = 'API Route Explorer: Search Routes';
+  quickPick.title = 'API Routes Explorer: Search Routes';
   quickPick.placeholder = 'Search by method, path, framework, file, or handler (e.g. GET users, nestjs auth)...';
   quickPick.matchOnDescription = true;
   quickPick.matchOnDetail = true;

@@ -11,7 +11,7 @@ import { calculateRouteStatistics, formatRouteStatistics } from '../analysis/rou
 import { analyzeMissingHandlers } from '../analysis/handlerAnalyzer';
 import { createRouteQuickPickItem } from '../scanner/routeSearch';
 
-suite('API Route Explorer — Sprint 6 Fastify & NestJS Suite', function () {
+suite('API Routes Explorer — Sprint 6 Fastify & NestJS Suite', function () {
   this.timeout(10000);
 
   // =========================================================================

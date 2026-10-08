@@ -7,12 +7,12 @@ import { CodeBlock } from "@/components/CodeBlock";
 export const metadata: Metadata = {
   title: "Native HTTP Client Guide — Test APIs in VS Code",
   description:
-    "Complete reference for the embedded HTTP Client in API Route Explorer. Dynamic parameters, headers, JSON body, cancellation, and response inspection.",
+    "Complete reference for the embedded HTTP Client in API Routes Explorer. Dynamic parameters, headers, JSON body, cancellation, and response inspection.",
   alternates: {
     canonical: `${siteConfig.url}/docs/http-client`,
   },
   openGraph: {
-    title: "Native HTTP Client — API Route Explorer Docs",
+    title: "Native HTTP Client — API Routes Explorer Docs",
     description: "Execute local HTTP requests directly inside your VS Code editor.",
     url: `${siteConfig.url}/docs/http-client`,
   },
@@ -45,14 +45,14 @@ export default function HttpClientDocsPage() {
         <ul className="space-y-2 text-xs sm:text-sm text-[var(--foreground)]">
           <li>• <strong>Activity Bar Route Click:</strong> Click the <strong>Test</strong> (⚡) icon next to any route item in the sidebar tree.</li>
           <li>• <strong>Right-Click Context Menu:</strong> Right-click a route in the tree and choose <strong>Test in HTTP Client</strong>.</li>
-          <li>• <strong>Command Palette:</strong> Press <kbd className="px-1.5 py-0.5 rounded bg-[var(--surface-elevated)] border border-[var(--surface-border)] text-xs">Cmd+Shift+P</kbd> and run <code>API Route Explorer: Open HTTP Client</code>.</li>
+          <li>• <strong>Command Palette:</strong> Press <kbd className="px-1.5 py-0.5 rounded bg-[var(--surface-elevated)] border border-[var(--surface-border)] text-xs">Cmd+Shift+P</kbd> and run <code>API Routes Explorer: Open HTTP Client</code>.</li>
         </ul>
       </section>
 
       <section className="space-y-4">
         <h2 className="text-xl font-bold text-[var(--foreground)]">Dynamic Path Parameters</h2>
         <p className="text-xs sm:text-sm text-[var(--muted)] leading-relaxed">
-          When opening parameterized routes like <code>/api/v1/users/:id</code> or <code>/api/v1/posts/[slug]</code>, API Route Explorer detects every parameter token and populates the <strong>Params</strong> tab:
+          When opening parameterized routes like <code>/api/v1/users/:id</code> or <code>/api/v1/posts/[slug]</code>, API Routes Explorer detects every parameter token and populates the <strong>Params</strong> tab:
         </p>
         <ul className="space-y-1.5 text-xs sm:text-sm text-[var(--muted)]">
           <li>• Parameter keys are pre-filled and marked as required based on the route definition.</li>
@@ -90,7 +90,7 @@ export default function HttpClientDocsPage() {
       <section className="space-y-4">
         <h2 className="text-xl font-bold text-[var(--foreground)]">In-Flight Request Cancellation</h2>
         <p className="text-xs sm:text-sm text-[var(--muted)] leading-relaxed">
-          If a long-running query or backend hang is taking too long, click <strong>Cancel</strong>. API Route Explorer immediately triggers an internal <code>AbortController</code> signal on the active Node HTTP request, releasing sockets cleanly.
+          If a long-running query or backend hang is taking too long, click <strong>Cancel</strong>. API Routes Explorer immediately triggers an internal <code>AbortController</code> signal on the active Node HTTP request, releasing sockets cleanly.
         </p>
       </section>
 

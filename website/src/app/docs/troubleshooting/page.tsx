@@ -7,12 +7,12 @@ import { CodeBlock } from "@/components/CodeBlock";
 export const metadata: Metadata = {
   title: "Troubleshooting — Common Diagnostics & Solutions",
   description:
-    "Solve common issues in API Route Explorer: ECONNREFUSED, 404 errors, route discovery issues, and authentication headers.",
+    "Solve common issues in API Routes Explorer: ECONNREFUSED, 404 errors, route discovery issues, and authentication headers.",
   alternates: {
     canonical: `${siteConfig.url}/docs/troubleshooting`,
   },
   openGraph: {
-    title: "Troubleshooting Guide — API Route Explorer Docs",
+    title: "Troubleshooting Guide — API Routes Explorer Docs",
     description: "Diagnose and resolve connection, discovery, and HTTP testing issues.",
     url: `${siteConfig.url}/docs/troubleshooting`,
   },
@@ -51,7 +51,7 @@ export default function TroubleshootingDocsPage() {
             • <strong>Verify Framework Syntax:</strong> Ensure your code declares routes using standard supported syntax (Express <code>router.get</code>, Next.js <code>export async function GET</code>, Fastify <code>fastify.get</code>, or NestJS <code>@Get()</code>).
           </li>
           <li>
-            • <strong>Manual Re-scan:</strong> Press <kbd className="px-1.5 py-0.5 rounded bg-[var(--surface-elevated)] border border-[var(--surface-border)] text-xs">Cmd+Shift+P</kbd> and run <code>API Route Explorer: Discover Routes</code>.
+            • <strong>Manual Re-scan:</strong> Press <kbd className="px-1.5 py-0.5 rounded bg-[var(--surface-elevated)] border border-[var(--surface-border)] text-xs">Cmd+Shift+P</kbd> and run <code>API Routes Explorer: Discover Routes</code>.
           </li>
         </ul>
       </section>
@@ -83,7 +83,7 @@ export default function TroubleshootingDocsPage() {
       <section className="space-y-3 p-6 rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)]">
         <h2 className="text-lg font-bold text-[var(--foreground)]">4. 401 Unauthorized / 403 Forbidden</h2>
         <p className="text-xs sm:text-sm text-[var(--muted)] leading-relaxed">
-          <strong>Cause:</strong> API Route Explorer does not bypass authentication middleware or fabricate credentials.
+          <strong>Cause:</strong> API Routes Explorer does not bypass authentication middleware or fabricate credentials.
         </p>
         <p className="text-xs sm:text-sm text-[var(--foreground)] leading-relaxed">
           <strong>Solution:</strong> In the HTTP Client, switch to the <strong>Headers</strong> tab and add your required token:

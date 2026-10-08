@@ -26,7 +26,7 @@ export function Navbar() {
         <Link href="/" className="flex items-center gap-3 group">
           <Image
             src="/icon.png"
-            alt="API Route Explorer"
+            alt="API Routes Explorer"
             width={34}
             height={34}
             className="w-[34px] h-[34px] rounded-lg object-contain shadow-sm transition-transform group-hover:scale-105"
@@ -34,7 +34,7 @@ export function Navbar() {
           />
           <div className="flex flex-col leading-tight">
             <span className="font-semibold text-base sm:text-lg tracking-tight text-[var(--foreground)]">
-              API Route <span className="text-emerald-400">Explorer</span>
+              API Routes <span className="text-emerald-400">Explorer</span>
             </span>
             <span className="text-[10px] text-[var(--muted)] font-mono tracking-tight">
               by Hussnain Ahmed

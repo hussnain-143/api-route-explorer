@@ -4,12 +4,12 @@ import { siteConfig } from "@/lib/site-config";
 export const metadata: Metadata = {
   title: "Security & Privacy — Local-First Architecture",
   description:
-    "Learn about API Route Explorer's security model. Local AST analysis, zero cloud tracking, strict CSP Webviews, and no credential persistence.",
+    "Learn about API Routes Explorer's security model. Local AST analysis, zero cloud tracking, strict CSP Webviews, and no credential persistence.",
   alternates: {
     canonical: `${siteConfig.url}/security`,
   },
   openGraph: {
-    title: "Security & Privacy Architecture — API Route Explorer",
+    title: "Security & Privacy Architecture — API Routes Explorer",
     description:
       "Your code stays on your machine. Zero cloud telemetry, no credential scanning, and offline AST analysis.",
     url: `${siteConfig.url}/security`,
@@ -28,7 +28,7 @@ export default function SecurityPage() {
           Your code stays on your machine.
         </h1>
         <p className="text-base sm:text-lg text-[var(--muted)] leading-relaxed">
-          API Route Explorer is built on a strict local-first philosophy. We do not operate remote servers, collect code telemetry, or persist your private API credentials.
+          API Routes Explorer is built on a strict local-first philosophy. We do not operate remote servers, collect code telemetry, or persist your private API credentials.
         </p>
       </div>
 
@@ -41,7 +41,7 @@ export default function SecurityPage() {
 {`YOUR WORKSPACE (VS Code)
        │
        ▼
-API Route Explorer
+API Routes Explorer
        │
  ┌─────┼─────┐
  ▼     ▼     ▼
@@ -139,7 +139,7 @@ Localhost / Target Server
         <div>
           <h3 className="font-bold text-sm text-[var(--foreground)]">Responsible Disclosure</h3>
           <p className="text-xs text-[var(--muted)]">
-            If you discover a security vulnerability in API Route Explorer, please report it via GitHub Security Advisories.
+            If you discover a security vulnerability in API Routes Explorer, please report it via GitHub Security Advisories.
           </p>
         </div>
         <a

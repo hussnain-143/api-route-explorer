@@ -6,7 +6,7 @@ import { buildInitialStateForRoute } from '../httpClient/httpClientProvider';
 import { validateAndResolveRequest } from '../httpClient/httpRequestService';
 import { HttpRequestConfig } from '../httpClient/httpClientTypes';
 
-suite('API Route Explorer — Sprint 16 Route Discovery & Test API Parameter Auto-Fill Suite', () => {
+suite('API Routes Explorer — Sprint 16 Route Discovery & Test API Parameter Auto-Fill Suite', () => {
 
   // =========================================================================
   // A. Nested Admin Router

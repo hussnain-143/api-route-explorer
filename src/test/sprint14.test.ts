@@ -17,7 +17,7 @@ import {
 } from '../httpClient/httpClientMessages';
 import { HttpRequestConfig } from '../httpClient/httpClientTypes';
 
-suite('API Route Explorer — Sprint 14 HTTP Client Hardening Suite', () => {
+suite('API Routes Explorer — Sprint 14 HTTP Client Hardening Suite', () => {
   let server: http.Server;
   let serverPort: number;
   let serverBaseUrl: string;

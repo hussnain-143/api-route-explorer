@@ -12,14 +12,14 @@ export function Footer() {
             <Link href="/" className="flex items-center gap-2.5 mb-3 group">
               <Image
                 src="/icon.png"
-                alt="API Route Explorer"
+                alt="API Routes Explorer"
                 width={28}
                 height={28}
                 className="w-7 h-7 rounded-lg object-contain shadow-sm transition-transform group-hover:scale-105"
               />
               <div className="flex flex-col leading-tight">
                 <span className="font-semibold text-[var(--foreground)] tracking-tight">
-                  API Route <span className="text-emerald-400">Explorer</span>
+                  API Routes <span className="text-emerald-400">Explorer</span>
                 </span>
                 <span className="text-[10px] text-[var(--muted)] font-mono tracking-tight">
                   by Hussnain Ahmed
@@ -155,7 +155,7 @@ export function Footer() {
 
         <div className="pt-8 border-t border-[var(--surface-border)] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
           <div>
-            © 2026 {siteConfig.author.name} and API Route Explorer Contributors.
+            © 2026 {siteConfig.author.name} and API Routes Explorer Contributors.
           </div>
           <div className="text-[var(--muted)]">
             Open-source developer tooling for Visual Studio Code.

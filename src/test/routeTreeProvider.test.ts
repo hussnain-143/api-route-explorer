@@ -12,7 +12,7 @@ import {
 } from '../providers/routeTreeProvider';
 import { COMMANDS, MESSAGES } from '../utils/constants';
 
-suite('API Route Explorer — RouteTreeProvider Suite', () => {
+suite('API Routes Explorer — RouteTreeProvider Suite', () => {
   test('Initial unscanned state shows "No routes discovered yet" placeholder', async () => {
     const provider = new RouteTreeProvider();
     const children = await provider.getChildren();

@@ -73,7 +73,7 @@ export function generateOpenApiDocument(
   analysis?: RouteAnalysisResult,
   options: OpenApiGenerationOptions = {}
 ): OpenApiGenerationResult {
-  const title = options.title || 'API Route Explorer API';
+  const title = options.title || 'API Routes Explorer API';
   const version = options.version || '1.0.0';
   const description =
     options.description ||

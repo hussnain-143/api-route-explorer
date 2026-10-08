@@ -24,7 +24,7 @@ import { analyzeWorkspaceRoutes } from '../analysis/routeAnalyzer';
 import { RouteAnalysisProvider } from '../providers/routeAnalysisProvider';
 import { RouteTreeItem } from '../providers/routeTreeProvider';
 
-suite('API Route Explorer — Sprint 4 Smart Route Analysis Suite', () => {
+suite('API Routes Explorer — Sprint 4 Smart Route Analysis Suite', () => {
   // =========================================================================
   // 1. ROUTE NORMALIZATION & DUPLICATE DETECTION TESTS
   // =========================================================================

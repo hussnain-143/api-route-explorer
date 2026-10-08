@@ -86,7 +86,7 @@ export function extractFilePathFromArg(arg: unknown): string | undefined {
 }
 
 /**
- * Activates the API Route Explorer extension.
+ * Activates the API Routes Explorer extension.
  */
 export function activate(context: vscode.ExtensionContext): void {
   const routeTreeProvider = new RouteTreeProvider();
@@ -116,7 +116,7 @@ export function activate(context: vscode.ExtensionContext): void {
     100
   );
   statusBarItem.command = COMMANDS.STATUS_BAR_MENU;
-  statusBarItem.tooltip = 'API Route Explorer: Click for route actions & search';
+  statusBarItem.tooltip = 'API Routes Explorer: Click for route actions & search';
 
   // In-memory state tracking
   let isScanning = false;
@@ -155,16 +155,16 @@ export function activate(context: vscode.ExtensionContext): void {
   const updateStatusBar = (): void => {
     if (!currentAnalysis || currentAnalysis.routes.length === 0) {
       statusBarItem.text = '$(symbol-event) 0 Routes';
-      statusBarItem.tooltip = 'API Route Explorer: 0 routes discovered. Click to open menu.';
+      statusBarItem.tooltip = 'API Routes Explorer: 0 routes discovered. Click to open menu.';
     } else {
       const count = currentAnalysis.routes.length;
       const filter = routeTreeProvider.getMethodFilter();
       if (filter) {
         statusBarItem.text = `$(symbol-event) ${count} Routes [${filter}]`;
-        statusBarItem.tooltip = `API Route Explorer: Filtered by ${filter}. Click to open menu.`;
+        statusBarItem.tooltip = `API Routes Explorer: Filtered by ${filter}. Click to open menu.`;
       } else {
         statusBarItem.text = `$(symbol-event) ${count} Routes`;
-        statusBarItem.tooltip = `API Route Explorer: ${count} routes discovered in ${currentAnalysis.statistics.totalFiles} files. Click to open menu.`;
+        statusBarItem.tooltip = `API Routes Explorer: ${count} routes discovered in ${currentAnalysis.statistics.totalFiles} files. Click to open menu.`;
       }
     }
     statusBarItem.show();
@@ -276,7 +276,7 @@ export function activate(context: vscode.ExtensionContext): void {
         await vscode.window.withProgress(
           {
             location: vscode.ProgressLocation.Notification,
-            title: 'API Route Explorer',
+            title: 'API Routes Explorer',
             cancellable: true,
           },
           async (progress, token) => {
@@ -293,7 +293,7 @@ export function activate(context: vscode.ExtensionContext): void {
       if (cts.token.isCancellationRequested) {
         return;
       }
-      console.error('[API Route Explorer] Scan failed:', error);
+      console.error('[API Routes Explorer] Scan failed:', error);
       if (showFeedback) {
         vscode.window.showErrorMessage('Failed to scan workspace routes.');
       }
@@ -588,7 +588,7 @@ export function activate(context: vscode.ExtensionContext): void {
       ];
 
       const pick = await vscode.window.showQuickPick(items, {
-        title: 'API Route Explorer: Group Routes',
+        title: 'API Routes Explorer: Group Routes',
         placeHolder: 'Select how routes should be grouped in the tree view',
       });
 
@@ -671,7 +671,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
       const items = allRoutes.map(createRouteQuickPickItem);
       const selected = await vscode.window.showQuickPick(items, {
-        title: 'API Route Explorer: Open HTTP Client',
+        title: 'API Routes Explorer: Open HTTP Client',
         placeHolder: 'Select an API route to test in the HTTP Client',
         matchOnDescription: true,
         matchOnDetail: true,
@@ -693,7 +693,7 @@ export function activate(context: vscode.ExtensionContext): void {
         }
         const items = allRoutes.map(createRouteQuickPickItem);
         const selected = await vscode.window.showQuickPick(items, {
-          title: 'API Route Explorer: Analyze Route',
+          title: 'API Routes Explorer: Analyze Route',
           placeHolder: 'Select an API route to analyze',
         });
         if (!selected) {
@@ -766,7 +766,7 @@ export function activate(context: vscode.ExtensionContext): void {
         }
         const items = allRoutes.map(createRouteQuickPickItem);
         const selected = await vscode.window.showQuickPick(items, {
-          title: 'API Route Explorer: View Route OpenAPI',
+          title: 'API Routes Explorer: View Route OpenAPI',
           placeHolder: 'Select an API route to generate OpenAPI specification for',
         });
         if (!selected) {
@@ -776,7 +776,7 @@ export function activate(context: vscode.ExtensionContext): void {
       }
 
       const singleDocResult = generateOpenApiDocument([route], routeTreeProvider.getAnalysis(), {
-        title: `API Route Explorer - ${route.method} ${route.path}`,
+        title: `API Routes Explorer - ${route.method} ${route.path}`,
         description: `Generated OpenAPI 3.0.3 specification for route ${route.method} ${route.path}`,
       });
 
@@ -977,7 +977,7 @@ export function activate(context: vscode.ExtensionContext): void {
       ];
 
       const selected = await vscode.window.showQuickPick(items, {
-        title: 'API Route Explorer: Filter Routes',
+        title: 'API Routes Explorer: Filter Routes',
         placeHolder: 'Select a filter category',
       });
       if (selected) {
@@ -1063,7 +1063,7 @@ export function activate(context: vscode.ExtensionContext): void {
       ];
 
       const pick = await vscode.window.showQuickPick(items, {
-        title: 'API Route Explorer — Quick Hub',
+        title: 'API Routes Explorer — Quick Hub',
         placeHolder: 'Select an action to inspect, filter, or export API routes',
       });
 
