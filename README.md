@@ -110,13 +110,13 @@ Open Project ──▶ Discover Routes ──▶ Analyze Health ──▶ Test i
 2. Press `Cmd+P` (macOS) or `Ctrl+P` (Windows/Linux).
 3. Type:
    ```text
-   ext install hussnain-143.api-route-explorer
+   ext install hussnain-143.vscode-api-route-explorer
    ```
 
 ### From VSIX Package
-Download the latest `api-route-explorer-1.5.1.vsix` from [GitHub Releases](https://github.com/hussnain-143/api-route-explorer/releases) and run:
+Download the latest `vscode-api-route-explorer-1.5.1.vsix` from [GitHub Releases](https://github.com/hussnain-143/api-route-explorer/releases) and run:
 ```bash
-code --install-extension api-route-explorer-1.5.1.vsix --force
+code --install-extension vscode-api-route-explorer-1.5.1.vsix --force
 ```
 
 ---

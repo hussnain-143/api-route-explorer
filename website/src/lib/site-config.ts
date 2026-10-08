@@ -26,15 +26,15 @@ export const siteConfig = {
   links: {
     github: "https://github.com/hussnain-143/api-route-explorer",
     marketplace:
-      "https://marketplace.visualstudio.com/items?itemName=hussnain-143.api-route-explorer",
+      "https://marketplace.visualstudio.com/items?itemName=hussnain-143.vscode-api-route-explorer",
     issues: "https://github.com/hussnain-143/api-route-explorer/issues",
     license:
       "https://github.com/hussnain-143/api-route-explorer/blob/main/LICENSE",
     releases: "https://github.com/hussnain-143/api-route-explorer/releases",
   },
   install: {
-    cli: "code --install-extension hussnain-143.api-route-explorer",
-    ext: "ext install hussnain-143.api-route-explorer",
+    cli: "code --install-extension hussnain-143.vscode-api-route-explorer",
+    ext: "ext install hussnain-143.vscode-api-route-explorer",
   },
   frameworks: [
     {

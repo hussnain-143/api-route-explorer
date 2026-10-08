@@ -1,5 +1,5 @@
 {
-  "name": "api-route-explorer",
+  "name": "vscode-api-route-explorer",
   "displayName": "API Route Explorer",
   "description": "Discover, analyze, search, and navigate API routes directly inside VS Code.",
   "version": "1.5.1",
