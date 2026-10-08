@@ -1220,9 +1220,35 @@ export class HttpClientPanel {
 
       if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(config.method) && config.body && config.body.trim()) {
         cmd += ' \\\\\\n  -d \\'' + config.body.replace(/'/g, "'\\\\''") + '\\'';
-      }
+           curlPreview.textContent = cmd;
+    }
 
-      curlPreview.textContent = cmd;
+    function updateLiveUrlFromInputs() {
+      if (!currentInitialState || !currentInitialState.urlTemplate) {
+        return;
+      }
+      let newUrl = currentInitialState.urlTemplate;
+      pathParams.forEach((p) => {
+        const input = document.getElementById('param-input-' + p.name);
+        const val = input ? input.value : p.value;
+        if (val && val.trim() !== '') {
+          newUrl = newUrl.replace(new RegExp('\\\\{' + p.name + '\\\\}', 'g'), encodeURIComponent(val.trim()));
+          newUrl = newUrl.replace(new RegExp(':' + p.name + '(\\\\?|\\\\*|\\\\+)?', 'g'), encodeURIComponent(val.trim()));
+        } else if (p.isOptional) {
+          newUrl = newUrl.replace(new RegExp('/\\\\{' + p.name + '\\\\}', 'g'), '');
+          newUrl = newUrl.replace(new RegExp('\\\\{' + p.name + '\\\\}', 'g'), '');
+          newUrl = newUrl.replace(new RegExp('/:' + p.name + '\\\\?', 'g'), '');
+          newUrl = newUrl.replace(new RegExp(':' + p.name + '\\\\?', 'g'), '');
+        }
+      });
+      const activeQueries = queryParams
+        .filter((q) => q.enabled && q.key && q.key.trim() !== '')
+        .map((q) => encodeURIComponent(q.key.trim()) + '=' + encodeURIComponent(q.value))
+        .join('&');
+      if (activeQueries) {
+        newUrl += (newUrl.includes('?') ? '&' : '?') + activeQueries;
+      }
+      urlInput.value = newUrl;
     }
 
     function sendRequest() {
@@ -1236,7 +1262,7 @@ export class HttpClientPanel {
       }
 
       // Dynamic path parameter validation: detect all {param} in URL
-      const placeholderRegex = /\\{([^}]+)\\}/g;
+      const placeholderRegex = /\{([^}]+)\}/g;
       const paramMap = new Map();
       for (const p of config.pathParams) {
         paramMap.set(p.name, p.value);
@@ -1246,18 +1272,36 @@ export class HttpClientPanel {
       while ((match = placeholderRegex.exec(config.url)) !== null) {
         const paramName = match[1];
         const val = paramMap.get(paramName);
-        if (!val || val.trim() === '') {
+        const optParam = pathParams.find((p) => p.name === paramName);
+        if ((!val || val.trim() === '') && !optParam?.isOptional) {
           const input = document.getElementById('param-input-' + paramName);
           if (input) {
             input.classList.add('invalid');
             input.focus();
           }
-          // Switch to Params tab if not active
           const paramsTabBtn = document.querySelector('.tab-btn[data-tab="tab-params"]');
           if (paramsTabBtn) {
             paramsTabBtn.click();
           }
           showValidationError('Required path parameter "' + paramName + '" is missing.');
+          return;
+        }
+      }
+
+      // Dynamic path parameter validation: detect unresolved :param tokens in URL
+      const colonRegex = /(?<![a-zA-Z0-9_]):([a-zA-Z_][a-zA-Z0-9_]*)/g;
+      let colonMatch;
+      while ((colonMatch = colonRegex.exec(config.url)) !== null) {
+        const colonParamName = colonMatch[1];
+        const val = paramMap.get(colonParamName);
+        const optParam = pathParams.find((p) => p.name === colonParamName);
+        if ((!val || val.trim() === '') && !optParam?.isOptional) {
+          const input = document.getElementById('param-input-' + colonParamName);
+          if (input) {
+            input.classList.add('invalid');
+            input.focus();
+          }
+          showValidationError('Required path parameter "' + colonParamName + '" is missing.');
           return;
         }
       }
@@ -1294,7 +1338,7 @@ export class HttpClientPanel {
 
         const label = document.createElement('span');
         label.className = 'param-label';
-        label.textContent = '{' + param.name + '}';
+        label.textContent = param.name + (param.isOptional ? ' (optional)' : '');
         label.title = param.name;
 
         const input = document.createElement('input');
@@ -1302,12 +1346,13 @@ export class HttpClientPanel {
         input.className = 'param-input';
         input.id = 'param-input-' + param.name;
         input.value = param.value || '';
-        input.placeholder = 'Value for ' + param.name + '...';
+        input.placeholder = param.placeholder || ('Value for ' + param.name + '...');
 
         input.addEventListener('input', () => {
           param.value = input.value;
           input.classList.remove('invalid');
           hideValidationError();
+          updateLiveUrlFromInputs();
           updateCurlPreview();
         });
 
@@ -1316,6 +1361,7 @@ export class HttpClientPanel {
         pathParamsList.appendChild(row);
       });
     }
+  }
 
     // Render Query parameters
     function renderQueryParams() {

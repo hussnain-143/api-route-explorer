@@ -24,6 +24,8 @@ export const HTTP_CLIENT_METHODS: readonly HttpClientMethod[] = [
 export interface HttpClientPathParam {
   name: string;
   value: string;
+  placeholder?: string;
+  isOptional?: boolean;
 }
 
 export interface HttpClientKeyValue {
@@ -85,6 +87,7 @@ export interface HttpClientInitialState {
   method: HttpClientMethod;
   baseUrl: string;
   fullUrl: string;
+  urlTemplate?: string;
   pathParams: HttpClientPathParam[];
   queryParams: HttpClientKeyValue[];
   headers: HttpClientKeyValue[];
