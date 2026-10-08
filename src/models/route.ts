@@ -24,4 +24,5 @@ export interface ApiRoute {
   framework: ApiFramework;
   handlerName?: string;
   module?: string;
+  routerVar?: string;
 }

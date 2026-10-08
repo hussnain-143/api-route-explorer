@@ -29,8 +29,8 @@ export class ExpressAdapter implements FrameworkAdapter {
 
     // Express route detection indicators
     const hasExpressImport = /\b(?:require\s*\(\s*['"]express['"]|from\s*['"]express['"])/.test(source);
-    const hasExpressCalls = /\b(?:app|router|[a-zA-Z0-9_$]+Router|[a-zA-Z0-9_$]+Routes)\s*\.\s*(?:get|post|put|patch|delete|all|use)\s*\(/.test(source);
-    const hasRouteRegex = /\b(?:app|router|[a-zA-Z0-9_$]+)\s*\.\s*(?:get|post|put|patch|delete)\s*\(\s*['"`]/.test(source);
+    const hasExpressCalls = /\b(?:app|router|[a-zA-Z0-9_$]+Router|[a-zA-Z0-9_$]+Routes)\s*\.\s*(?:get|post|put|patch|delete|all|use|route)\s*\(/.test(source);
+    const hasRouteRegex = /\b(?:app|router|[a-zA-Z0-9_$]+)\s*\.\s*(?:get|post|put|patch|delete|all|route)\s*\(\s*['"`\[]/.test(source);
 
     return hasExpressImport || hasExpressCalls || hasRouteRegex;
   }

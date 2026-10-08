@@ -5,6 +5,11 @@ All notable changes to the "api-route-explorer" extension will be documented in 
 ## [1.5.1] - 2026-10-08
 
 ### Fixed & Enhanced
+- **Advanced Route Discovery & Prefix Resolution Engine**:
+  - Implemented multi-stage router mounting analysis supporting destructured `Router()`, multi-argument router chaining, and relative root exports.
+  - Added recursive sub-router mounting resolution with deep parent-child prefix inheritance.
+  - Eliminated router collision when files re-export or mount common controller routers under distinct namespace prefixes.
+  - Full diagnostic logging (`getLastDiscoveryDiagnostics()`) for unmounted routes and router dependency trees.
 - **Branding & Visual Polish**:
   - Re-rendered pure transparent vector logo icon eliminating white background extrusion.
   - Aligned website, marketplace, and activity bar icons with high-contrast emerald & teal routing mark.

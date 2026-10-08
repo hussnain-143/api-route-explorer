@@ -8,6 +8,9 @@ export interface OpenApiPathConversionResult {
   pathParameters: string[];
 }
 
+const CONVERSION_CACHE = new Map<string, OpenApiPathConversionResult>();
+const MAX_CONVERSION_CACHE = 10000;
+
 /**
  * Converts framework-specific route paths (Express, Next.js, Fastify, NestJS)
  * into standard OpenAPI 3.0 path syntax with `{param}` placeholders.
@@ -25,6 +28,11 @@ export interface OpenApiPathConversionResult {
 export function convertRouteToOpenApiPath(rawPath: string): OpenApiPathConversionResult {
   if (!rawPath || rawPath.trim() === '') {
     return { openApiPath: '/', pathParameters: [] };
+  }
+
+  const cached = CONVERSION_CACHE.get(rawPath);
+  if (cached) {
+    return { openApiPath: cached.openApiPath, pathParameters: [...cached.pathParameters] };
   }
 
   let path = rawPath.trim();
@@ -80,10 +88,10 @@ export function convertRouteToOpenApiPath(rawPath: string): OpenApiPathConversio
       continue;
     }
 
-    // 4. Express / Fastify / NestJS colon parameter: `:id` or `:id*` or `:id+`
+    // 4. Express / Fastify / NestJS colon parameter: `:id` or `:id?` or `:id*` or `:id+`
     if (seg.includes(':')) {
-      // Handle potential prefix or suffix around colon parameter (e.g., `item-:id` or `:id.json`)
-      seg = seg.replace(/:([a-zA-Z0-9_]+)[\*\+]?/g, (_match, name) => {
+      // Handle potential prefix or suffix around colon parameter (e.g., `item-:id` or `:id.json` or `:id?`)
+      seg = seg.replace(/:([a-zA-Z0-9_]+)[\*\+\?]?/g, (_match, name) => {
         const clean = sanitizeParameterName(name) || `param${i + 1}`;
         const uniqueName = disambiguateParamName(clean, usedParamNames);
         pathParameters.push(uniqueName);
@@ -111,7 +119,13 @@ export function convertRouteToOpenApiPath(rawPath: string): OpenApiPathConversio
     openApiPath = openApiPath.slice(0, -1);
   }
 
-  return { openApiPath, pathParameters };
+  const result: OpenApiPathConversionResult = { openApiPath, pathParameters };
+  if (CONVERSION_CACHE.size >= MAX_CONVERSION_CACHE) {
+    CONVERSION_CACHE.clear();
+  }
+  CONVERSION_CACHE.set(rawPath, result);
+
+  return { openApiPath, pathParameters: [...pathParameters] };
 }
 
 /**

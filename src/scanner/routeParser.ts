@@ -51,7 +51,81 @@ const SUPPORTED_EXPRESS_METHODS: Record<string, HttpMethod> = {
   put: 'PUT',
   patch: 'PATCH',
   delete: 'DELETE',
+  all: 'ANY',
+  options: 'OPTIONS',
+  head: 'HEAD',
 };
+
+/**
+ * Standard identifier names that commonly have .get() / .post() but are never routers.
+ */
+const EXCLUDED_CALLERS = new Set<string>([
+  'req',
+  'res',
+  'response',
+  'request',
+  'client',
+  'redisClient',
+  'cache',
+  'session',
+  'map',
+  'set',
+  'localStorage',
+  'sessionStorage',
+  'cookies',
+  'headers',
+  'params',
+  'query',
+  'url',
+  'axios',
+  'prisma',
+  'it',
+  'test',
+  'describe',
+  'assert',
+  'console',
+  'process',
+  'Math',
+  'JSON',
+]);
+
+/**
+ * Finds the index of the matching closing parenthesis for an opening parenthesis at openIndex.
+ * Ignores parentheses inside strings.
+ */
+export function findMatchingParen(source: string, openIndex: number): number {
+  let depth = 0;
+  let inQuote: string | null = null;
+  const len = source.length;
+
+  for (let i = openIndex; i < len; i++) {
+    const char = source[i];
+    if (inQuote !== null) {
+      if (char === '\\') {
+        i++;
+      } else if (char === inQuote) {
+        inQuote = null;
+      }
+      continue;
+    }
+
+    if (char === '\'' || char === '"' || char === '`') {
+      inQuote = char;
+      continue;
+    }
+
+    if (char === '(') {
+      depth++;
+    } else if (char === ')') {
+      depth--;
+      if (depth === 0) {
+        return i;
+      }
+    }
+  }
+
+  return -1;
+}
 
 /**
  * Masks single-line and multi-line comments with whitespace.
@@ -125,18 +199,25 @@ export function maskComments(source: string): string {
 }
 
 /**
- * Regex matching Express application and router route registrations:
- * Matches: (app|router).(get|post|put|patch|delete)('<path>' | "<path>" | `<path>`)
- * Optionally supports TypeScript generic type arguments before the opening parenthesis.
+ * Regex matching direct Express route method calls on any valid identifier:
+ * caller.verb('<path>' | "<path>" | `<path>`)
  */
-const EXPRESS_ROUTE_REGEX = /\b(app|router)\s*\.\s*(get|post|put|patch|delete)\s*(?:<[^>]*>)?\s*\(\s*(?:'([^'\r\n]*)'|"([^"\r\n]*)"|`([^`\r\n]*)`)/gi;
+const DIRECT_METHOD_REGEX = /\b([a-zA-Z0-9_$]+)\s*\.\s*(get|post|put|patch|delete|all|options|head)\s*(?:<[^>]*>)?\s*\(\s*(?:'([^'\r\n]*)'|"([^"\r\n]*)"|`([^`\r\n]*)`)/gi;
+
+/**
+ * Regex matching caller.route(path) calls
+ */
+const ROUTE_CALL_REGEX = /\b([a-zA-Z0-9_$]+)\s*\.\s*route\s*\(/gi;
 
 /**
  * Parses Express.js routes from JavaScript or TypeScript source code.
  *
  * Supports:
- * - Application methods: app.get(), app.post(), app.put(), app.patch(), app.delete()
- * - Router methods: router.get(), router.post(), router.put(), router.patch(), router.delete()
+ * - Application methods: app.get(), app.post(), app.put(), app.patch(), app.delete(), app.all()
+ * - Router methods on any identifier: router.get(), chatRouter.post(), helpCenterAdminRouter.delete(), etc.
+ * - Chained route definitions: router.route('/path').get(...).post(...)
+ * - Multiline chained route definitions across newlines
+ * - Array route paths: router.route(['/path1', '/path2']).get(...)
  * - Single quotes, double quotes, and simple template literals without interpolation.
  *
  * @param source The source code of the file.
@@ -152,23 +233,29 @@ export function parseExpressRoutes(source: string, filePath: string): ApiRoute[]
   const lineIndex = new LineIndex(source);
   const cleanSource = maskComments(source);
 
-  // Reset regex state
-  EXPRESS_ROUTE_REGEX.lastIndex = 0;
-  let match: RegExpExecArray | null = EXPRESS_ROUTE_REGEX.exec(cleanSource);
+  // 1. Parse direct method calls: caller.verb(path, ...)
+  DIRECT_METHOD_REGEX.lastIndex = 0;
+  let directMatch: RegExpExecArray | null = DIRECT_METHOD_REGEX.exec(cleanSource);
 
-  while (match !== null) {
-    const rawMethod = match[2].toLowerCase();
+  while (directMatch !== null) {
+    const caller = directMatch[1];
+    const rawMethod = directMatch[2].toLowerCase();
     const httpMethod = SUPPORTED_EXPRESS_METHODS[rawMethod];
 
     // Path can be captured from group 3 (single-quote), group 4 (double-quote), or group 5 (backtick)
-    const rawPath = match[3] ?? match[4] ?? match[5];
+    const rawPath = directMatch[3] ?? directMatch[4] ?? directMatch[5];
 
-    // If backticks were used, reject dynamic interpolation (${...}) for Sprint 1
-    const isTemplateLiteral = match[5] !== undefined;
+    const isTemplateLiteral = directMatch[5] !== undefined;
     const hasInterpolation = isTemplateLiteral && rawPath !== undefined && rawPath.includes('${');
 
-    if (httpMethod && rawPath !== undefined && !hasInterpolation) {
-      const { line, column } = lineIndex.getPosition(match.index);
+    if (
+      !EXCLUDED_CALLERS.has(caller) &&
+      httpMethod &&
+      rawPath !== undefined &&
+      (rawPath.startsWith('/') || rawPath === '*') &&
+      !hasInterpolation
+    ) {
+      const { line, column } = lineIndex.getPosition(directMatch.index);
 
       routes.push({
         method: httpMethod,
@@ -180,8 +267,98 @@ export function parseExpressRoutes(source: string, filePath: string): ApiRoute[]
       });
     }
 
-    match = EXPRESS_ROUTE_REGEX.exec(cleanSource);
+    directMatch = DIRECT_METHOD_REGEX.exec(cleanSource);
+  }
+
+  // 2. Parse router.route(...) chained methods: router.route('/path').get(...).post(...)
+  ROUTE_CALL_REGEX.lastIndex = 0;
+  let routeMatch: RegExpExecArray | null = ROUTE_CALL_REGEX.exec(cleanSource);
+
+  while (routeMatch !== null) {
+    const caller = routeMatch[1];
+    if (EXCLUDED_CALLERS.has(caller)) {
+      routeMatch = ROUTE_CALL_REGEX.exec(cleanSource);
+      continue;
+    }
+
+    const openParenIdx = routeMatch.index + routeMatch[0].length - 1;
+    const closeParenIdx = findMatchingParen(cleanSource, openParenIdx);
+    if (closeParenIdx === -1) {
+      routeMatch = ROUTE_CALL_REGEX.exec(cleanSource);
+      continue;
+    }
+
+    const argContent = cleanSource.slice(openParenIdx + 1, closeParenIdx).trim();
+    const paths: string[] = [];
+
+    // Check single string literal: '/path' or "/path" or `/path`
+    const stringMatch = argContent.match(/^(['"`])([^\r\n]*?)\1$/);
+    if (stringMatch) {
+      const candidatePath = stringMatch[2];
+      if (!candidatePath.includes('${') && (candidatePath.startsWith('/') || candidatePath === '*')) {
+        paths.push(candidatePath);
+      }
+    } else if (argContent.startsWith('[') && argContent.endsWith(']')) {
+      // Array literal: ['/path1', '/path2']
+      const arrayItemRegex = /(['"`])([^\r\n]*?)\1/g;
+      let am: RegExpExecArray | null = arrayItemRegex.exec(argContent);
+      while (am !== null) {
+        const candidatePath = am[2];
+        if (!candidatePath.includes('${') && (candidatePath.startsWith('/') || candidatePath === '*')) {
+          paths.push(candidatePath);
+        }
+        am = arrayItemRegex.exec(argContent);
+      }
+    }
+
+    if (paths.length > 0) {
+      // Scan forward for chained .verb(...) calls
+      let searchIdx = closeParenIdx + 1;
+      while (searchIdx < cleanSource.length) {
+        // Skip whitespace and newlines
+        while (searchIdx < cleanSource.length && /\s/.test(cleanSource[searchIdx])) {
+          searchIdx++;
+        }
+
+        if (cleanSource[searchIdx] !== '.') {
+          break;
+        }
+
+        const remainingText = cleanSource.slice(searchIdx);
+        const verbMatch = remainingText.match(/^\.\s*(get|post|put|patch|delete|all|options|head)\s*(?:<[^>]*>)?\s*\(/i);
+        if (!verbMatch) {
+          break;
+        }
+
+        const rawVerb = verbMatch[1].toLowerCase();
+        const httpMethod = SUPPORTED_EXPRESS_METHODS[rawVerb];
+        const verbOpenParen = searchIdx + verbMatch[0].length - 1;
+        const verbCloseParen = findMatchingParen(cleanSource, verbOpenParen);
+        if (verbCloseParen === -1) {
+          break;
+        }
+
+        if (httpMethod) {
+          const { line, column } = lineIndex.getPosition(searchIdx);
+          for (const p of paths) {
+            routes.push({
+              method: httpMethod,
+              path: p,
+              filePath,
+              line,
+              column,
+              framework: 'express',
+            });
+          }
+        }
+
+        searchIdx = verbCloseParen + 1;
+      }
+    }
+
+    routeMatch = ROUTE_CALL_REGEX.exec(cleanSource);
   }
 
   return routes;
 }
+

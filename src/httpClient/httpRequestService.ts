@@ -67,16 +67,40 @@ export function validateAndResolveRequest(config: HttpRequestConfig): Validation
   }
 
   // 2. Path parameter substitution and validation
+  // 2. Path parameter substitution and validation ({param} and :param)
   const placeholderRegex = /\{([^}]+)\}/g;
+  const colonParamRegex = /(?<![a-zA-Z0-9_]):([a-zA-Z_][a-zA-Z0-9_]*)/g;
   const pathParamMap = new Map<string, string>();
   for (const p of config.pathParams) {
     pathParamMap.set(p.name, p.value);
   }
 
   let missingParam: string | undefined;
+
+  // Substitute {param}
   urlString = urlString.replace(placeholderRegex, (match, paramName) => {
     const val = pathParamMap.get(paramName);
     if (val === undefined || val.trim() === '') {
+      const optParam = config.pathParams.find((p) => p.name === paramName);
+      if (optParam?.isOptional) {
+        return '';
+      }
+      if (!missingParam) {
+        missingParam = paramName;
+      }
+      return match;
+    }
+    return encodeURIComponent(val.trim());
+  });
+
+  // Substitute :param
+  urlString = urlString.replace(colonParamRegex, (match, paramName) => {
+    const val = pathParamMap.get(paramName);
+    if (val === undefined || val.trim() === '') {
+      const optParam = config.pathParams.find((p) => p.name === paramName);
+      if (optParam?.isOptional) {
+        return '';
+      }
       if (!missingParam) {
         missingParam = paramName;
       }
@@ -112,6 +136,20 @@ export function validateAndResolveRequest(config: HttpRequestConfig): Validation
     };
   }
 
+  const remainingColon = urlString.match(colonParamRegex);
+  if (remainingColon && remainingColon.length > 0) {
+    const name = remainingColon[0].slice(1);
+    return {
+      ok: false,
+      error: `Required path parameter "${name}" is missing.`,
+      code: 'MISSING_PATH_PARAM',
+      possibleCauses: [
+        `Specify a value for "${name}" in the Path Parameters section`,
+        'All path parameter placeholders must be replaced before sending',
+      ],
+    };
+  }
+
   // 3. Parse URL object
   let parsedUrl: URL;
   try {
@@ -128,14 +166,15 @@ export function validateAndResolveRequest(config: HttpRequestConfig): Validation
   // Normalize path segments to collapse any repeating blocks (e.g. /api/v1/api/v1)
   const segments = parsedUrl.pathname.split('/').filter(Boolean);
   const collapsed = collapseRepeatingSegments(segments);
-  const trailingSlash = parsedUrl.pathname.endsWith('/') && collapsed.length > 0 ? '/' : '';
+  const originalEndedWithSlash = config.url.split('?')[0].endsWith('/');
+  const trailingSlash = originalEndedWithSlash && collapsed.length > 0 ? '/' : '';
   parsedUrl.pathname = (collapsed.length > 0 ? '/' + collapsed.join('/') : '/') + trailingSlash;
 
   // 4. Query parameter processing
   if (config.queryParams && Array.isArray(config.queryParams)) {
     for (const qp of config.queryParams) {
       if (qp.enabled && qp.key && qp.key.trim() !== '') {
-        parsedUrl.searchParams.append(qp.key.trim(), qp.value);
+        parsedUrl.searchParams.set(qp.key.trim(), qp.value);
       }
     }
   }
