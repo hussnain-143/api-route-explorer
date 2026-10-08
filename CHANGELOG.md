@@ -2,6 +2,22 @@
 
 All notable changes to the "api-route-explorer" extension will be documented in this file.
 
+## [1.5.2] - 2026-10-08
+
+### Enhanced & Polished (UI & UX Overhaul)
+- **HTTP Client Webview Overhaul**:
+  - Repaired webview script scoping and parameter binding for instant endpoint initialization.
+  - Implemented modern Omni Request Bar grouping HTTP method badge, URL input, and quick copy actions into a sleek glass container.
+  - Added power-user global keyboard shortcut: `⌘ + Enter` / `Ctrl + Enter` to send requests instantly from any panel focus.
+  - Added real-time JSON validation indicator and quick template buttons (`{ } Object`, `[ ] Array`, `{ } Format JSON`).
+  - Added live millisecond duration timer during request dispatch.
+  - Enhanced response status badges with glowing dot indicators and latency/size chips.
+- **Sidebar & Activity Bar UX**:
+  - Added native VS Code route count badge (`routesTreeView.badge`) and issue alert badge (`analysisTreeView.badge`).
+  - Context-aware group icons: source code files display `symbol-file` in blue, directory modules display `folder`.
+  - Reordered hover inline buttons to prioritize 1-click Test API (`$(send)`), Jump to Source (`$(go-to-file)`), and Copy Route URL (`$(link)`).
+  - Streamlined sidebar title navigation bar with Search, Refresh, Filter, and Group By actions.
+
 ## [1.5.1] - 2026-10-08
 
 ### Fixed & Enhanced

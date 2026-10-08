@@ -2,7 +2,7 @@
   "name": "api-routes-explorer",
   "displayName": "API Routes Explorer",
   "description": "Discover, analyze, search, and navigate API routes directly inside VS Code.",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "publisher": "hussnain-143",
   "publisherDisplayName": "Hussnain Ahmed",
   "author": {
