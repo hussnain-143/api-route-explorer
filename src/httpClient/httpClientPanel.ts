@@ -269,30 +269,86 @@ export class HttpClientPanel {
   <title>HTTP Client</title>
   <style>
     :root {
-      --bg: var(--vscode-editor-background, #1e1e1e);
-      --fg: var(--vscode-editor-foreground, #cccccc);
-      --input-bg: var(--vscode-input-background, #252526);
-      --input-fg: var(--vscode-input-foreground, #cccccc);
-      --input-border: var(--vscode-input-border, rgba(128, 128, 128, 0.25));
-      --btn-bg: var(--vscode-button-background, #0e639c);
-      --btn-fg: var(--vscode-button-foreground, #ffffff);
-      --btn-hover: var(--vscode-button-hoverBackground, #1177bb);
-      --btn-sec-bg: var(--vscode-button-secondaryBackground, #3a3d41);
-      --btn-sec-fg: var(--vscode-button-secondaryForeground, #ffffff);
-      --btn-sec-hover: var(--vscode-button-secondaryHoverBackground, #45494e);
-      --panel-border: var(--vscode-panel-border, rgba(128, 128, 128, 0.18));
-      --badge-bg: var(--vscode-badge-background, #4d4d4d);
-      --badge-fg: var(--vscode-badge-foreground, #ffffff);
-      --font-family: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
-      --code-font: var(--vscode-editor-font-family, Menlo, Monaco, "Courier New", monospace);
+      /* VS Code Native Integration Tokens */
+      --are-bg: var(--vscode-editor-background, #1e1e1e);
+      --are-fg: var(--vscode-editor-foreground, #cccccc);
+      --are-muted: var(--vscode-descriptionForeground, #888888);
+      --are-border: var(--vscode-panel-border, var(--vscode-widget-border, rgba(128, 128, 128, 0.2)));
+      --are-card-bg: var(--vscode-editorWidget-background, rgba(128, 128, 128, 0.04));
+      --are-card-border: var(--vscode-widget-border, var(--vscode-panel-border, rgba(128, 128, 128, 0.16)));
+      --are-input-bg: var(--vscode-input-background, #252526);
+      --are-input-fg: var(--vscode-input-foreground, #cccccc);
+      --are-input-border: var(--vscode-input-border, rgba(128, 128, 128, 0.28));
+      --are-focus-border: var(--vscode-focusBorder, #007acc);
+      --are-btn-bg: var(--vscode-button-background, #0e639c);
+      --are-btn-fg: var(--vscode-button-foreground, #ffffff);
+      --are-btn-hover: var(--vscode-button-hoverBackground, #1177bb);
+      --are-btn-sec-bg: var(--vscode-button-secondaryBackground, rgba(128, 128, 128, 0.14));
+      --are-btn-sec-fg: var(--vscode-button-secondaryForeground, var(--vscode-foreground, #cccccc));
+      --are-btn-sec-hover: var(--vscode-button-secondaryHoverBackground, rgba(128, 128, 128, 0.24));
+      --are-badge-bg: var(--vscode-badge-background, #4d4d4d);
+      --are-badge-fg: var(--vscode-badge-foreground, #ffffff);
+      --are-font: var(--vscode-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+      --are-code-font: var(--vscode-editor-font-family, Menlo, Monaco, "Courier New", monospace);
 
+      /* Backward compatibility mapping */
+      --bg: var(--are-bg);
+      --fg: var(--are-fg);
+      --input-bg: var(--are-input-bg);
+      --input-fg: var(--are-input-fg);
+      --input-border: var(--are-input-border);
+      --panel-border: var(--are-border);
+      --btn-sec-bg: var(--are-btn-sec-bg);
+      --btn-sec-fg: var(--are-btn-sec-fg);
+      --btn-sec-hover: var(--are-btn-sec-hover);
+      --badge-bg: var(--are-badge-bg);
+      --badge-fg: var(--are-badge-fg);
+      --font-family: var(--are-font);
+      --code-font: var(--are-code-font);
+
+      /* Semantic HTTP Method Tokens (WCAG AA Compliant) */
       --color-emerald: #10B981;
-      --color-emerald-bg: rgba(16, 185, 129, 0.15);
+      --color-emerald-bg: rgba(16, 185, 129, 0.12);
       --color-emerald-border: rgba(16, 185, 129, 0.35);
       --color-blue: #3B82F6;
+      --color-blue-bg: rgba(59, 130, 246, 0.12);
+      --color-blue-border: rgba(59, 130, 246, 0.35);
       --color-amber: #F59E0B;
+      --color-amber-bg: rgba(245, 158, 11, 0.12);
+      --color-amber-border: rgba(245, 158, 11, 0.35);
       --color-violet: #8B5CF6;
+      --color-violet-bg: rgba(139, 92, 246, 0.12);
+      --color-violet-border: rgba(139, 92, 246, 0.35);
       --color-rose: #EF4444;
+      --color-rose-bg: rgba(239, 68, 68, 0.12);
+      --color-rose-border: rgba(239, 68, 68, 0.35);
+    }
+
+    /* Light Theme Adjustments */
+    body.vscode-light {
+      --are-card-bg: rgba(0, 0, 0, 0.02);
+      --are-card-border: rgba(0, 0, 0, 0.12);
+      --are-btn-sec-bg: rgba(0, 0, 0, 0.06);
+      --are-btn-sec-hover: rgba(0, 0, 0, 0.12);
+      --color-emerald: #059669;
+      --color-blue: #2563EB;
+      --color-amber: #D97706;
+      --color-violet: #7C3AED;
+      --color-rose: #DC2626;
+    }
+
+    /* High Contrast Mode */
+    body.vscode-high-contrast {
+      --are-border: var(--vscode-contrastBorder, #ffffff);
+      --are-card-border: var(--vscode-contrastBorder, #ffffff);
+      --are-input-border: var(--vscode-contrastBorder, #ffffff);
+      --are-btn-sec-bg: transparent;
+      --are-btn-sec-fg: #ffffff;
+    }
+    body.vscode-high-contrast .btn,
+    body.vscode-high-contrast .tab-btn.active,
+    body.vscode-high-contrast .omni-input-group:focus-within {
+      outline: 1px solid var(--vscode-contrastBorder, #ffffff);
     }
 
     * {
@@ -302,9 +358,9 @@ export class HttpClientPanel {
     }
 
     body {
-      background-color: var(--bg);
-      color: var(--fg);
-      font-family: var(--font-family);
+      background-color: var(--are-bg);
+      color: var(--are-fg);
+      font-family: var(--are-font);
       font-size: 13px;
       line-height: 1.45;
       padding: 16px 20px;
@@ -325,7 +381,7 @@ export class HttpClientPanel {
       align-items: center;
       justify-content: space-between;
       padding-bottom: 12px;
-      border-bottom: 1px solid var(--panel-border);
+      border-bottom: 1px solid var(--are-border);
     }
 
     .header-left {
@@ -345,7 +401,7 @@ export class HttpClientPanel {
       font-size: 13px;
       font-weight: 700;
       letter-spacing: -0.2px;
-      color: var(--fg);
+      color: var(--are-fg);
     }
 
     .header-badge {
@@ -362,8 +418,8 @@ export class HttpClientPanel {
 
     .header-meta {
       font-size: 11px;
-      opacity: 0.65;
-      font-family: var(--code-font);
+      opacity: 0.7;
+      font-family: var(--are-code-font);
     }
 
     .header-right {
@@ -374,7 +430,7 @@ export class HttpClientPanel {
 
     .shortcut-pill {
       font-size: 11px;
-      opacity: 0.6;
+      opacity: 0.65;
       display: flex;
       align-items: center;
       gap: 4px;
@@ -386,16 +442,29 @@ export class HttpClientPanel {
       border-radius: 4px;
       padding: 1px 5px;
       font-size: 10px;
-      font-family: var(--code-font);
+      font-family: var(--are-code-font);
     }
 
-    /* Route Context Banner (Hero Card) */
+    /* Route Hero Card */
     .route-context-bar {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
-      border: 1px solid var(--panel-border);
+      background: var(--are-card-bg);
+      border: 1px solid var(--are-card-border);
       border-left: 3px solid var(--color-emerald);
       border-radius: 8px;
-      padding: 10px 14px;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: border-color 0.15s ease;
+    }
+
+    .route-context-bar[data-method="GET"] { border-left-color: var(--color-emerald); }
+    .route-context-bar[data-method="POST"] { border-left-color: var(--color-blue); }
+    .route-context-bar[data-method="PUT"] { border-left-color: var(--color-amber); }
+    .route-context-bar[data-method="PATCH"] { border-left-color: var(--color-violet); }
+    .route-context-bar[data-method="DELETE"] { border-left-color: var(--color-rose); }
+
+    .route-hero-main {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -403,38 +472,64 @@ export class HttpClientPanel {
       flex-wrap: wrap;
     }
 
-    .route-context-left {
+    .route-hero-title {
       display: flex;
       align-items: center;
       gap: 10px;
       flex-wrap: wrap;
     }
 
-    .route-context-badge {
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      padding: 3px 8px;
+    .hero-method-badge {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      padding: 3px 9px;
       border-radius: 4px;
-      background: var(--badge-bg);
-      color: var(--badge-fg);
-      letter-spacing: 0.6px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-family: var(--are-code-font);
+      background: var(--color-emerald-bg);
+      color: var(--color-emerald);
+      border: 1px solid var(--color-emerald-border);
     }
 
+    .hero-method-badge[data-method="GET"] { background: var(--color-emerald-bg); color: var(--color-emerald); border-color: var(--color-emerald-border); }
+    .hero-method-badge[data-method="POST"] { background: var(--color-blue-bg); color: var(--color-blue); border-color: var(--color-blue-border); }
+    .hero-method-badge[data-method="PUT"] { background: var(--color-amber-bg); color: var(--color-amber); border-color: var(--color-amber-border); }
+    .hero-method-badge[data-method="PATCH"] { background: var(--color-violet-bg); color: var(--color-violet); border-color: var(--color-violet-border); }
+    .hero-method-badge[data-method="DELETE"] { background: var(--color-rose-bg); color: var(--color-rose); border-color: var(--color-rose-border); }
+
     .route-context-signature {
-      font-family: var(--code-font);
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--fg);
+      font-family: var(--are-code-font);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--are-fg);
+    }
+
+    .route-hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .route-context-source {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       font-size: 11px;
       opacity: 0.85;
+      padding-top: 4px;
+      border-top: 1px solid rgba(128, 128, 128, 0.1);
+    }
+
+    .route-context-badge {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: var(--are-badge-bg);
+      color: var(--are-badge-fg);
+      letter-spacing: 0.6px;
     }
 
     .source-link-btn {
@@ -442,7 +537,7 @@ export class HttpClientPanel {
       border: none;
       color: var(--vscode-textLink-foreground, #3794ff);
       cursor: pointer;
-      font-family: var(--code-font);
+      font-family: var(--are-code-font);
       font-size: 11px;
       display: inline-flex;
       align-items: center;
@@ -454,7 +549,7 @@ export class HttpClientPanel {
     }
 
     .source-link-btn:hover {
-      background: rgba(55, 148, 255, 0.1);
+      background: rgba(55, 148, 255, 0.12);
       color: var(--vscode-textLink-activeForeground, #58a6ff);
     }
 
@@ -469,8 +564,8 @@ export class HttpClientPanel {
       flex: 1;
       display: flex;
       align-items: center;
-      background: var(--input-bg);
-      border: 1px solid var(--input-border);
+      background: var(--are-input-bg);
+      border: 1px solid var(--are-input-border);
       border-radius: 6px;
       overflow: hidden;
       transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -483,10 +578,10 @@ export class HttpClientPanel {
 
     .method-select {
       background: transparent;
-      color: var(--input-fg);
+      color: var(--are-input-fg);
       border: none;
       padding: 8px 12px;
-      font-family: var(--code-font);
+      font-family: var(--are-code-font);
       font-weight: 800;
       font-size: 12px;
       cursor: pointer;
@@ -505,16 +600,16 @@ export class HttpClientPanel {
     .omni-divider {
       width: 1px;
       height: 20px;
-      background: var(--panel-border);
+      background: var(--are-border);
     }
 
     .url-input {
       flex: 1;
       background: transparent;
-      color: var(--input-fg);
+      color: var(--are-input-fg);
       border: none;
       padding: 8px 12px;
-      font-family: var(--code-font);
+      font-family: var(--are-code-font);
       font-size: 12px;
       outline: none;
     }
@@ -526,8 +621,8 @@ export class HttpClientPanel {
     .btn-omni-copy {
       background: transparent;
       border: none;
-      color: var(--fg);
-      opacity: 0.7;
+      color: var(--are-fg);
+      opacity: 0.75;
       padding: 6px 12px;
       cursor: pointer;
       font-size: 11px;
@@ -546,7 +641,7 @@ export class HttpClientPanel {
     /* Buttons */
     .btn {
       padding: 8px 16px;
-      border: none;
+      border: 1px solid transparent;
       border-radius: 6px;
       cursor: pointer;
       font-size: 12px;
@@ -554,7 +649,7 @@ export class HttpClientPanel {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: transform 0.08s ease, filter 0.15s ease, background 0.15s ease;
+      transition: transform 0.08s ease, filter 0.15s ease, background 0.15s ease, border-color 0.15s ease;
       white-space: nowrap;
       user-select: none;
     }
@@ -575,22 +670,23 @@ export class HttpClientPanel {
     }
 
     .btn-send .btn-badge {
-      background: rgba(0, 0, 0, 0.2);
+      background: rgba(0, 0, 0, 0.22);
       font-size: 10px;
       padding: 1px 5px;
       border-radius: 3px;
-      font-family: var(--code-font);
+      font-family: var(--are-code-font);
       font-weight: 500;
     }
 
     .btn-secondary {
-      background: var(--btn-sec-bg);
-      color: var(--btn-sec-fg);
-      border: 1px solid var(--panel-border);
+      background: var(--are-btn-sec-bg);
+      color: var(--are-btn-sec-fg);
+      border: 1px solid var(--are-border);
     }
 
     .btn-secondary:hover {
-      background: var(--btn-sec-hover);
+      background: var(--are-btn-sec-hover);
+      border-color: rgba(128, 128, 128, 0.4);
     }
 
     .btn-cancel {
@@ -611,16 +707,17 @@ export class HttpClientPanel {
     /* Tab Bar */
     .tab-bar {
       display: flex;
-      border-bottom: 1px solid var(--panel-border);
+      border-bottom: 1px solid var(--are-border);
       gap: 6px;
       margin-top: 4px;
+      align-items: center;
     }
 
     .tab-btn {
       background: transparent;
       border: none;
       border-bottom: 2px solid transparent;
-      color: var(--fg);
+      color: var(--are-fg);
       opacity: 0.65;
       padding: 8px 14px;
       cursor: pointer;
@@ -639,13 +736,13 @@ export class HttpClientPanel {
     .tab-btn.active {
       opacity: 1;
       border-bottom-color: var(--color-emerald);
-      color: var(--fg);
+      color: var(--are-fg);
       font-weight: 600;
     }
 
     .tab-badge {
-      background: var(--badge-bg);
-      color: var(--badge-fg);
+      background: var(--are-badge-bg);
+      color: var(--are-badge-fg);
       font-size: 10px;
       font-weight: 600;
       border-radius: 9999px;
@@ -664,8 +761,8 @@ export class HttpClientPanel {
 
     /* Cards */
     .card {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid var(--panel-border);
+      background: var(--are-card-bg);
+      border: 1px solid var(--are-card-border);
       border-radius: 8px;
       padding: 14px;
     }
@@ -675,7 +772,7 @@ export class HttpClientPanel {
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.6px;
-      opacity: 0.75;
+      color: var(--are-muted);
       margin-bottom: 8px;
       display: flex;
       align-items: center;
@@ -696,7 +793,7 @@ export class HttpClientPanel {
 
     .param-label {
       width: 150px;
-      font-family: var(--code-font);
+      font-family: var(--are-code-font);
       font-size: 12px;
       font-weight: 600;
       overflow: hidden;
@@ -707,27 +804,33 @@ export class HttpClientPanel {
       gap: 4px;
     }
 
-    .param-label .opt-tag {
+    .badge-req, .req-star {
+      color: var(--color-rose);
+      font-weight: bold;
+    }
+
+    .badge-opt, .opt-tag {
       font-size: 10px;
-      opacity: 0.6;
+      opacity: 0.65;
       font-weight: normal;
     }
 
     .param-input {
       flex: 1;
-      background: var(--input-bg);
-      color: var(--input-fg);
-      border: 1px solid var(--input-border);
+      background: var(--are-input-bg);
+      color: var(--are-input-fg);
+      border: 1px solid var(--are-input-border);
       padding: 6px 10px;
       border-radius: 5px;
-      font-family: var(--code-font);
+      font-family: var(--are-code-font);
       font-size: 12px;
       outline: none;
-      transition: border-color 0.15s;
+      transition: border-color 0.15s, box-shadow 0.15s;
     }
 
     .param-input:focus {
       border-color: var(--color-emerald);
+      box-shadow: 0 0 0 1px var(--color-emerald);
     }
 
     .param-input.invalid {
@@ -747,16 +850,16 @@ export class HttpClientPanel {
     }
 
     .body-banner.detected {
-      background: rgba(16, 185, 129, 0.12);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      color: #34D399;
+      background: var(--color-emerald-bg);
+      border: 1px solid var(--color-emerald-border);
+      color: var(--color-emerald);
     }
 
     .body-banner.notice {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: var(--fg);
-      opacity: 0.8;
+      background: var(--are-card-bg);
+      border: 1px solid var(--are-card-border);
+      color: var(--are-fg);
+      opacity: 0.85;
     }
 
     .body-form-row {
@@ -772,7 +875,7 @@ export class HttpClientPanel {
 
     .body-form-label {
       width: 140px;
-      font-family: var(--code-font);
+      font-family: var(--are-code-font);
       font-size: 12px;
       font-weight: 600;
       display: flex;
@@ -783,35 +886,23 @@ export class HttpClientPanel {
       white-space: nowrap;
     }
 
-    .req-star {
-      color: var(--color-rose);
-      font-weight: bold;
-    }
-
     .type-chip {
       font-size: 9px;
-      opacity: 0.6;
+      opacity: 0.7;
       font-weight: normal;
-      background: rgba(255, 255, 255, 0.06);
-      padding: 1px 4px;
+      background: rgba(128, 128, 128, 0.14);
+      padding: 1px 5px;
       border-radius: 3px;
-    }
-
-    .body-form-input-wrap {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      position: relative;
     }
 
     .body-form-input {
       width: 100%;
-      background: var(--input-bg);
-      color: var(--input-fg);
-      border: 1px solid var(--input-border);
+      background: var(--are-input-bg);
+      color: var(--are-input-fg);
+      border: 1px solid var(--are-input-border);
       padding: 6px 10px;
       border-radius: 5px;
-      font-family: var(--code-font);
+      font-family: var(--are-code-font);
       font-size: 12px;
       outline: none;
       transition: border-color 0.15s;
@@ -822,11 +913,9 @@ export class HttpClientPanel {
     }
 
     .btn-eye-toggle {
-      position: absolute;
-      right: 8px;
       background: transparent;
       border: none;
-      color: var(--fg);
+      color: var(--are-fg);
       opacity: 0.6;
       cursor: pointer;
       font-size: 12px;
@@ -847,9 +936,9 @@ export class HttpClientPanel {
       text-align: left;
       font-size: 11px;
       font-weight: 600;
-      opacity: 0.6;
+      color: var(--are-muted);
       padding: 6px 8px;
-      border-bottom: 1px solid var(--panel-border);
+      border-bottom: 1px solid var(--are-border);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -867,12 +956,12 @@ export class HttpClientPanel {
 
     .kv-input {
       width: 100%;
-      background: var(--input-bg);
-      color: var(--input-fg);
-      border: 1px solid var(--input-border);
+      background: var(--are-input-bg);
+      color: var(--are-input-fg);
+      border: 1px solid var(--are-input-border);
       padding: 6px 10px;
       border-radius: 4px;
-      font-family: var(--code-font);
+      font-family: var(--are-code-font);
       font-size: 12px;
       outline: none;
       transition: border-color 0.15s;
@@ -885,7 +974,7 @@ export class HttpClientPanel {
     .btn-icon {
       background: transparent;
       border: none;
-      color: var(--fg);
+      color: var(--are-fg);
       opacity: 0.5;
       cursor: pointer;
       padding: 4px 6px;
@@ -904,21 +993,26 @@ export class HttpClientPanel {
     .body-editor {
       width: 100%;
       min-height: 200px;
-      background: var(--input-bg);
-      color: var(--input-fg);
-      border: 1px solid var(--input-border);
+      background: var(--are-input-bg);
+      color: var(--are-input-fg);
+      border: 1px solid var(--are-input-border);
       border-radius: 6px;
       padding: 10px 12px;
-      font-family: var(--code-font);
+      font-family: var(--are-code-font);
       font-size: 12px;
       resize: vertical;
       line-height: 1.5;
       outline: none;
-      transition: border-color 0.15s;
+      transition: border-color 0.15s, box-shadow 0.15s;
     }
 
     .body-editor:focus {
       border-color: var(--color-emerald);
+    }
+
+    .body-editor.invalid {
+      border-color: var(--color-rose);
+      box-shadow: 0 0 0 1px var(--color-rose);
     }
 
     .body-toolbar {
@@ -927,12 +1021,15 @@ export class HttpClientPanel {
       align-items: center;
       margin-top: 8px;
       font-size: 11px;
+      flex-wrap: wrap;
+      gap: 6px;
     }
 
     .body-toolbar-left {
       display: flex;
       align-items: center;
       gap: 10px;
+      flex-wrap: wrap;
     }
 
     .json-valid-indicator {
@@ -945,18 +1042,19 @@ export class HttpClientPanel {
 
     .json-valid-indicator.valid { color: var(--color-emerald); }
     .json-valid-indicator.invalid { color: var(--color-rose); }
-    .json-valid-indicator.empty { opacity: 0.6; }
+    .json-valid-indicator.empty { color: var(--are-muted); }
 
     .quick-snippet-btn {
       background: transparent;
-      border: 1px dashed var(--panel-border);
-      color: var(--fg);
-      opacity: 0.7;
+      border: 1px dashed var(--are-border);
+      color: var(--are-fg);
+      opacity: 0.75;
       padding: 2px 7px;
       border-radius: 3px;
       font-size: 11px;
-      font-family: var(--code-font);
+      font-family: var(--are-code-font);
       cursor: pointer;
+      transition: opacity 0.15s, border-color 0.15s, color 0.15s;
     }
 
     .quick-snippet-btn:hover {
@@ -967,23 +1065,23 @@ export class HttpClientPanel {
 
     /* cURL Preview */
     .curl-preview {
-      background: rgba(0, 0, 0, 0.25);
-      border: 1px solid var(--panel-border);
+      background: var(--are-card-bg);
+      border: 1px solid var(--are-card-border);
       border-radius: 6px;
       padding: 12px;
-      font-family: var(--code-font);
+      font-family: var(--are-code-font);
       font-size: 12px;
       line-height: 1.45;
       white-space: pre-wrap;
       word-break: break-all;
-      color: var(--fg);
+      color: var(--are-fg);
       max-height: 320px;
       overflow-y: auto;
     }
 
     /* Response Section */
     .response-section {
-      margin-top: 12px;
+      margin-top: 8px;
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -993,8 +1091,10 @@ export class HttpClientPanel {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid var(--panel-border);
+      border-bottom: 1px solid var(--are-border);
       padding-bottom: 8px;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
     .response-title {
@@ -1003,12 +1103,13 @@ export class HttpClientPanel {
       display: flex;
       align-items: center;
       gap: 6px;
+      color: var(--are-fg);
     }
 
     .response-meta {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
     }
 
@@ -1020,7 +1121,7 @@ export class HttpClientPanel {
       font-size: 12px;
       padding: 3px 8px;
       border-radius: 4px;
-      font-family: var(--code-font);
+      font-family: var(--are-code-font);
     }
 
     .status-dot {
@@ -1029,60 +1130,86 @@ export class HttpClientPanel {
     }
 
     .status-2xx {
-      background: rgba(16, 185, 129, 0.15);
+      background: var(--color-emerald-bg);
       color: var(--color-emerald);
-      border: 1px solid rgba(16, 185, 129, 0.4);
+      border: 1px solid var(--color-emerald-border);
     }
 
     .status-3xx {
-      background: rgba(59, 130, 246, 0.15);
+      background: var(--color-blue-bg);
       color: var(--color-blue);
-      border: 1px solid rgba(59, 130, 246, 0.4);
+      border: 1px solid var(--color-blue-border);
     }
 
     .status-4xx {
-      background: rgba(245, 158, 11, 0.15);
+      background: var(--color-amber-bg);
       color: var(--color-amber);
-      border: 1px solid rgba(245, 158, 11, 0.4);
+      border: 1px solid var(--color-amber-border);
     }
 
     .status-5xx {
-      background: rgba(239, 68, 68, 0.15);
+      background: var(--color-rose-bg);
       color: var(--color-rose);
-      border: 1px solid rgba(239, 68, 68, 0.4);
+      border: 1px solid var(--color-rose-border);
     }
 
     .metric-chip {
       font-size: 11px;
-      font-family: var(--code-font);
-      background: rgba(128, 128, 128, 0.12);
-      border: 1px solid var(--panel-border);
+      font-family: var(--are-code-font);
+      background: var(--are-card-bg);
+      border: 1px solid var(--are-card-border);
       padding: 3px 7px;
       border-radius: 4px;
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      opacity: 0.9;
+      color: var(--are-fg);
+    }
+
+    .format-pill-btn {
+      background: transparent;
+      border: 1px solid var(--are-border);
+      color: var(--are-fg);
+      opacity: 0.7;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      cursor: pointer;
+      font-family: var(--are-code-font);
+      transition: opacity 0.15s, border-color 0.15s, background 0.15s;
+    }
+
+    .format-pill-btn:hover {
+      opacity: 1;
+    }
+
+    .format-pill-btn.active {
+      opacity: 1;
+      background: var(--color-emerald-bg);
+      border-color: var(--color-emerald-border);
+      color: var(--color-emerald);
+      font-weight: 700;
     }
 
     .response-body-pre {
-      background: rgba(0, 0, 0, 0.25);
-      border: 1px solid var(--panel-border);
+      background: var(--are-card-bg);
+      border: 1px solid var(--are-card-border);
       border-radius: 6px;
       padding: 14px;
-      max-height: 440px;
+      max-height: 460px;
       overflow: auto;
-      font-family: var(--code-font);
+      font-family: var(--are-code-font);
       font-size: 12px;
       line-height: 1.5;
       white-space: pre-wrap;
       word-break: break-word;
+      color: var(--are-fg);
     }
 
     .empty-state {
       text-align: center;
       padding: 36px 20px;
-      opacity: 0.7;
+      color: var(--are-muted);
       font-size: 12px;
       display: flex;
       flex-direction: column;
@@ -1093,25 +1220,26 @@ export class HttpClientPanel {
     .empty-state-icon {
       font-size: 28px;
       line-height: 1;
-      opacity: 0.8;
+      opacity: 0.9;
     }
 
     .empty-state-title {
       font-weight: 600;
       font-size: 13px;
-      color: var(--fg);
+      color: var(--are-fg);
     }
 
     .empty-state-sub {
       font-size: 11px;
-      opacity: 0.7;
-      max-width: 320px;
+      opacity: 0.8;
+      max-width: 340px;
+      line-height: 1.45;
     }
 
     /* Error Card */
     .error-card {
-      border: 1px solid rgba(239, 68, 68, 0.35);
-      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid var(--color-rose-border);
+      background: var(--color-rose-bg);
       border-radius: 8px;
       padding: 16px;
       display: flex;
@@ -1130,13 +1258,13 @@ export class HttpClientPanel {
 
     .error-card-url-title {
       font-size: 11px;
-      opacity: 0.8;
+      opacity: 0.85;
     }
 
     .error-card-url {
-      font-family: var(--code-font);
+      font-family: var(--are-code-font);
       font-size: 12px;
-      background: rgba(0, 0, 0, 0.25);
+      background: rgba(0, 0, 0, 0.2);
       padding: 6px 10px;
       border-radius: 4px;
       word-break: break-all;
@@ -1158,16 +1286,16 @@ export class HttpClientPanel {
 
     .error-card-causes li {
       font-size: 12px;
-      opacity: 0.85;
+      opacity: 0.9;
     }
 
     .error-card-code-wrap {
       font-size: 11px;
-      opacity: 0.8;
+      opacity: 0.85;
     }
 
     .error-card-code {
-      font-family: var(--code-font);
+      font-family: var(--are-code-font);
       font-weight: 600;
       color: var(--color-rose);
       background: rgba(239, 68, 68, 0.15);
@@ -1185,8 +1313,8 @@ export class HttpClientPanel {
     }
 
     .alert-error {
-      background: rgba(239, 68, 68, 0.12);
-      border: 1px solid rgba(239, 68, 68, 0.35);
+      background: var(--color-rose-bg);
+      border: 1px solid var(--color-rose-border);
       color: var(--color-rose);
     }
 
@@ -1202,6 +1330,38 @@ export class HttpClientPanel {
 
     @keyframes spin {
       to { transform: rotate(360deg); }
+    }
+
+    /* Responsive Design for Narrow Views (320px - 640px) */
+    @media (max-width: 640px) {
+      body {
+        padding: 10px 12px;
+      }
+      .request-bar {
+        flex-wrap: wrap;
+      }
+      .omni-input-group {
+        width: 100%;
+      }
+      .route-hero-main {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .route-hero-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+      .param-row, .body-form-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .param-label, .body-form-label {
+        width: 100%;
+      }
+      .response-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
   </style>
 </head>
@@ -1222,9 +1382,17 @@ export class HttpClientPanel {
 
     <!-- Route Context Banner (Hero Card) -->
     <div class="route-context-bar" id="route-context-bar" style="display: none;">
-      <div class="route-context-left">
-        <span class="route-context-badge" id="route-context-badge">API</span>
-        <span class="route-context-signature" id="route-context-signature"></span>
+      <div class="route-hero-main">
+        <div class="route-hero-title">
+          <span class="hero-method-badge" id="hero-method-badge" data-method="GET">GET</span>
+          <span class="route-context-signature" id="route-context-signature"></span>
+          <span class="route-context-badge" id="route-context-badge">API</span>
+        </div>
+        <div class="route-hero-actions">
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-hero-curl" title="Copy cURL command">
+            <span>💻</span> Copy cURL
+          </button>
+        </div>
       </div>
       <div class="route-context-source" id="route-context-source">
         <span>Source:</span>
@@ -1362,7 +1530,10 @@ export class HttpClientPanel {
             <button type="button" class="quick-snippet-btn" id="btn-snippet-obj">{ } Object</button>
             <button type="button" class="quick-snippet-btn" id="btn-snippet-arr">[ ] Array</button>
           </div>
-          <button id="btn-format-json" class="btn btn-secondary btn-sm">{ } Format JSON</button>
+          <div style="display: flex; gap: 6px;">
+            <button id="btn-copy-json" class="btn btn-secondary btn-sm">📋 Copy JSON</button>
+            <button id="btn-format-json" class="btn btn-secondary btn-sm">{ } Format JSON</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1419,7 +1590,6 @@ export class HttpClientPanel {
           <button id="btn-copy-res-headers" class="btn btn-secondary btn-sm">Copy Headers</button>
         </div>
       </div>
-      </div>
 
       <div id="response-empty" class="card empty-state">
         <span class="empty-state-icon">🚀</span>
@@ -1439,6 +1609,10 @@ export class HttpClientPanel {
         </div>
 
         <div id="res-tab-body" class="tab-content active" style="margin-top: 8px;">
+          <div style="display: flex; justify-content: flex-end; margin-bottom: 6px; gap: 4px;">
+            <button id="btn-res-pretty" class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 11px;">Pretty</button>
+            <button id="btn-res-raw" class="btn btn-secondary btn-sm" style="padding: 2px 8px; font-size: 11px;">Raw</button>
+          </div>
           <pre id="response-body" class="response-body-pre"></pre>
         </div>
 
@@ -1529,6 +1703,14 @@ export class HttpClientPanel {
     const btnAddVar = document.getElementById('btn-add-var');
     const btnSaveToken = document.getElementById('btn-save-token');
 
+    const heroMethodBadge = document.getElementById('hero-method-badge');
+    const btnHeroCurl = document.getElementById('btn-hero-curl');
+    const btnCopyJson = document.getElementById('btn-copy-json');
+    const btnResPretty = document.getElementById('btn-res-pretty');
+    const btnResRaw = document.getElementById('btn-res-raw');
+    let isResponsePretty = true;
+    let currentRawResponseBody = '';
+
     const responseMeta = document.getElementById('response-meta');
     const responseStatus = document.getElementById('response-status');
     const responseTime = document.getElementById('response-time');
@@ -1554,7 +1736,15 @@ export class HttpClientPanel {
 
     // Method change style
     methodSelect.addEventListener('change', () => {
-      methodSelect.setAttribute('data-method', methodSelect.value);
+      const selectedMethod = methodSelect.value;
+      methodSelect.setAttribute('data-method', selectedMethod);
+      if (heroMethodBadge) {
+        heroMethodBadge.textContent = selectedMethod;
+        heroMethodBadge.setAttribute('data-method', selectedMethod);
+      }
+      if (routeContextBar) {
+        routeContextBar.setAttribute('data-method', selectedMethod);
+      }
       renderBodyParameters();
       updateCurlPreview();
     });
@@ -1694,6 +1884,61 @@ export class HttpClientPanel {
       vscode.postMessage({ type: 'copyText', payload: { text, label: 'cURL command' } });
       setTemporaryLabel(btnCopyCurl, '✓ Copied!', 'Copy cURL');
     });
+
+    if (btnHeroCurl) {
+      btnHeroCurl.addEventListener('click', () => {
+        const text = curlPreview.textContent || '';
+        vscode.postMessage({ type: 'copyText', payload: { text, label: 'cURL command' } });
+        setTemporaryLabel(btnHeroCurl, '✓ Copied!', '💻 Copy cURL');
+      });
+    }
+
+    if (btnCopyJson) {
+      btnCopyJson.addEventListener('click', () => {
+        const text = bodyInput.value || '';
+        vscode.postMessage({ type: 'copyText', payload: { text, label: 'JSON body' } });
+        setTemporaryLabel(btnCopyJson, '✓ Copied!', '📋 Copy JSON');
+      });
+    }
+
+    function renderResponseBodyView() {
+      if (!currentRawResponseBody) {
+        responseBody.textContent = '(empty response body)';
+        return;
+      }
+      if (currentRawResponseBody.length > 250000) {
+        responseBody.textContent = currentRawResponseBody.slice(0, 250000) + '\\n\\n... [Response body truncated for rendering performance. Total size: ' + responseSize.textContent + ']';
+        return;
+      }
+      if (isResponsePretty) {
+        try {
+          const parsed = JSON.parse(currentRawResponseBody);
+          responseBody.textContent = JSON.stringify(parsed, null, 2);
+        } catch {
+          responseBody.textContent = currentRawResponseBody;
+        }
+      } else {
+        responseBody.textContent = currentRawResponseBody;
+      }
+    }
+
+    if (btnResPretty) {
+      btnResPretty.addEventListener('click', () => {
+        isResponsePretty = true;
+        btnResPretty.classList.add('active');
+        if (btnResRaw) btnResRaw.classList.remove('active');
+        renderResponseBodyView();
+      });
+    }
+
+    if (btnResRaw) {
+      btnResRaw.addEventListener('click', () => {
+        isResponsePretty = false;
+        btnResRaw.classList.add('active');
+        if (btnResPretty) btnResPretty.classList.remove('active');
+        renderResponseBodyView();
+      });
+    }
 
     btnJumpCode.addEventListener('click', () => {
       if (currentInitialState) {
@@ -2388,8 +2633,13 @@ export class HttpClientPanel {
             const sFile = (rc && rc.sourceFile) || currentInitialState.filePath;
             const sLine = (rc && rc.sourceLine) || currentInitialState.line;
 
+            if (heroMethodBadge) {
+              heroMethodBadge.textContent = meth;
+              heroMethodBadge.setAttribute('data-method', meth);
+            }
+            routeContextBar.setAttribute('data-method', meth);
             routeContextBadge.textContent = fw.toUpperCase();
-            routeContextSignature.textContent = meth + ' ' + rPath;
+            routeContextSignature.textContent = rPath || meth;
 
             if (sFile) {
               const locText = sLine ? sFile + ':' + sLine : sFile;
@@ -2475,11 +2725,12 @@ export class HttpClientPanel {
 
           // Body (large response protection: limit pre render if > 250,000 chars)
           const rawBody = data.body || '';
-          if (rawBody.length > 250000) {
-            responseBody.textContent = rawBody.slice(0, 250000) + '\\n\\n... [Response body truncated for rendering performance. Total size: ' + responseSize.textContent + ']';
-          } else {
-            responseBody.textContent = rawBody || '(empty response body)';
+          currentRawResponseBody = rawBody;
+          if (btnResPretty && btnResRaw) {
+            btnResPretty.classList.toggle('active', isResponsePretty);
+            btnResRaw.classList.toggle('active', !isResponsePretty);
           }
+          renderResponseBodyView();
 
           // Headers
           resHeadersTableBody.innerHTML = '';

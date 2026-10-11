@@ -18,10 +18,23 @@ export const metadata: Metadata = {
 export default function ChangelogPage() {
   const releases = [
     {
+      version: "v1.5.3",
+      date: "October 2026",
+      title: "UI/UX Redesign & Postman Variables Sprint",
+      badge: "Latest Release",
+      highlights: [
+        "Complete Webview redesign with native VS Code theme design tokens (Dark, Light, High Contrast).",
+        "Route Hero Context Card answering endpoint signature, method badge, and 1-click cURL copying.",
+        "Postman-style environment variables ({{baseUrl}}, {{token}}) with live interpolation and 1-click token saving.",
+        "Interactive QuickPick search with real-time match counter and inline 1-click Test API activation.",
+        "Response inspector with Pretty/Raw toggles and large payload rendering safety safeguards.",
+      ],
+    },
+    {
       version: "v1.5.1",
       date: "October 2026",
       title: "Clean Icon Alpha & Brand Polish",
-      badge: "Latest Release",
+      badge: undefined,
       highlights: [
         "Re-rendered lossless vector icon eliminating white background artifacts.",
         "Unified all page badges, tags, and status pills to the emerald theme.",
