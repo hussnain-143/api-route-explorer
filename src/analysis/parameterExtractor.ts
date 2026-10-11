@@ -1104,10 +1104,12 @@ function extractFromSchemaBlock(
   seen: Set<string>,
   results: ApiParameter[]
 ): void {
-  const lines = block.split('\n');
-  for (const line of lines) {
-    const parts = line.split(':');
-    if (parts.length < 2) {continue;}
+  const entries = splitTopLevelArguments(block);
+  for (const entry of entries) {
+    const lines = entry.split('\n');
+    for (const line of lines) {
+      const parts = line.split(':');
+      if (parts.length < 2) {continue;}
 
     const rawKey = parts[0].trim().replace(/['"]/g, '');
     if (!rawKey || !/^[a-zA-Z0-9_$]+$/.test(rawKey)) {continue;}
@@ -1145,6 +1147,7 @@ function extractFromSchemaBlock(
       isSensitive: sugg.isSensitive,
     });
   }
+}
 }
 
 /**

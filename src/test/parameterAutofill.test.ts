@@ -511,4 +511,48 @@ suite('API Routes Explorer — Smart API Parameter Detection & Autofill Suite', 
     assert.strictEqual(state.variables.baseUrl, 'http://localhost:8000');
     assert.strictEqual(typeof state.variables.token, 'string');
   });
+
+  test('O. Proper dynamic parameter auto-naming: newPassword and custom fields auto-set keys with clean values', () => {
+    // 1. Dynamic credential handling
+    const newPassSug = suggestParameterValue('newPassword', 'body');
+    assert.strictEqual(newPassSug.value, '');
+    assert.strictEqual(newPassSug.placeholder, '••••••••');
+    assert.strictEqual(newPassSug.isSensitive, true);
+    assert.strictEqual(newPassSug.type, 'string');
+
+    const confirmPassSug = suggestParameterValue('confirmPassword', 'body');
+    assert.strictEqual(confirmPassSug.value, '');
+    assert.strictEqual(confirmPassSug.placeholder, '••••••••');
+    assert.strictEqual(confirmPassSug.isSensitive, true);
+
+    // 2. Dynamic custom body fields
+    const customSug = suggestParameterValue('companyName', 'body');
+    assert.strictEqual(customSug.value, '');
+    assert.strictEqual(customSug.placeholder, 'companyName');
+    assert.strictEqual(customSug.type, 'string');
+
+    // 3. Dynamic JSON body generation preserves auto-named keys
+    const routeSource = `
+      router.post('/change-password', (req, res) => {
+        const { currentPassword, newPassword, confirmPassword } = req.body;
+        res.json({ ok: true });
+      });
+    `;
+    const route = createTestRoute({
+      path: '/change-password',
+      method: 'POST',
+      filePath: '/workspace/routes/account.js',
+      line: 2,
+    });
+    const fileSources = new Map<string, string>([[route.filePath, routeSource]]);
+    const state = buildInitialStateForRoute(route, 'http://localhost:3000', fileSources);
+
+    assert.strictEqual(state.bodyParams?.length, 3);
+    const parsedBody = JSON.parse(state.body || '{}');
+    assert.deepStrictEqual(parsedBody, {
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+    });
+  });
 });
