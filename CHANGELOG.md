@@ -1,6 +1,20 @@
 # Changelog
-
+ 
 All notable changes to the "api-route-explorer" extension will be documented in this file.
+
+## [1.5.4] - 2026-10-11
+
+### Added & Enhanced (Dynamic Parameter Auto-Naming & Validation Engine)
+- **Proper Dynamic Parameter Auto-Naming**:
+  - Automatically auto-sets body parameter keys into request JSON payloads across all validation frameworks (Zod, Joi, Fastify) and destructured `req.body` handlers.
+  - Eliminated artificial mock values, prefilled fake names (`John`, `Doe`), and `"sample_"` prefixes in request templates.
+- **Dynamic Credential Masking & Clean Defaults**:
+  - Sensitive parameters (`newPassword`, `currentPassword`, `confirmPassword`, secrets, tokens, API keys) dynamically receive `isSensitive: true` and `••••••••` masked placeholder.
+  - Generates eye-toggle reveal buttons in the HTTP Client parameter form while ensuring empty, clean input defaults in JSON.
+- **Balanced Multi-Line & Inline Schema Parsing**:
+  - Upgraded schema block extraction with top-level balanced delimiter parsing (`splitTopLevelArguments`) supporting both multi-line and single-line comma-separated validation rules.
+- **Test Suite Expansion**:
+  - Added test `O` covering dynamic auto-naming and custom field inference, expanding the suite to **290 passing tests** with 0 regressions.
 
 ## [1.5.3] - 2026-10-11
 
