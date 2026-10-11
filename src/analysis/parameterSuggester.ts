@@ -38,8 +38,9 @@ export function suggestParameterValue(
     lower.startsWith('password_') ||
     lower.includes('secret')
   ) {
+    const isNewOrCustom = lower.includes('new') || lower.includes('confirm') || lower.includes('old') || lower.includes('current');
     return {
-      value: 'password',
+      value: isNewOrCustom ? '' : 'password',
       placeholder: '••••••••',
       type: 'string',
       isSensitive: true,
