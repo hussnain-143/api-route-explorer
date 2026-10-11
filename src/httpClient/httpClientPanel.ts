@@ -21,6 +21,10 @@ import {
 export class HttpClientPanel {
   public static currentPanel: HttpClientPanel | undefined;
   public static readonly viewType = 'apiRouteExplorer.httpClientPanel';
+  public static sharedVariables: Record<string, string> = {
+    baseUrl: 'http://localhost:3000',
+    token: '',
+  };
 
   private readonly _panel: vscode.WebviewPanel;
   private readonly _extensionUri: vscode.Uri;
@@ -38,6 +42,11 @@ export class HttpClientPanel {
     const column = vscode.window.activeTextEditor
       ? vscode.ViewColumn.Beside
       : vscode.ViewColumn.One;
+
+    if (initialState.baseUrl) {
+      HttpClientPanel.sharedVariables.baseUrl = initialState.baseUrl;
+    }
+    initialState.variables = { ...HttpClientPanel.sharedVariables };
 
     // If an existing panel is active, reveal it and update state
     if (HttpClientPanel.currentPanel) {
@@ -99,6 +108,10 @@ export class HttpClientPanel {
    * Updates the panel with a newly selected route.
    */
   public updateRoute(state: HttpClientInitialState): void {
+    if (state.baseUrl) {
+      HttpClientPanel.sharedVariables.baseUrl = state.baseUrl;
+    }
+    state.variables = { ...HttpClientPanel.sharedVariables };
     this._initialState = state;
     this._panel.title = `HTTP: ${state.method} ${state.openApiPath}`;
     this._panel.webview.postMessage({
@@ -119,10 +132,25 @@ export class HttpClientPanel {
 
     switch (message.type) {
       case 'ready': {
+        this._initialState.variables = { ...HttpClientPanel.sharedVariables };
         this._panel.webview.postMessage({
           type: 'init',
           payload: this._initialState,
         });
+        break;
+      }
+
+      case 'saveVariables': {
+        if (message.payload && message.payload.variables) {
+          HttpClientPanel.sharedVariables = {
+            ...HttpClientPanel.sharedVariables,
+            ...message.payload.variables,
+          };
+          this._panel.webview.postMessage({
+            type: 'variablesUpdated',
+            payload: { variables: HttpClientPanel.sharedVariables },
+          });
+        }
         break;
       }
 
@@ -707,6 +735,108 @@ export class HttpClientPanel {
       box-shadow: 0 0 0 1px var(--color-rose);
     }
 
+    /* Body parameter banner & structured form */
+    .body-banner {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      margin-bottom: 10px;
+    }
+
+    .body-banner.detected {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34D399;
+    }
+
+    .body-banner.notice {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--fg);
+      opacity: 0.8;
+    }
+
+    .body-form-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .body-form-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .body-form-label {
+      width: 140px;
+      font-family: var(--code-font);
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .req-star {
+      color: var(--color-rose);
+      font-weight: bold;
+    }
+
+    .type-chip {
+      font-size: 9px;
+      opacity: 0.6;
+      font-weight: normal;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+
+    .body-form-input-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+
+    .body-form-input {
+      width: 100%;
+      background: var(--input-bg);
+      color: var(--input-fg);
+      border: 1px solid var(--input-border);
+      padding: 6px 10px;
+      border-radius: 5px;
+      font-family: var(--code-font);
+      font-size: 12px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .body-form-input:focus {
+      border-color: var(--color-emerald);
+    }
+
+    .btn-eye-toggle {
+      position: absolute;
+      right: 8px;
+      background: transparent;
+      border: none;
+      color: var(--fg);
+      opacity: 0.6;
+      cursor: pointer;
+      font-size: 12px;
+      padding: 2px 4px;
+    }
+
+    .btn-eye-toggle:hover {
+      opacity: 1;
+    }
+
     /* Tables */
     .kv-table {
       width: 100%;
@@ -1143,7 +1273,7 @@ export class HttpClientPanel {
     <!-- Client Error Display -->
     <div id="validation-error" class="alert alert-error" style="display: none;"></div>
 
-    <!-- Request Sub-Tabs: Params, Headers, Body, cURL -->
+    <!-- Request Sub-Tabs: Params, Headers, Body, Variables, cURL -->
     <div class="tab-bar">
       <button class="tab-btn active" data-tab="tab-params">
         Params <span id="badge-params" class="tab-badge" style="display:none;">0</span>
@@ -1153,6 +1283,9 @@ export class HttpClientPanel {
       </button>
       <button class="tab-btn" data-tab="tab-body">
         Body
+      </button>
+      <button class="tab-btn" data-tab="tab-vars">
+        Variables <span id="badge-vars" class="tab-badge" style="display:none;">0</span>
       </button>
       <button class="tab-btn" data-tab="tab-curl">
         cURL
@@ -1213,11 +1346,19 @@ export class HttpClientPanel {
 
     <!-- Tab 3: Body -->
     <div id="tab-body" class="tab-content">
+      <div id="body-banner" class="body-banner notice" style="display: none;"></div>
+
+      <div id="body-form-view" class="card" style="display: none; margin-bottom: 12px;">
+        <div class="section-title" style="margin-bottom: 10px;">Detected Request Body Parameters</div>
+        <div id="body-form-fields"></div>
+      </div>
+
       <div class="card">
         <textarea id="body-input" class="body-editor" spellcheck="false" placeholder='{\n  "key": "value"\n}'></textarea>
         <div class="body-toolbar">
           <div class="body-toolbar-left">
             <span id="json-valid-indicator" class="json-valid-indicator empty">JSON Body (optional)</span>
+            <button type="button" class="quick-snippet-btn" id="btn-toggle-body-mode" style="display: none;">Show Form View</button>
             <button type="button" class="quick-snippet-btn" id="btn-snippet-obj">{ } Object</button>
             <button type="button" class="quick-snippet-btn" id="btn-snippet-arr">[ ] Array</button>
           </div>
@@ -1226,7 +1367,33 @@ export class HttpClientPanel {
       </div>
     </div>
 
-    <!-- Tab 4: cURL -->
+    <!-- Tab 4: Variables (Postman-style environment & auth tokens) -->
+    <div id="tab-vars" class="tab-content">
+      <div class="card" style="margin-bottom: 12px; background: rgba(59, 130, 246, 0.05); border-color: rgba(59, 130, 246, 0.25);">
+        <div style="font-size: 12px; line-height: 1.5; color: var(--fg);">
+          <strong>Environment Variables:</strong> Store reusable values like <code>{{baseUrl}}</code> or <code>{{token}}</code>. 
+          Use <code>{{variableName}}</code> anywhere in your URL, Headers (e.g. <code>Authorization: Bearer {{token}}</code>), Query parameters, or JSON Body.
+        </div>
+      </div>
+      <div class="card">
+        <table class="kv-table">
+          <thead>
+            <tr>
+              <th style="width: 32%;">Variable Name</th>
+              <th>Value</th>
+              <th style="width: 140px;">Usage Syntax</th>
+              <th style="width: 32px;"></th>
+            </tr>
+          </thead>
+          <tbody id="vars-table-body"></tbody>
+        </table>
+        <div style="margin-top: 10px; display: flex; gap: 8px;">
+          <button id="btn-add-var" class="btn btn-secondary btn-sm">+ Add Variable</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 5: cURL -->
     <div id="tab-curl" class="tab-content">
       <div class="card" style="display: flex; flex-direction: column; gap: 10px;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1247,9 +1414,11 @@ export class HttpClientPanel {
           <span id="response-status" class="status-badge"></span>
           <span id="response-time" class="metric-chip"></span>
           <span id="response-size" class="metric-chip"></span>
+          <button id="btn-save-token" class="btn btn-secondary btn-sm" style="display: none; border-color: rgba(16, 185, 129, 0.4); color: #34D399;" title="Save authentication token to {{token}} variable">🔑 Save to {{token}}</button>
           <button id="btn-copy-response" class="btn btn-secondary btn-sm">Copy Body</button>
           <button id="btn-copy-res-headers" class="btn btn-secondary btn-sm">Copy Headers</button>
         </div>
+      </div>
       </div>
 
       <div id="response-empty" class="card empty-state">
@@ -1321,6 +1490,21 @@ export class HttpClientPanel {
     const btnSnippetArr = document.getElementById('btn-snippet-arr');
     const validationError = document.getElementById('validation-error');
     const headerMeta = document.getElementById('header-meta');
+    const bodyBanner = document.getElementById('body-banner');
+    const bodyFormView = document.getElementById('body-form-view');
+    const bodyFormFields = document.getElementById('body-form-fields');
+    const btnToggleBodyMode = document.getElementById('btn-toggle-body-mode');
+    let isBodyFormVisible = false;
+
+    if (btnToggleBodyMode) {
+      btnToggleBodyMode.addEventListener('click', () => {
+        isBodyFormVisible = !isBodyFormVisible;
+        if (bodyFormView) {
+          bodyFormView.style.display = isBodyFormVisible ? 'block' : 'none';
+        }
+        btnToggleBodyMode.textContent = isBodyFormVisible ? 'Hide Form View' : 'Show Form View';
+      });
+    }
 
     const routeContextBar = document.getElementById('route-context-bar');
     const routeContextBadge = document.getElementById('route-context-badge');
@@ -1340,6 +1524,10 @@ export class HttpClientPanel {
 
     const badgeParams = document.getElementById('badge-params');
     const badgeHeaders = document.getElementById('badge-headers');
+    const badgeVars = document.getElementById('badge-vars');
+    const varsTableBody = document.getElementById('vars-table-body');
+    const btnAddVar = document.getElementById('btn-add-var');
+    const btnSaveToken = document.getElementById('btn-save-token');
 
     const responseMeta = document.getElementById('response-meta');
     const responseStatus = document.getElementById('response-status');
@@ -1367,6 +1555,7 @@ export class HttpClientPanel {
     // Method change style
     methodSelect.addEventListener('change', () => {
       methodSelect.setAttribute('data-method', methodSelect.value);
+      renderBodyParameters();
       updateCurlPreview();
     });
 
@@ -1545,6 +1734,117 @@ export class HttpClientPanel {
       document.querySelectorAll('.param-input.invalid').forEach((el) => el.classList.remove('invalid'));
     }
 
+    let variablesList = [];
+
+    function getVariablesMap() {
+      const map = {};
+      variablesList.forEach((v) => {
+        if (v.key && v.key.trim() !== '') {
+          map[v.key.trim()] = v.value;
+        }
+      });
+      return map;
+    }
+
+    function persistVariables() {
+      const varsMap = getVariablesMap();
+      vscode.postMessage({
+        type: 'saveVariables',
+        payload: { variables: varsMap },
+      });
+      updateCurlPreview();
+    }
+
+    function setVariable(key, value) {
+      const existing = variablesList.find((v) => v.key.trim() === key.trim());
+      if (existing) {
+        existing.value = value;
+      } else {
+        variablesList.push({ key: key.trim(), value });
+      }
+      renderVariables();
+      persistVariables();
+    }
+
+    function renderVariables() {
+      if (!varsTableBody) return;
+      varsTableBody.innerHTML = '';
+
+      const validCount = variablesList.filter((v) => v.key && v.key.trim() !== '').length;
+      if (badgeVars) {
+        if (validCount > 0) {
+          badgeVars.textContent = validCount;
+          badgeVars.style.display = 'inline-block';
+        } else {
+          badgeVars.style.display = 'none';
+        }
+      }
+
+      variablesList.forEach((v, index) => {
+        const tr = document.createElement('tr');
+
+        // Key Name
+        const tdKey = document.createElement('td');
+        const inputKey = document.createElement('input');
+        inputKey.type = 'text';
+        inputKey.className = 'kv-input';
+        inputKey.value = v.key;
+        inputKey.placeholder = 'e.g. baseUrl, token';
+        inputKey.addEventListener('input', () => {
+          v.key = inputKey.value;
+          tdSyntax.textContent = v.key.trim() ? '{{' + v.key.trim() + '}}' : '';
+          persistVariables();
+        });
+        tdKey.appendChild(inputKey);
+
+        // Value
+        const tdVal = document.createElement('td');
+        const inputVal = document.createElement('input');
+        inputVal.type = 'text';
+        inputVal.className = 'kv-input';
+        inputVal.value = v.value;
+        inputVal.placeholder = 'Variable value';
+        inputVal.addEventListener('input', () => {
+          v.value = inputVal.value;
+          persistVariables();
+        });
+        tdVal.appendChild(inputVal);
+
+        // Syntax usage preview
+        const tdSyntax = document.createElement('td');
+        tdSyntax.style.fontFamily = 'var(--code-font)';
+        tdSyntax.style.fontSize = '11px';
+        tdSyntax.style.color = 'var(--color-emerald)';
+        tdSyntax.textContent = v.key.trim() ? '{{' + v.key.trim() + '}}' : '';
+
+        // Delete button
+        const tdDel = document.createElement('td');
+        const btnDel = document.createElement('button');
+        btnDel.className = 'btn-icon';
+        btnDel.textContent = '✕';
+        btnDel.title = 'Remove variable';
+        btnDel.addEventListener('click', () => {
+          variablesList.splice(index, 1);
+          renderVariables();
+          persistVariables();
+        });
+        tdDel.appendChild(btnDel);
+
+        tr.appendChild(tdKey);
+        tr.appendChild(tdVal);
+        tr.appendChild(tdSyntax);
+        tr.appendChild(tdDel);
+        varsTableBody.appendChild(tr);
+      });
+    }
+
+    if (btnAddVar) {
+      btnAddVar.addEventListener('click', () => {
+        variablesList.push({ key: '', value: '' });
+        renderVariables();
+      });
+    }
+
     function collectRequestConfig() {
       const currentPathParams = pathParams.map((p) => {
         const input = document.getElementById('param-input-' + p.name);
@@ -1561,12 +1861,19 @@ export class HttpClientPanel {
         queryParams: queryParams,
         headers: headers,
         body: bodyInput.value,
+        variables: getVariablesMap(),
       };
     }
 
     function updateCurlPreview() {
       const config = collectRequestConfig();
       let resolvedUrl = config.url;
+
+      // Replace variables in URL
+      const varsMap = getVariablesMap();
+      for (const [k, v] of Object.entries(varsMap)) {
+        resolvedUrl = resolvedUrl.replace(new RegExp('\\\\{\\\\{' + k + '\\\\}\\\\}', 'g'), v);
+      }
 
       // Replace path params
       for (const p of config.pathParams) {
@@ -1578,7 +1885,15 @@ export class HttpClientPanel {
       // Append query params
       const activeQueries = config.queryParams
         .filter((q) => q.enabled && q.key && q.key.trim() !== '')
-        .map((q) => encodeURIComponent(q.key.trim()) + '=' + encodeURIComponent(q.value))
+        .map((q) => {
+          let k = q.key.trim();
+          let v = q.value;
+          for (const [vk, vv] of Object.entries(varsMap)) {
+            k = k.replace(new RegExp('\\\\{\\\\{' + vk + '\\\\}\\\\}', 'g'), vv);
+            v = v.replace(new RegExp('\\\\{\\\\{' + vk + '\\\\}\\\\}', 'g'), vv);
+          }
+          return encodeURIComponent(k) + '=' + encodeURIComponent(v);
+        })
         .join('&');
 
       if (activeQueries) {
@@ -1589,12 +1904,22 @@ export class HttpClientPanel {
 
       for (const h of config.headers) {
         if (h.enabled && h.key && h.key.trim() !== '') {
-          cmd += ' \\\\\\n  -H "' + h.key.trim() + ': ' + h.value + '"';
+          let k = h.key.trim();
+          let v = h.value;
+          for (const [vk, vv] of Object.entries(varsMap)) {
+            k = k.replace(new RegExp('\\\\{\\\\{' + vk + '\\\\}\\\\}', 'g'), vv);
+            v = v.replace(new RegExp('\\\\{\\\\{' + vk + '\\\\}\\\\}', 'g'), vv);
+          }
+          cmd += ' \\\\\\n  -H "' + k + ': ' + v + '"';
         }
       }
 
       if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(config.method) && config.body && config.body.trim()) {
-        cmd += ' \\\\\\n  -d \\'' + config.body.replace(/'/g, "'\\\\''") + '\\'';
+        let b = config.body;
+        for (const [vk, vv] of Object.entries(varsMap)) {
+          b = b.replace(new RegExp('\\\\{\\\\{' + vk + '\\\\}\\\\}', 'g'), vv);
+        }
+        cmd += ' \\\\\\n  -d \\'' + b.replace(/'/g, "'\\\\''") + '\\'';
       }
 
       curlPreview.textContent = cmd;
@@ -1720,14 +2045,16 @@ export class HttpClientPanel {
 
         const label = document.createElement('span');
         label.className = 'param-label';
-        label.innerHTML = escapeHtml(param.name) + (param.isOptional ? ' <span class="opt-tag">(optional)</span>' : '');
+        label.innerHTML = escapeHtml(param.name) + (param.isOptional ? ' <span class="opt-tag">(optional)</span>' : ' <span class="req-star">*</span>');
         label.title = param.name;
 
         const input = document.createElement('input');
         input.type = 'text';
         input.className = 'param-input';
         input.id = 'param-input-' + param.name;
-        input.value = param.value || '';
+        const effectiveVal = (param.value !== undefined && param.value !== '') ? param.value : (param.placeholder || '');
+        input.value = effectiveVal;
+        param.value = effectiveVal;
         input.placeholder = param.placeholder || ('Value for ' + param.name + '...');
 
         input.addEventListener('input', () => {
@@ -1742,6 +2069,135 @@ export class HttpClientPanel {
         row.appendChild(input);
         pathParamsList.appendChild(row);
       });
+    }
+
+    // Render Request Body parameters (Destructured, Direct, Nested, Schemas)
+    function renderBodyParameters() {
+      if (!bodyFormFields || !bodyBanner) return;
+      bodyFormFields.innerHTML = '';
+      const isBodyMethod = ['POST', 'PUT', 'PATCH'].includes(methodSelect.value);
+
+      if (!isBodyMethod) {
+        bodyBanner.style.display = 'none';
+        if (bodyFormView) bodyFormView.style.display = 'none';
+        if (btnToggleBodyMode) btnToggleBodyMode.style.display = 'none';
+        return;
+      }
+
+      const detected = currentInitialState && currentInitialState.bodyParams && currentInitialState.bodyParams.length > 0;
+
+      if (detected) {
+        const detectedList = currentInitialState.bodyParams;
+        bodyBanner.className = 'body-banner detected';
+        bodyBanner.innerHTML = '✓ <strong>' + detectedList.length + ' body parameter' + (detectedList.length > 1 ? 's' : '') + ' detected</strong> from route static analysis.';
+        bodyBanner.style.display = 'flex';
+        if (bodyFormView) bodyFormView.style.display = 'block';
+        if (btnToggleBodyMode) {
+          btnToggleBodyMode.style.display = 'inline-block';
+          btnToggleBodyMode.textContent = 'Hide Form View';
+        }
+
+        detectedList.forEach((param) => {
+          const row = document.createElement('div');
+          row.className = 'body-form-row';
+
+          const label = document.createElement('div');
+          label.className = 'body-form-label';
+          label.title = param.name;
+          label.innerHTML = escapeHtml(param.name) + (param.required ? ' <span class="req-star">*</span>' : '') + (param.type ? ' <span class="type-chip">' + escapeHtml(param.type) + '</span>' : '');
+
+          const inputContainer = document.createElement('div');
+          inputContainer.style.display = 'flex';
+          inputContainer.style.flex = '1';
+          inputContainer.style.alignItems = 'center';
+          inputContainer.style.gap = '6px';
+
+          const input = document.createElement('input');
+          const isPassword = /password|secret|pass|token/i.test(param.name);
+          input.type = isPassword ? 'password' : 'text';
+          input.className = 'body-form-input';
+          input.id = 'body-param-' + param.name;
+
+          const initVal = param.value !== undefined && param.value !== null ? String(param.value) : (param.placeholder || '');
+          input.value = initVal;
+          input.placeholder = param.placeholder || ('Value for ' + param.name + '...');
+
+          input.addEventListener('input', () => {
+            param.value = parsePrimitiveValue(input.value, param.type);
+            syncBodyFormToJson();
+          });
+
+          inputContainer.appendChild(input);
+
+          if (isPassword) {
+            const toggleBtn = document.createElement('button');
+            toggleBtn.type = 'button';
+            toggleBtn.className = 'btn-eye-toggle';
+            toggleBtn.textContent = '👁';
+            toggleBtn.title = 'Show/hide password';
+            toggleBtn.addEventListener('click', () => {
+              input.type = input.type === 'password' ? 'text' : 'password';
+            });
+            inputContainer.appendChild(toggleBtn);
+          }
+
+          row.appendChild(label);
+          row.appendChild(inputContainer);
+          bodyFormFields.appendChild(row);
+        });
+
+        syncBodyFormToJson();
+      } else {
+        bodyBanner.className = 'body-banner notice';
+        bodyBanner.innerHTML = 'ℹ Body parameters could not be detected automatically. You can manually enter/edit the JSON body below.';
+        bodyBanner.style.display = 'flex';
+        if (bodyFormView) bodyFormView.style.display = 'none';
+        if (btnToggleBodyMode) btnToggleBodyMode.style.display = 'none';
+      }
+    }
+
+    function parsePrimitiveValue(valStr, expectedType) {
+      const s = String(valStr).trim();
+      if (expectedType === 'boolean' || s === 'true' || s === 'false') {
+        if (s === 'true') return true;
+        if (s === 'false') return false;
+      }
+      if (expectedType === 'number') {
+        const num = Number(s);
+        if (!isNaN(num) && s !== '') return num;
+      }
+      if (s === 'null') return null;
+      if (!expectedType && /^-?\\d+(\\.\\d+)?$/.test(s) && !/^0\\d+/.test(s)) {
+        return Number(s);
+      }
+      return valStr;
+    }
+
+    function setDeepValue(obj, path, value) {
+      const parts = path.split('.');
+      let curr = obj;
+      for (let i = 0; i < parts.length - 1; i++) {
+        const part = parts[i];
+        if (!curr[part] || typeof curr[part] !== 'object') {
+          curr[part] = {};
+        }
+        curr = curr[part];
+      }
+      curr[parts[parts.length - 1]] = value;
+    }
+
+    function syncBodyFormToJson() {
+      if (!currentInitialState || !currentInitialState.bodyParams || currentInitialState.bodyParams.length === 0) return;
+      const obj = {};
+      for (const p of currentInitialState.bodyParams) {
+        const input = document.getElementById('body-param-' + p.name);
+        const rawVal = input ? input.value : (p.value !== undefined ? p.value : p.placeholder);
+        const parsed = parsePrimitiveValue(rawVal, p.type);
+        setDeepValue(obj, p.name, parsed);
+      }
+      bodyInput.value = JSON.stringify(obj, null, 2);
+      validateBodyJsonRealtime();
+      updateCurlPreview();
     }
 
     // Render Query parameters
@@ -1901,9 +2357,21 @@ export class HttpClientPanel {
           queryParams = (currentInitialState.queryParams || []).map((q) => ({ ...q }));
           headers = (currentInitialState.headers || []).map((h) => ({ ...h }));
 
+          const rawVars = currentInitialState.variables || {};
+          variablesList = Object.entries(rawVars).map(([k, v]) => ({ key: k, value: String(v) }));
+          if (!variablesList.some((v) => v.key === 'baseUrl')) {
+            variablesList.unshift({ key: 'baseUrl', value: currentInitialState.baseUrl || 'http://localhost:3000' });
+          }
+          if (!variablesList.some((v) => v.key === 'token')) {
+            variablesList.push({ key: 'token', value: '' });
+          }
+
           renderPathParams();
           renderQueryParams();
           renderHeaders();
+          renderVariables();
+          renderBodyParameters();
+          updateLiveUrlFromInputs();
           validateBodyJsonRealtime();
           updateCurlPreview();
           hideValidationError();
@@ -2030,6 +2498,45 @@ export class HttpClientPanel {
             tr.appendChild(tdVal);
             resHeadersTableBody.appendChild(tr);
           });
+
+          // Detect token in JSON response for 1-click save to {{token}}
+          let detectedToken = null;
+          try {
+            const parsed = JSON.parse(rawBody);
+            if (parsed && typeof parsed === 'object') {
+              if (typeof parsed.token === 'string') detectedToken = parsed.token;
+              else if (typeof parsed.accessToken === 'string') detectedToken = parsed.accessToken;
+              else if (typeof parsed.access_token === 'string') detectedToken = parsed.access_token;
+              else if (typeof parsed.jwt === 'string') detectedToken = parsed.jwt;
+              else if (parsed.data && typeof parsed.data === 'object') {
+                if (typeof parsed.data.token === 'string') detectedToken = parsed.data.token;
+                else if (typeof parsed.data.accessToken === 'string') detectedToken = parsed.data.accessToken;
+                else if (typeof parsed.data.access_token === 'string') detectedToken = parsed.data.access_token;
+              }
+            }
+          } catch {}
+
+          if (detectedToken && btnSaveToken) {
+            btnSaveToken.style.display = 'inline-flex';
+            btnSaveToken.onclick = () => {
+              setVariable('token', detectedToken);
+              btnSaveToken.textContent = '✓ Saved to {{token}}!';
+              setTimeout(() => {
+                btnSaveToken.textContent = '🔑 Save to {{token}}';
+              }, 2500);
+            };
+          } else if (btnSaveToken) {
+            btnSaveToken.style.display = 'none';
+          }
+          break;
+        }
+
+        case 'variablesUpdated': {
+          if (msg.payload && msg.payload.variables) {
+            variablesList = Object.entries(msg.payload.variables).map(([k, v]) => ({ key: k, value: String(v) }));
+            renderVariables();
+            updateCurlPreview();
+          }
           break;
         }
 

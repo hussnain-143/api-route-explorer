@@ -18,6 +18,7 @@ export type WebviewToHostMessage =
   | { type: 'copyCurl'; payload: HttpRequestConfig }
   | { type: 'copyText'; payload: { text: string; label: string } }
   | { type: 'openSource'; payload: { filePath?: string; line?: number } }
+  | { type: 'saveVariables'; payload: { variables: Record<string, string> } }
   | { type: 'resetRequest' };
 
 export type HostToWebviewMessage =
@@ -25,6 +26,7 @@ export type HostToWebviewMessage =
   | { type: 'requestStart' }
   | { type: 'response'; payload: HttpResponseData }
   | { type: 'error'; payload: HttpErrorData }
+  | { type: 'variablesUpdated'; payload: { variables: Record<string, string> } }
   | { type: 'info'; payload: { message: string } };
 
 /**
@@ -44,6 +46,14 @@ export function isWebviewToHostMessage(data: unknown): data is WebviewToHostMess
 
   if (type === 'sendRequest' || type === 'copyCurl') {
     return isValidHttpRequestConfig(obj.payload);
+  }
+
+  if (type === 'saveVariables') {
+    if (!obj.payload || typeof obj.payload !== 'object') {
+      return false;
+    }
+    const p = obj.payload as Record<string, unknown>;
+    return p.variables !== null && typeof p.variables === 'object';
   }
 
   if (type === 'copyText') {
