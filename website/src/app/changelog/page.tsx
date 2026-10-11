@@ -18,10 +18,23 @@ export const metadata: Metadata = {
 export default function ChangelogPage() {
   const releases = [
     {
+      version: "v1.5.4",
+      date: "October 2026",
+      title: "Proper Dynamic Parameter Auto-Naming & Validation Engine",
+      badge: "Latest Release",
+      highlights: [
+        "Fully dynamic parameter auto-naming for request body payloads across Zod, Joi, Fastify, and destructured handlers.",
+        "Automatic key insertion without artificial mock values, prefilled fake text, or 'sample_' prefixes.",
+        "Dynamic credential masking with eye-toggle for sensitive fields (newPassword, confirmPassword, secretKey, tokens).",
+        "Balanced top-level schema parsing supporting both multi-line and single-line comma-separated validation rules.",
+        "Over 290 comprehensive automated unit tests passing across all supported frameworks.",
+      ],
+    },
+    {
       version: "v1.5.3",
       date: "October 2026",
       title: "UI/UX Redesign & Postman Variables Sprint",
-      badge: "Latest Release",
+      badge: undefined,
       highlights: [
         "Complete Webview redesign with native VS Code theme design tokens (Dark, Light, High Contrast).",
         "Route Hero Context Card answering endpoint signature, method badge, and 1-click cURL copying.",

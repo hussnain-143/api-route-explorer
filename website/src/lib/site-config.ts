@@ -17,7 +17,7 @@ export const siteConfig = {
   longDescription:
     "API Routes Explorer is a developer-focused VS Code extension that automatically discovers, analyzes, tests, and documents backend API routes directly from your editor. Stop context switching between code, terminal windows, Postman, and Swagger docs.",
   url: "https://apirouteexplorer.dev",
-  version: "1.5.3",
+  version: "1.5.4",
   author: {
     name: "Hussnain Ahmed",
     url: "https://github.com/hussnain-143",

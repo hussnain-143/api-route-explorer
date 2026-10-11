@@ -2363,7 +2363,7 @@ export class HttpClientPanel {
           input.className = 'body-form-input';
           input.id = 'body-param-' + param.name;
 
-          const initVal = param.value !== undefined && param.value !== null ? String(param.value) : (param.placeholder || '');
+          const initVal = param.value !== undefined && param.value !== null ? String(param.value) : '';
           input.value = initVal;
           input.placeholder = param.placeholder || ('Value for ' + param.name + '...');
 
@@ -2436,7 +2436,7 @@ export class HttpClientPanel {
       const obj = {};
       for (const p of currentInitialState.bodyParams) {
         const input = document.getElementById('body-param-' + p.name);
-        const rawVal = input ? input.value : (p.value !== undefined ? p.value : p.placeholder);
+        const rawVal = input ? input.value : (p.value !== undefined && p.value !== null ? p.value : '');
         const parsed = parsePrimitiveValue(rawVal, p.type);
         setDeepValue(obj, p.name, parsed);
       }

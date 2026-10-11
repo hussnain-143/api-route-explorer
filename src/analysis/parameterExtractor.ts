@@ -518,11 +518,24 @@ function findSchemaInSource(source: string, schemaName: string): string | undefi
   if (!source || !schemaName) {return undefined;}
   const escaped = schemaName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const schemaRegex = new RegExp(
-    `(?:const|let|var|export\\s+const)\\s+${escaped}\\s*=\\s*(?:z|Joi|yup|schema)\\.[a-zA-Z0-9_$]+\\s*\\(\\s*\\{[\\s\\S]*?\\}\\s*\\)`,
+    `(?:const|let|var|export\\s+const)\\s+${escaped}\\s*=\\s*(?:z|Joi|yup|schema)\\.[a-zA-Z0-9_$]+\\s*\\(`,
     'm'
   );
   const m = source.match(schemaRegex);
-  if (m) {return m[0];}
+  if (m && m.index !== undefined) {
+    const startIdx = m.index + m[0].length;
+    let parenDepth = 1;
+    let i = startIdx;
+    while (i < source.length && parenDepth > 0) {
+      if (source[i] === '(') {
+        parenDepth++;
+      } else if (source[i] === ')') {
+        parenDepth--;
+      }
+      i++;
+    }
+    return source.slice(m.index, i);
+  }
 
   const genericSchemaRegex = new RegExp(
     `(?:const|let|var|export\\s+const)\\s+${escaped}\\s*=\\s*([\\s\\S]*?)(?:;|\\n\\s*\\n)`,
@@ -563,6 +576,26 @@ function findHandlerCodeSnippet(
   const methodLower = (route.method || 'get').toLowerCase();
   const cleanPath = route.path.split('?')[0];
   const pathsToTry = [route.path, cleanPath];
+
+  // Try unmounted path suffixes (e.g. /api/v1/admin/auth/change-password -> /change-password)
+  const segments = cleanPath.split('/').filter(Boolean);
+  for (let i = 1; i < segments.length; i++) {
+    const suffix = '/' + segments.slice(i).join('/');
+    if (!pathsToTry.includes(suffix)) {
+      pathsToTry.push(suffix);
+    }
+  }
+
+  // Check direct call on route.line if available in source
+  const sourceLines = source.split('\n');
+  if (route.line !== undefined && route.line >= 0 && route.line < sourceLines.length) {
+    const targetLine = sourceLines[route.line];
+    const lineCallRegex = new RegExp(`\\.\\s*(?:${methodLower}|all)\\s*(?:<[^>]*>)?\\s*\\(\\s*['"\`]([^'"\`]+)['"\`]\\s*,`);
+    const lm = targetLine.match(lineCallRegex);
+    if (lm && lm[1] && !pathsToTry.includes(lm[1])) {
+      pathsToTry.push(lm[1]);
+    }
+  }
 
   for (const p of pathsToTry) {
     if (!p) {continue;}
@@ -635,7 +668,22 @@ function resolveArgumentToHandler(
     const idMatches = arg.match(/\b([a-zA-Z0-9_$]*(?:[sS]chema|[vV]alidat[a-zA-Z0-9_$]*|[mM]odel))\b/g);
     if (idMatches) {
       for (const id of idMatches) {
-        const schemaDef = findSchemaInSource(fileSource, id);
+        let schemaDef = findSchemaInSource(fileSource, id);
+        if (!schemaDef) {
+          const imports = parseImports(fileSource);
+          const matchedImport = imports.find((imp) => imp.localName === id);
+          if (matchedImport) {
+            const resolved = resolveModuleFile(route.filePath, matchedImport.specifier, fileSources);
+            if (resolved) {
+              schemaDef = findSchemaInSource(
+                resolved.source,
+                matchedImport.importedName !== 'default' && matchedImport.importedName !== '*'
+                  ? matchedImport.importedName
+                  : id
+              );
+            }
+          }
+        }
         if (schemaDef) {
           extraSchemaCode += '\n' + schemaDef;
         }
@@ -737,8 +785,10 @@ function findFunctionOrObjectInSource(source: string, rootId: string, propId?: s
   const fm = source.match(funcRegex);
   if (fm) {return fm[0];}
 
-  // Look for const login = (req, res) => { ... }
-  const constRegex = new RegExp(`(?:export\\s+)?(?:const|let|var)\\s+${rootId}\\s*=\\s*(?:async\\s*)?(?:\\([^)]*\\)|[a-zA-Z0-9_$]+)\\s*=>\\s*\\{([\\s\\S]*?)\\n\\s*\\}`);
+  // Look for const login = (req, res) => { ... } or const login = asyncHandler(async (req, res) => { ... })
+  const constRegex = new RegExp(
+    `(?:export\\s+)?(?:const|let|var)\\s+${rootId}\\s*=\\s*(?:[a-zA-Z0-9_$]+\\s*\\(\\s*)?(?:async\\s*)?(?:\\([^)]*\\)|[a-zA-Z0-9_$]+)\\s*=>\\s*\\{([\\s\\S]*?)(?:\\n\\s*\\}|\\n\\s*\\}\\s*\\))`
+  );
   const km = source.match(constRegex);
   if (km) {return km[0];}
 
@@ -847,7 +897,16 @@ export function extractBodyParametersFromHandler(handlerCode: string): ApiParame
   const results: ApiParameter[] = [];
   const seen = new Set<string>();
 
-  // 1. Validation Schemas: Zod z.object({ ... })
+  // 1a. Nested body schema: body: z.object({ ... }) or body: Joi.object({ ... })
+  const nestedBodyZodRegex = /body\s*:\s*(?:z|Joi|yup)\.object\s*\(\s*\{([\s\S]*?)\}\s*\)/g;
+  let nbm: RegExpExecArray | null = nestedBodyZodRegex.exec(handlerCode);
+  while (nbm !== null) {
+    const block = nbm[1];
+    extractFromSchemaBlock(block, 'zod', seen, results);
+    nbm = nestedBodyZodRegex.exec(handlerCode);
+  }
+
+  // 1b. Validation Schemas: Zod z.object({ ... })
   const zodRegex = /z\.object\s*\(\s*\{([^}]+)\}\s*\)/g;
   let zm: RegExpExecArray | null = zodRegex.exec(handlerCode);
   while (zm !== null) {
@@ -1045,15 +1104,20 @@ function extractFromSchemaBlock(
   seen: Set<string>,
   results: ApiParameter[]
 ): void {
-  const lines = block.split('\n');
-  for (const line of lines) {
-    const parts = line.split(':');
-    if (parts.length < 2) {continue;}
+  const entries = splitTopLevelArguments(block);
+  for (const entry of entries) {
+    const lines = entry.split('\n');
+    for (const line of lines) {
+      const parts = line.split(':');
+      if (parts.length < 2) {continue;}
 
     const rawKey = parts[0].trim().replace(/['"]/g, '');
     if (!rawKey || !/^[a-zA-Z0-9_$]+$/.test(rawKey)) {continue;}
 
     const rule = parts.slice(1).join(':').toLowerCase();
+    if (rawKey === 'body' && (rule.includes('object') || rule.includes('z.object'))) {
+      continue;
+    }
     if (seen.has(rawKey)) {continue;}
     seen.add(rawKey);
 
@@ -1083,6 +1147,7 @@ function extractFromSchemaBlock(
       isSensitive: sugg.isSensitive,
     });
   }
+}
 }
 
 /**
