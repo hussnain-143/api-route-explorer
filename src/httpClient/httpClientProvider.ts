@@ -5,11 +5,14 @@ import { getRelativeFilePath } from '../providers/routeTreeProvider';
 import { getResolvedBaseUrl, resolveFullUrl } from '../utils/routeFormatters';
 import { HttpClientPanel } from './httpClientPanel';
 import {
+  HttpClientBodyParam,
   HttpClientInitialState,
   HttpClientKeyValue,
   HttpClientMethod,
   HTTP_CLIENT_METHODS,
 } from './httpClientTypes';
+import { extractRouteParameters } from '../analysis/parameterExtractor';
+import { buildJsonObjectFromParams } from '../analysis/parameterSuggester';
 
 /**
  * Normalizes an ApiRoute HttpMethod to a supported HttpClientMethod.
@@ -25,16 +28,30 @@ export function normalizeHttpClientMethod(method: HttpMethod): HttpClientMethod 
   return 'GET';
 }
 
+let sharedVariables: Record<string, string> = {
+  baseUrl: 'http://localhost:3000',
+  token: '',
+};
+
+export function getSharedVariables(): Record<string, string> {
+  return { ...sharedVariables };
+}
+
+export function setSharedVariables(vars: Record<string, string>): void {
+  sharedVariables = { ...sharedVariables, ...vars };
+}
+
 /**
  * Builds the initial state for the HTTP Client based on an ApiRoute and workspace configuration.
  */
 export function buildInitialStateForRoute(
   route: ApiRoute,
-  customBaseUrl?: string
+  customBaseUrl?: string,
+  fileSources?: Map<string, string> | Record<string, string>
 ): HttpClientInitialState {
   const baseUrl = getResolvedBaseUrl(customBaseUrl);
 
-  // 1. Separate query parameters if already present in route path (safely distinguishing from optional :param?)
+  // 1. Separate path and OpenAPI conversion
   const rawPath = route.path || '';
   let rawPathOnly = rawPath;
   let rawQueryString = '';
@@ -49,14 +66,31 @@ export function buildInitialStateForRoute(
   const openApiPath = conversion.openApiPath;
   const method = normalizeHttpClientMethod(route.method);
 
+  // 2. Extract normalized parameters using static analysis engine
+  const allParams = extractRouteParameters(route, fileSources);
+
+  // 3. Populate Query Parameters
   const queryParams: HttpClientKeyValue[] = [];
-  if (rawQueryString) {
+  let qCounter = 0;
+
+  // Include query params detected from route path or handler
+  const detectedQueryParams = allParams.filter((p) => p.location === 'query');
+  if (detectedQueryParams.length > 0) {
+    for (const q of detectedQueryParams) {
+      queryParams.push({
+        id: `q_init_${qCounter++}`,
+        key: q.name,
+        value: q.value !== undefined ? String(q.value) : (q.defaultValue !== undefined ? String(q.defaultValue) : ''),
+        enabled: true,
+      });
+    }
+  } else if (rawQueryString) {
     const pairs = rawQueryString.split('&');
-    pairs.forEach((pair, idx) => {
+    pairs.forEach((pair) => {
       const [k, v] = pair.split('=');
       if (k && k.trim()) {
         queryParams.push({
-          id: `q_init_${idx}`,
+          id: `q_init_${qCounter++}`,
           key: decodeURIComponent(k.trim()),
           value: v ? decodeURIComponent(v.trim()) : '',
           enabled: true,
@@ -65,52 +99,12 @@ export function buildInitialStateForRoute(
     });
   }
 
-  // 2. Extract path parameters and assign safe initial placeholders and values
-  let idCounter = 0;
-  const sampleIds = ['123', '456', '789', '101', '202'];
-
+  // 4. Populate Path Parameters
+  const detectedPathParams = allParams.filter((p) => p.location === 'path');
   const pathParams = conversion.pathParameters.map((name) => {
-    const lower = name.toLowerCase();
-    let placeholder = '123';
-    let initialValue = '123';
-
-    if (lower === 'id' || lower.endsWith('id') || lower.endsWith('_id')) {
-      initialValue = sampleIds[idCounter % sampleIds.length];
-      placeholder = initialValue;
-      idCounter++;
-    } else if (lower.includes('slug')) {
-      initialValue = 'sample-slug';
-      placeholder = 'sample-slug';
-    } else if (lower.includes('name')) {
-      initialValue = 'sample-name';
-      placeholder = 'sample-name';
-    } else if (lower.includes('email')) {
-      initialValue = 'user@example.com';
-      placeholder = 'user@example.com';
-    } else if (lower.includes('date')) {
-      initialValue = '2026-01-01';
-      placeholder = '2026-01-01';
-    } else if (lower.includes('status')) {
-      initialValue = 'active';
-      placeholder = 'active';
-    } else if (lower.includes('type')) {
-      initialValue = 'default';
-      placeholder = 'default';
-    } else if (lower.includes('provider')) {
-      initialValue = 'google';
-      placeholder = 'google';
-    } else if (lower.includes('category')) {
-      initialValue = 'sample-category';
-      placeholder = 'sample-category';
-    } else if (lower.includes('token') || lower.includes('code')) {
-      initialValue = 'ABC123';
-      placeholder = 'ABC123';
-    } else {
-      initialValue = '123';
-      placeholder = '123';
-    }
-
-    const isOptional = rawPathOnly.includes(`:${name}?`);
+    const detected = detectedPathParams.find((p) => p.name.toLowerCase() === name.toLowerCase());
+    const placeholder = detected?.placeholder || '123';
+    const isOptional = detected?.isOptional || rawPathOnly.includes(`:${name}?`);
 
     return {
       name,
@@ -122,9 +116,8 @@ export function buildInitialStateForRoute(
 
   const urlTemplate = resolveFullUrl(baseUrl, openApiPath);
 
-  // 3. Compose initial fullUrl (template + query params)
+  // 5. Compose initial fullUrl (template + query params)
   let fullUrl = urlTemplate;
-
   const queryStr = queryParams
     .filter((q) => q.enabled && q.key)
     .map((q) => `${encodeURIComponent(q.key)}=${encodeURIComponent(q.value)}`)
@@ -133,6 +126,7 @@ export function buildInitialStateForRoute(
     fullUrl += (fullUrl.includes('?') ? '&' : '?') + queryStr;
   }
 
+  // 6. Headers
   const headers: HttpClientKeyValue[] = [];
   if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
     headers.push({
@@ -149,9 +143,29 @@ export function buildInitialStateForRoute(
     enabled: true,
   });
 
-  const body = method === 'POST' || method === 'PUT' || method === 'PATCH'
-    ? '{\n  \n}'
-    : '';
+  // 7. Request Body & Body Parameters
+  const detectedBodyParams = allParams.filter((p) => p.location === 'body');
+  let body = '';
+  const bodyParams: HttpClientBodyParam[] = [];
+
+  if (method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'DELETE') {
+    if (detectedBodyParams.length > 0) {
+      const jsonObject = buildJsonObjectFromParams(detectedBodyParams);
+      body = JSON.stringify(jsonObject, null, 2);
+      for (const p of detectedBodyParams) {
+        bodyParams.push({
+          name: p.name,
+          value: p.value !== undefined ? p.value : p.defaultValue,
+          type: typeof p.type === 'string' ? p.type : undefined,
+          required: p.required,
+          placeholder: p.placeholder,
+          isSensitive: p.isSensitive,
+        });
+      }
+    } else {
+      body = method === 'DELETE' ? '' : '{\n  \n}';
+    }
+  }
 
   const relFilePath = getRelativeFilePath(route.filePath);
 
@@ -166,6 +180,8 @@ export function buildInitialStateForRoute(
     queryParams,
     headers,
     body,
+    bodyParams,
+    detectedParameters: allParams,
     framework: route.framework,
     filePath: relFilePath,
     line: route.line,
@@ -178,6 +194,7 @@ export function buildInitialStateForRoute(
       framework: route.framework,
       handlerName: route.handlerName,
     },
+    variables: { ...sharedVariables, baseUrl },
   };
 }
 
@@ -187,8 +204,9 @@ export function buildInitialStateForRoute(
 export function openHttpClientForRoute(
   extensionUri: vscode.Uri,
   route: ApiRoute,
-  customBaseUrl?: string
+  customBaseUrl?: string,
+  fileSources?: Map<string, string> | Record<string, string>
 ): HttpClientPanel {
-  const initialState = buildInitialStateForRoute(route, customBaseUrl);
+  const initialState = buildInitialStateForRoute(route, customBaseUrl, fileSources);
   return HttpClientPanel.createOrShow(extensionUri, initialState);
 }

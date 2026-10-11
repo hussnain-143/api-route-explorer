@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { ApiRoute } from '../models/route';
 import { getMethodIcon, getRelativeFilePath } from '../providers/routeTreeProvider';
-import { MESSAGES } from '../utils/constants';
+import { COMMANDS, MESSAGES } from '../utils/constants';
 import { openRoute } from '../utils/navigation';
 
 /**
@@ -14,7 +14,7 @@ export interface RouteQuickPickItem extends vscode.QuickPickItem {
 /**
  * Converts an ApiRoute into a searchable QuickPickItem.
  * Uses label for method + path, description for relative file path & handler,
- * and detail for line info and framework.
+ * and detail for line info and framework. Includes quick action button to Test API.
  */
 export function createRouteQuickPickItem(route: ApiRoute): RouteQuickPickItem {
   const relativePath = getRelativeFilePath(route.filePath);
@@ -36,6 +36,12 @@ export function createRouteQuickPickItem(route: ApiRoute): RouteQuickPickItem {
     description,
     detail,
     iconPath: getMethodIcon(route.method),
+    buttons: [
+      {
+        iconPath: new vscode.ThemeIcon('send'),
+        tooltip: 'Test API in HTTP Client',
+      },
+    ],
     route,
   };
 }
@@ -61,6 +67,7 @@ export function findSimilarRoutes(route: ApiRoute, allRoutes: ApiRoute[]): ApiRo
 /**
  * Opens a native VS Code QuickPick allowing developers to search routes
  * by HTTP method, route path, filename, folder, framework, or handler.
+ * Provides instant match counting and inline 1-click Test API action.
  *
  * @param routes The currently discovered ApiRoute collection.
  * @param hasScanned Boolean indicating whether an initial workspace scan was performed.
@@ -82,15 +89,40 @@ export async function showRouteQuickPick(
   }
 
   const quickPick = vscode.window.createQuickPick<RouteQuickPickItem>();
-  quickPick.title = 'API Routes Explorer: Search Routes';
-  quickPick.placeholder = 'Search by method, path, framework, file, or handler (e.g. GET users, nestjs auth)...';
+  const totalCount = routes.length;
+  quickPick.title = `Search Routes (${totalCount} endpoint${totalCount === 1 ? '' : 's'})`;
+  quickPick.placeholder = 'Search by method, path, parameter, or controller (e.g. GET users, /admin, auth)...';
   quickPick.matchOnDescription = true;
   quickPick.matchOnDetail = true;
-  quickPick.items = routes.map(createRouteQuickPickItem);
+
+  const allItems = routes.map(createRouteQuickPickItem);
+  quickPick.items = allItems;
 
   if (initialQuery) {
     quickPick.value = initialQuery;
   }
+
+  quickPick.onDidChangeValue((query) => {
+    const q = query.trim().toLowerCase();
+    if (!q) {
+      quickPick.title = `Search Routes (${totalCount} endpoint${totalCount === 1 ? '' : 's'})`;
+      quickPick.items = allItems;
+      return;
+    }
+    const filtered = allItems.filter((item) => {
+      const matchLabel = item.label.toLowerCase().includes(q);
+      const matchDesc = item.description ? item.description.toLowerCase().includes(q) : false;
+      const matchDetail = item.detail ? item.detail.toLowerCase().includes(q) : false;
+      return matchLabel || matchDesc || matchDetail;
+    });
+    quickPick.title = `Search Routes (${filtered.length} of ${totalCount} matching)`;
+    quickPick.items = filtered;
+  });
+
+  quickPick.onDidTriggerItemButton(async (e) => {
+    quickPick.dispose();
+    await vscode.commands.executeCommand(COMMANDS.OPEN_HTTP_CLIENT, e.item.route);
+  });
 
   quickPick.onDidAccept(async () => {
     const selected = quickPick.selectedItems[0];

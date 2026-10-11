@@ -677,7 +677,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand(COMMANDS.OPEN_HTTP_CLIENT, async (arg: unknown) => {
       const route = extractRouteFromArg(arg);
       if (route) {
-        openHttpClientForRoute(context.extensionUri, route);
+        openHttpClientForRoute(context.extensionUri, route, undefined, currentFileSources);
         return;
       }
 
@@ -696,7 +696,7 @@ export function activate(context: vscode.ExtensionContext): void {
       });
 
       if (selected) {
-        openHttpClientForRoute(context.extensionUri, selected.route);
+        openHttpClientForRoute(context.extensionUri, selected.route, undefined, currentFileSources);
       }
     }),
 
@@ -767,7 +767,7 @@ export function activate(context: vscode.ExtensionContext): void {
       if (chosen.action === 'jump') {
         await openRoute(route);
       } else if (chosen.action === 'test') {
-        openHttpClientForRoute(context.extensionUri, route);
+        openHttpClientForRoute(context.extensionUri, route, undefined, currentFileSources);
       } else if (chosen.action === 'openapi') {
         await vscode.commands.executeCommand(COMMANDS.VIEW_ROUTE_OPENAPI, route);
       }

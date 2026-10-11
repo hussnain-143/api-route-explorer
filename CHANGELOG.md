@@ -2,6 +2,24 @@
 
 All notable changes to the "api-route-explorer" extension will be documented in this file.
 
+## [1.5.3] - 2026-10-11
+
+### Enhanced & Polished (UI & UX Design Sprint)
+- **Design Tokens & Theme Consistency**:
+  - Implemented cohesive `--are-*` design token system integrated with VS Code native color variables (`--vscode-editor-background`, `--vscode-editor-foreground`, `--vscode-button-*`, `--vscode-focusBorder`).
+  - Added dedicated styling support for Dark, Light, and High Contrast themes with WCAG AA compliant contrast ratios.
+  - Added responsive layout queries (`@media (max-width: 640px)`) ensuring forms and inspection tables wrap cleanly on narrow split editor views.
+- **Route Hero Context Card**:
+  - Added high-visibility context card answering endpoint identity at a glance: Method verb badge, endpoint path signature, framework chip, 1-click `[💻 Copy cURL]`, and `[Source: file.ts:line ↗]`.
+- **Search & Navigation UX**:
+  - Real-time route match counter in QuickPick title (`Search Routes (X of Y matching)`).
+  - Added inline 1-click `$(send)` button to each QuickPick item for instant jumping from search directly into the HTTP Client test panel.
+- **Request & Response Tools**:
+  - Postman-style environment variables (`{{baseUrl}}`, `{{token}}`, custom variables) with live interpolation across URL, Headers, Query parameters, and JSON Body.
+  - Auto-detection of auth tokens in JSON responses with 1-click `[🔑 Save to {{token}}]` action.
+  - Added `[📋 Copy JSON]` button with visual `✓ Copied!` confirmation.
+  - Added `[Pretty] / [Raw]` format toggles in Response Body inspector with 2-space JSON formatting and large response safety truncation (>250,000 characters).
+
 ## [1.5.2] - 2026-10-08
 
 ### Enhanced & Polished (UI & UX Overhaul)

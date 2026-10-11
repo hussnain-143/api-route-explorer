@@ -13,7 +13,10 @@ export type HttpMethod =
   | 'ANY';
 
 import type { ApiFramework } from './framework';
+import type { ApiParameter } from './parameter';
+
 export type { ApiFramework };
+export type { ApiParameter };
 
 export interface ApiRoute {
   method: HttpMethod;
@@ -25,4 +28,5 @@ export interface ApiRoute {
   handlerName?: string;
   module?: string;
   routerVar?: string;
+  parameters?: ApiParameter[];
 }

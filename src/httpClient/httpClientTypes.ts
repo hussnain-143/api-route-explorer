@@ -43,6 +43,7 @@ export interface HttpRequestConfig {
   headers: HttpClientKeyValue[];
   body: string;
   timeoutMs?: number;
+  variables?: Record<string, string>;
 }
 
 export interface ResolvedHttpRequest {
@@ -81,6 +82,15 @@ export interface HttpErrorData {
   possibleCauses?: string[];
 }
 
+export interface HttpClientBodyParam {
+  name: string;
+  value: unknown;
+  type?: string;
+  required?: boolean;
+  placeholder?: string;
+  isSensitive?: boolean;
+}
+
 export interface HttpClientInitialState {
   routePath: string;
   openApiPath: string;
@@ -92,8 +102,11 @@ export interface HttpClientInitialState {
   queryParams: HttpClientKeyValue[];
   headers: HttpClientKeyValue[];
   body: string;
+  bodyParams?: HttpClientBodyParam[];
+  detectedParameters?: import('../models/parameter').ApiParameter[];
   framework?: string;
   filePath?: string;
   line?: number;
   routeContext?: HttpClientRouteContext;
+  variables?: Record<string, string>;
 }

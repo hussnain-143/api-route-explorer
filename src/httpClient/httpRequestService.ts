@@ -42,11 +42,26 @@ const DEFAULT_TIMEOUT_MS = 10000;
 const MAX_REDIRECTS = 5;
 
 /**
+ * Interpolates Postman-style {{varName}} placeholders from a dictionary of variables.
+ */
+export function interpolateVariables(input: string, variables?: Record<string, string>): string {
+  if (!input || !variables || typeof input !== 'string') {
+    return input || '';
+  }
+  return input.replace(/\{\{([a-zA-Z0-9_$-]+)\}\}/g, (match, varName) => {
+    if (Object.prototype.hasOwnProperty.call(variables, varName)) {
+      return variables[varName];
+    }
+    return match;
+  });
+}
+
+/**
  * Validates an HttpRequestConfig and produces a fully resolved request
  * with substituted path parameters, query string, normalized headers, and validated body.
  */
 export function validateAndResolveRequest(config: HttpRequestConfig): ValidationResult {
-  // 1. Basic URL validation
+  // 1. Basic URL validation with variable resolution
   if (!config.url || typeof config.url !== 'string' || !config.url.trim()) {
     return {
       ok: false,
@@ -56,23 +71,22 @@ export function validateAndResolveRequest(config: HttpRequestConfig): Validation
     };
   }
 
-  let urlString = config.url.trim();
+  let urlString = interpolateVariables(config.url.trim(), config.variables);
   if (!urlString.startsWith('http://') && !urlString.startsWith('https://')) {
     return {
       ok: false,
       error: 'Invalid request URL. Scheme must be http:// or https://.',
       code: 'ERR_INVALID_URL',
-      possibleCauses: ['Add http:// or https:// to the start of the URL'],
+      possibleCauses: ['Add http:// or https:// to the start of the URL', 'If using {{baseUrl}}, ensure the variable is defined'],
     };
   }
 
-  // 2. Path parameter substitution and validation
   // 2. Path parameter substitution and validation ({param} and :param)
   const placeholderRegex = /\{([^}]+)\}/g;
   const colonParamRegex = /(?<![a-zA-Z0-9_]):([a-zA-Z_][a-zA-Z0-9_]*)/g;
   const pathParamMap = new Map<string, string>();
   for (const p of config.pathParams) {
-    pathParamMap.set(p.name, p.value);
+    pathParamMap.set(p.name, interpolateVariables(p.value, config.variables));
   }
 
   let missingParam: string | undefined;
@@ -174,7 +188,9 @@ export function validateAndResolveRequest(config: HttpRequestConfig): Validation
   if (config.queryParams && Array.isArray(config.queryParams)) {
     for (const qp of config.queryParams) {
       if (qp.enabled && qp.key && qp.key.trim() !== '') {
-        parsedUrl.searchParams.set(qp.key.trim(), qp.value);
+        const k = interpolateVariables(qp.key.trim(), config.variables);
+        const v = interpolateVariables(qp.value, config.variables);
+        parsedUrl.searchParams.set(k, v);
       }
     }
   }
@@ -184,7 +200,9 @@ export function validateAndResolveRequest(config: HttpRequestConfig): Validation
   if (config.headers && Array.isArray(config.headers)) {
     for (const h of config.headers) {
       if (h.enabled && h.key && h.key.trim() !== '') {
-        headers[h.key.trim()] = h.value;
+        const k = interpolateVariables(h.key.trim(), config.variables);
+        const v = interpolateVariables(h.value, config.variables);
+        headers[k] = v;
       }
     }
   }
@@ -195,7 +213,7 @@ export function validateAndResolveRequest(config: HttpRequestConfig): Validation
   const hasBody = method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'DELETE';
 
   if (hasBody && config.body && config.body.trim() !== '') {
-    const rawBody = config.body.trim();
+    const rawBody = interpolateVariables(config.body.trim(), config.variables);
 
     // Check if Content-Type is JSON or not set
     const headerKeys = Object.keys(headers);
