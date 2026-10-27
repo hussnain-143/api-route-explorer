@@ -233,11 +233,49 @@ export class UsersController {
         </div>
       </section>
 
+      {/* 6. Hono & Koa Router */}
+      <section className="p-8 sm:p-12 rounded-3xl border border-[var(--surface-border)] bg-[var(--surface)] space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400 font-mono">
+              Framework 06
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-bold text-[var(--foreground)]">Hono &amp; Koa Router</h2>
+          </div>
+          <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-mono w-fit">
+            Cross-File Mounts
+          </span>
+        </div>
+        <p className="text-xs sm:text-sm text-[var(--muted)] leading-relaxed max-w-3xl">
+          Supports modern lightweight Edge and Node routers including <code>Hono</code> and <code>@koa/router</code>. Automatically resolves cross-file sub-router mounts declared via <code>app.route(&apos;/prefix&apos;, subRouter)</code> and <code>router.use(&apos;/prefix&apos;, subRouter.routes())</code>.
+        </p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-3 text-xs">
+            <h3 className="font-semibold text-[var(--foreground)]">Supported Patterns:</h3>
+            <ul className="space-y-1.5 text-[var(--muted)]">
+              <li>• Hono sub-app mounting: <code>app.route(&apos;/api/v1/books&apos;, bookRoutes)</code></li>
+              <li>• Koa router mounting: <code>router.use(&apos;/auth&apos;, authRouter.routes())</code></li>
+              <li>• Standard HTTP verbs: <code>.get()</code>, <code>.post()</code>, <code>.put()</code>, <code>.delete()</code>, <code>.patch()</code></li>
+            </ul>
+          </div>
+          <CodeBlock
+            language="typescript"
+            title="Hono Sub-Router Mount Example"
+            code={`import { Hono } from 'hono';
+import bookRoutes from './books';
+
+const app = new Hono();
+// Discovers all routes in bookRoutes under /api/v1/books/*
+app.route('/api/v1/books', bookRoutes);`}
+          />
+        </div>
+      </section>
+
       {/* Community Demand Notice */}
       <div className="p-8 rounded-2xl border border-[var(--surface-border)] bg-[var(--surface)] text-center space-y-3">
         <h3 className="text-lg font-bold text-[var(--foreground)]">Looking for another framework?</h3>
         <p className="text-xs text-[var(--muted)] max-w-xl mx-auto">
-          API Routes Explorer is designed with an extensible scanner engine. Support for Koa, Hono, Elysia, and Spring Boot can be added based on community feedback.
+          API Routes Explorer is designed with an extensible scanner engine. Support for Elysia, Remix, FastAPI, and Go (Gin/Fiber) can be added based on community feedback.
         </p>
         <div className="pt-2">
           <a
