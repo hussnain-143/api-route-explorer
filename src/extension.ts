@@ -7,6 +7,7 @@ import {
   RouteTreeProvider,
 } from './providers/routeTreeProvider';
 import { RouteAnalysisProvider } from './providers/routeAnalysisProvider';
+import { RouteCodeLensProvider } from './providers/routeCodeLensProvider';
 import { createRouteFileWatcher, RouteFileChangeEvent } from './scanner/routeWatcher';
 import {
   scanWorkspaceDetailed,
@@ -15,7 +16,10 @@ import {
 } from './scanner/routeScanner';
 import { RouteIndex } from './scanner/routeIndex';
 import { createRouteQuickPickItem, showRouteQuickPick } from './scanner/routeSearch';
-import { openHttpClientForRoute } from './httpClient/httpClientProvider';
+import {
+  initHttpClientState,
+  openHttpClientForRoute,
+} from './httpClient/httpClientProvider';
 import {
   analyzeWorkspaceRoutes,
   RouteAnalysisResult,
@@ -91,7 +95,11 @@ export function extractFilePathFromArg(arg: unknown): string | undefined {
 export function activate(context: vscode.ExtensionContext): void {
   const routeTreeProvider = new RouteTreeProvider();
   const routeAnalysisProvider = new RouteAnalysisProvider();
+  const routeCodeLensProvider = new RouteCodeLensProvider();
   const diagnosticsManager = new RouteDiagnosticsManager();
+
+  // Initialize persistent HTTP Client variable state
+  initHttpClientState(context.workspaceState);
 
   // Initialize grouping mode from configuration
   const initialGrouping = vscode.workspace
@@ -99,8 +107,13 @@ export function activate(context: vscode.ExtensionContext): void {
     .get<RouteGroupingMode>('defaultGrouping', 'file');
   routeTreeProvider.setGroupingMode(initialGrouping);
 
-  // Create dedicated TreeView instances for Activity Bar
+  // Create dedicated TreeView instances for Activity Bar and Explorer sidebar
   const routesTreeView = vscode.window.createTreeView(VIEWS.ROUTES, {
+    treeDataProvider: routeTreeProvider,
+    showCollapseAll: true,
+  });
+
+  const explorerRoutesTreeView = vscode.window.createTreeView(VIEWS.EXPLORER_ROUTES, {
     treeDataProvider: routeTreeProvider,
     showCollapseAll: true,
   });
@@ -130,6 +143,8 @@ export function activate(context: vscode.ExtensionContext): void {
     if (!currentAnalysis || currentAnalysis.routes.length === 0) {
       routesTreeView.description = undefined;
       routesTreeView.badge = undefined;
+      explorerRoutesTreeView.description = undefined;
+      explorerRoutesTreeView.badge = undefined;
       analysisTreeView.badge = undefined;
       return;
     }
@@ -151,11 +166,15 @@ export function activate(context: vscode.ExtensionContext): void {
       activeFilterLabel = ` [Filter: ${filterOpts.state}]`;
     }
 
-    routesTreeView.description = `${currentAnalysis.routes.length} routes (${currentAnalysis.statistics.totalFiles} files)${modeLabel}${activeFilterLabel}`;
-    routesTreeView.badge = {
+    const desc = `${currentAnalysis.routes.length} routes (${currentAnalysis.statistics.totalFiles} files)${modeLabel}${activeFilterLabel}`;
+    const routeBadge = {
       value: currentAnalysis.routes.length,
       tooltip: `${currentAnalysis.routes.length} API routes discovered across ${currentAnalysis.statistics.totalFiles} files`,
     };
+    routesTreeView.description = desc;
+    routesTreeView.badge = routeBadge;
+    explorerRoutesTreeView.description = desc;
+    explorerRoutesTreeView.badge = routeBadge;
 
     const issueCount =
       (currentAnalysis.statistics.warningCount || 0) +
@@ -192,6 +211,7 @@ export function activate(context: vscode.ExtensionContext): void {
     currentAnalysis = analysis;
     routeTreeProvider.setRoutes(analysis.routes, analysis);
     routeAnalysisProvider.setAnalysis(analysis);
+    routeCodeLensProvider.setRoutes(analysis.routes);
     diagnosticsManager.updateDiagnostics(
       analysis.duplicates,
       analysis.missingHandlers,
@@ -199,10 +219,12 @@ export function activate(context: vscode.ExtensionContext): void {
     );
 
     updateTreeViewDescription();
-    routesTreeView.badge = {
+    const badgeVal = {
       value: analysis.routes.length,
       tooltip: `${analysis.routes.length} discovered API routes`,
     };
+    routesTreeView.badge = badgeVal;
+    explorerRoutesTreeView.badge = badgeVal;
 
     const errorCount = analysis.statistics.errorCount;
     const warningCount = analysis.statistics.warningCount;
@@ -225,11 +247,14 @@ export function activate(context: vscode.ExtensionContext): void {
     if (!workspaceFolders || workspaceFolders.length === 0) {
       routeTreeProvider.clear();
       routeAnalysisProvider.clear();
+      routeCodeLensProvider.clear();
       diagnosticsManager.clear();
       currentRouteIndex.clear();
       currentFileSources.clear();
       routesTreeView.description = undefined;
       routesTreeView.badge = undefined;
+      explorerRoutesTreeView.description = undefined;
+      explorerRoutesTreeView.badge = undefined;
       analysisTreeView.description = undefined;
       statusBarItem.hide();
       if (showFeedback) {
@@ -425,10 +450,14 @@ export function activate(context: vscode.ExtensionContext): void {
     applyAnalysis(analysis);
   };
 
-  // Active editor route awareness: safely highlight or expand matching route in TreeView
+  // Active editor route awareness: safely highlight or expand matching route in visible TreeViews
   const updateActiveEditorRoute = () => {
     const editor = vscode.window.activeTextEditor;
-    if (!editor || !routeTreeProvider.getHasScanned() || !routesTreeView.visible) {
+    if (
+      !editor ||
+      !routeTreeProvider.getHasScanned() ||
+      (!routesTreeView.visible && !explorerRoutesTreeView.visible)
+    ) {
       return;
     }
 
@@ -437,26 +466,45 @@ export function activate(context: vscode.ExtensionContext): void {
 
     const match = routeTreeProvider.findRouteItemAt(currentFilePath, currentLine);
     if (match) {
-      routesTreeView
-        .reveal(match.routeItem, {
-          select: true,
-          focus: false,
-          expand: true,
-        })
-        .then(undefined, () => {
-          // Safe: ignore any reveal errors if tree is not visible or ready
-        });
+      if (routesTreeView.visible) {
+        routesTreeView
+          .reveal(match.routeItem, {
+            select: true,
+            focus: false,
+            expand: true,
+          })
+          .then(undefined, () => {});
+      }
+      if (explorerRoutesTreeView.visible) {
+        explorerRoutesTreeView
+          .reveal(match.routeItem, {
+            select: true,
+            focus: false,
+            expand: true,
+          })
+          .then(undefined, () => {});
+      }
     }
   };
 
   context.subscriptions.push(
     routesTreeView,
+    explorerRoutesTreeView,
     analysisTreeView,
     statusBarItem,
     diagnosticsManager,
+    routeCodeLensProvider,
 
-    // File Explorer sidebar section
-    vscode.window.registerTreeDataProvider(VIEWS.EXPLORER_ROUTES, routeTreeProvider),
+    // Inline editor CodeLens provider for API routes
+    vscode.languages.registerCodeLensProvider(
+      [
+        { language: 'javascript', scheme: 'file' },
+        { language: 'typescript', scheme: 'file' },
+        { language: 'javascriptreact', scheme: 'file' },
+        { language: 'typescriptreact', scheme: 'file' },
+      ],
+      routeCodeLensProvider
+    ),
 
     // Active editor listeners for route awareness
     vscode.window.onDidChangeActiveTextEditor(updateActiveEditorRoute),
@@ -473,6 +521,9 @@ export function activate(context: vscode.ExtensionContext): void {
       }
       if (e.affectsConfiguration('apiRouteExplorer.scan.exclude')) {
         void executeScan(false);
+      }
+      if (e.affectsConfiguration('apiRouteExplorer.codeLens.enabled')) {
+        routeCodeLensProvider.refresh();
       }
     }),
 
@@ -796,6 +847,7 @@ export function activate(context: vscode.ExtensionContext): void {
       const singleDocResult = generateOpenApiDocument([route], routeTreeProvider.getAnalysis(), {
         title: `API Routes Explorer - ${route.method} ${route.path}`,
         description: `Generated OpenAPI 3.0.3 specification for route ${route.method} ${route.path}`,
+        fileSources: currentFileSources,
       });
 
       const yamlContent = serializeOpenApiToYaml(singleDocResult.document);

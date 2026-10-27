@@ -2,10 +2,10 @@
 
 > **Discover → Analyze → Test → Response → Document API routes directly inside VS Code.**
 
-[![Version](https://img.shields.io/badge/version-1.5.4-emerald.svg)](https://github.com/hussnain-143/api-route-explorer/releases)
+[![Version](https://img.shields.io/badge/version-1.6.0-emerald.svg)](https://github.com/hussnain-143/api-route-explorer/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-teal.svg)](LICENSE)
-[![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.90.0-cyan.svg)](https://marketplace.visualstudio.com/items?itemName=hussnain-143.api-route-explorer)
-[![Tests: 290 passing](https://img.shields.io/badge/tests-290%20passing-success.svg)](https://github.com/hussnain-143/api-route-explorer)
+[![VS Code](https://img.shields.io/badge/VS%20Code-%5E1.90.0-cyan.svg)](https://marketplace.visualstudio.com/items?itemName=hussnain-143.api-routes-explorer)
+[![Tests: 299 passing](https://img.shields.io/badge/tests-299%20passing-success.svg)](https://github.com/hussnain-143/api-route-explorer)
 [![Dependencies: 0](https://img.shields.io/badge/dependencies-0-success.svg)](package.json)
 [![Author: Hussnain Ahmed](https://img.shields.io/badge/Author-Hussnain%20Ahmed-blue.svg)](https://github.com/hussnain-143)
 
@@ -49,10 +49,11 @@ Open Project ──▶ Discover Routes ──▶ Analyze Health ──▶ Test i
 
 ### 🧭 1. Route Discovery & Navigation
 - **Offline AST Parsing**: Fast, non-executing static analysis of routes without running user code.
+- **Inline Editor CodeLens**: Click `Test`, `Analyze`, or `OpenAPI` directly above route declarations in your editor.
 - **1-Click Jump to Code**: Click any route in the tree to jump directly to its controller definition line.
 - **Smart Grouping**: Switch between **Group by File**, **Group by Framework**, **Group by HTTP Method**, or **Group by Health**.
 - **Instant Search & Filter**: Real-time fuzzy filtering by route path, HTTP method, status, or handler name.
-- **Sub-Second Scalability**: Discovers 4,700+ routes in under 100ms with debounced incremental file watchers.
+- **Sub-Second Scalability**: Concurrent batched scanning with debounced incremental file watchers.
 
 ### 🩺 2. Route Intelligence & Analysis
 - **Health Ratings**: Automated categorization into `Healthy`, `Warning`, or `Error`.
@@ -100,6 +101,7 @@ Open Project ──▶ Discover Routes ──▶ Analyze Health ──▶ Test i
 | **Next.js Pages Router** | `pages/api/**/*.ts` | File-based routing | Handler checks | Supported | Supported |
 | **Fastify** | `fastify.get()`, `fastify.route()` | `fastify.register(prefix)` | `preHandler`, `preValidation` | Supported | Supported |
 | **NestJS** | `@Controller()`, `@Get()`, etc. | Controller prefix | `@UseGuards()`, Interceptors | Supported | Supported |
+| **Hono / Koa** | `app.get()`, `router.post()` | `app.route()`, `router.use()` | Middleware chains | Supported | Supported |
 
 ---
 
@@ -114,9 +116,9 @@ Open Project ──▶ Discover Routes ──▶ Analyze Health ──▶ Test i
    ```
 
 ### From VSIX Package
-Download the latest `api-routes-explorer-1.5.4.vsix` from [GitHub Releases](https://github.com/hussnain-143/api-route-explorer/releases) and run:
+Download the latest `api-routes-explorer-1.6.0.vsix` from [GitHub Releases](https://github.com/hussnain-143/api-route-explorer/releases) and run:
 ```bash
-code --install-extension api-routes-explorer-1.5.4.vsix --force
+code --install-extension api-routes-explorer-1.6.0.vsix --force
 ```
 
 ---
@@ -148,6 +150,7 @@ Customize API Routes Explorer in your VS Code `settings.json`:
   "apiRouteExplorer.autoRefresh": true,
   "apiRouteExplorer.scan.exclude": ["**/custom-temp/**"],
   "apiRouteExplorer.httpClient.timeout": 10000,
+  "apiRouteExplorer.codeLens.enabled": true,
   "apiRouteExplorer.openapi.title": "My API Specification",
   "apiRouteExplorer.openapi.version": "1.0.0"
 }

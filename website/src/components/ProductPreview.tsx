@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { siteConfig } from "@/lib/site-config";
 
 export function ProductPreview() {
   const [selectedRoute, setSelectedRoute] = useState<string>("GET /api/v1/users/{id}");
@@ -51,7 +52,7 @@ export function ProductPreview() {
         </div>
         <div className="flex items-center gap-2 text-[11px] text-[var(--muted)]">
           <span className="px-2 py-0.5 rounded bg-[var(--surface-elevated)] border border-[var(--surface-border)]">
-            v1.5.4
+            v{siteConfig.version}
           </span>
         </div>
       </div>

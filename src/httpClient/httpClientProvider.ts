@@ -33,12 +33,30 @@ let sharedVariables: Record<string, string> = {
   token: '',
 };
 
+let workspaceStateStore: vscode.Memento | undefined;
+const VARIABLES_STORAGE_KEY = 'apiRouteExplorer.httpClient.variables';
+
+/**
+ * Initializes persistent storage for HTTP Client variables using workspaceState.
+ */
+export function initHttpClientState(workspaceState: vscode.Memento): void {
+  workspaceStateStore = workspaceState;
+  const saved = workspaceState.get<Record<string, string>>(VARIABLES_STORAGE_KEY);
+  if (saved && typeof saved === 'object') {
+    sharedVariables = { ...sharedVariables, ...saved };
+  }
+}
+
 export function getSharedVariables(): Record<string, string> {
   return { ...sharedVariables };
 }
 
 export function setSharedVariables(vars: Record<string, string>): void {
   sharedVariables = { ...sharedVariables, ...vars };
+  if (workspaceStateStore) {
+    // Persist non-empty variables safely in workspace state
+    void workspaceStateStore.update(VARIABLES_STORAGE_KEY, sharedVariables);
+  }
 }
 
 /**

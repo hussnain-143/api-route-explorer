@@ -53,7 +53,7 @@ export default function HomePage() {
           {/* Supported Frameworks Ticker */}
           <div className="pt-6 flex flex-wrap items-center justify-center gap-2 text-xs text-[var(--muted)]">
             <span className="mr-2 font-medium text-[var(--foreground)]">Verified Support:</span>
-            {["Express", "Next.js App Router", "Next.js Pages Router", "Fastify", "NestJS", "OpenAPI 3.0.3"].map(
+            {["Express", "Next.js App Router", "Next.js Pages Router", "Fastify", "NestJS", "Hono / Koa", "OpenAPI 3.0.3"].map(
               (fw) => (
                 <span
                   key={fw}
@@ -73,7 +73,7 @@ export default function HomePage() {
           {/* Micro-Proof Metrics */}
           <div className="pt-8 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl mx-auto text-left">
             <div className="p-4 rounded-xl border border-[var(--surface-border)] bg-[var(--surface)]">
-              <div className="text-xl sm:text-2xl font-bold text-emerald-400 font-mono">250+</div>
+              <div className="text-xl sm:text-2xl font-bold text-emerald-400 font-mono">299+</div>
               <div className="text-xs text-[var(--muted)] mt-1">Automated tests passed</div>
             </div>
             <div className="p-4 rounded-xl border border-[var(--surface-border)] bg-[var(--surface)]">

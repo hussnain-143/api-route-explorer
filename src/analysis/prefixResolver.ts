@@ -423,15 +423,17 @@ function splitTopLevelArgs(argsText: string): string[] {
 }
 
 /**
- * Extracts router mount calls from source code: caller.use(prefix, ...middlewares, router)
+ * Extracts router mount calls from source code:
+ * - Express / Koa: caller.use(prefix, ...middlewares, router) or caller.use(prefix, router.routes())
+ * - Hono: caller.route(prefix, subRouter)
  */
 export function extractMounts(source: string, filePath: string): MountEntry[] {
-  if (!source.includes('.use')) {
+  if (!source.includes('.use') && !source.includes('.route')) {
     return [];
   }
   const mounts: MountEntry[] = [];
   const clean = maskComments(source);
-  const USE_REGEX = /\b([a-zA-Z0-9_$]+)\s*\.\s*use\s*\(/g;
+  const USE_REGEX = /\b([a-zA-Z0-9_$]+)\s*\.\s*(use|route)\s*\(/g;
 
   let match: RegExpExecArray | null = USE_REGEX.exec(clean);
   while (match !== null) {
@@ -471,8 +473,8 @@ export function extractMounts(source: string, filePath: string): MountEntry[] {
         continue;
       }
 
-      // Check simple identifier: e.g. v1Router, adminRouter, complaintRouter
-      const idMatch = arg.match(/^([a-zA-Z0-9_$]+)$/);
+      // Check simple identifier or Koa .routes() call: e.g. v1Router, adminRouter, userRouter.routes()
+      const idMatch = arg.match(/^([a-zA-Z0-9_$]+)(?:\.routes\(\s*\))?$/);
       if (idMatch) {
         const id = idMatch[1];
         if (id !== callerVar && !NON_ROUTER_IDENTIFIERS.has(id)) {
@@ -545,8 +547,8 @@ function extractFileRouterDetails(source: string): FileRouterDetails {
     bm = NAMED_EXPORT_BLOCK.exec(clean);
   }
 
-  // Detect routers declared in this file: const x = Router(); or const x = express.Router();
-  const ROUTER_DECL = /(?:const|let|var)\s+([a-zA-Z0-9_$]+)\s*=\s*(?:Router|express\.Router)\s*\(/g;
+  // Detect routers declared in this file: const x = Router(); express.Router(); new Hono(); new Router();
+  const ROUTER_DECL = /(?:const|let|var)\s+([a-zA-Z0-9_$]+)\s*=\s*(?:new\s+)?(?:Router|express\.Router|Hono|KoaRouter)\s*(?:<[^>]*>)?\s*\(/g;
   let rm: RegExpExecArray | null = ROUTER_DECL.exec(clean);
   while (rm !== null) {
     declaredRouters.add(rm[1]);

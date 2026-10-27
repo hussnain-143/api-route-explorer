@@ -1,6 +1,28 @@
 # Changelog
  
-All notable changes to the "api-route-explorer" extension will be documented in this file.
+All notable changes to the "api-routes-explorer" extension will be documented in this file.
+
+## [1.6.0] - 2026-10-27
+
+### Added & Enhanced (Inline CodeLens, OpenAPI Schema Intelligence, Hono/Koa & Performance)
+- **Inline Editor CodeLens Actions (`RouteCodeLensProvider`)**:
+  - Displays interactive `$(send) Test <METHOD> <path>`, `$(pulse) Analyze`, and `$(file-code) OpenAPI` CodeLens actions directly above route declarations in JavaScript and TypeScript files.
+  - Added `apiRouteExplorer.codeLens.enabled` configuration setting (enabled by default).
+- **Richer OpenAPI 3.0.3 Query & RequestBody Schema Generation**:
+  - Automatically populates OpenAPI `query` parameters and `requestBody` `properties`/`required` schemas from route handlers and Zod/Joi/destructured body schemas.
+  - Marks sensitive body properties with `format: "password"` in generated OpenAPI specifications.
+- **Hono & Koa Router Mount Resolution**:
+  - Added static cross-file mount resolution for Hono (`app.route('/prefix', subRouter)`) and Koa Router (`router.use('/prefix', subRouter.routes())`).
+- **HTTP Client Persistence, Multi-Value Query Params & URL Hardening**:
+  - Unified `sharedVariables` state between the Webview panel and provider with automatic workspace-level persistence (`workspaceState`).
+  - Wired `apiRouteExplorer.httpClient.timeout` setting directly into request execution.
+  - Preserved path parameter values that match existing segment names (e.g., `/posts/{slug}` with `slug="posts"` resolves to `/posts/posts`).
+  - Added support for repeated/multi-value query parameters (`?tag=backend&tag=typescript`).
+- **Concurrent Batch Scanner & Memory Optimization**:
+  - Upgraded workspace scanner to read and parse files in concurrent batches (`SCAN_BATCH_SIZE = 24`) while automatically skipping `.test.*`, `.spec.*`, `__tests__`, and `.turbo` directories.
+  - Reduced extension memory footprint via selective `fileSources` retention (`isRelevantSourceForAnalysis`).
+  - Synchronized badge counts, descriptions, and active-editor cursor route tracking across both the Activity Bar view and Explorer sidebar view.
+  - Expanded automated test suite to **299 passing tests** across 19 suites.
 
 ## [1.5.4] - 2026-10-11
 

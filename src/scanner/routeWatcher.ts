@@ -8,10 +8,12 @@ const IGNORED_PATH_SEGMENTS = [
   '/node_modules/',
   '/.git/',
   '/.next/',
+  '/.turbo/',
   '/dist/',
   '/build/',
   '/coverage/',
   '/out/',
+  '/__tests__/',
 ];
 
 /**
@@ -21,6 +23,9 @@ const IGNORED_PATH_SEGMENTS = [
 export function isIgnoredFile(uri: vscode.Uri): boolean {
   const normalizedPath = uri.fsPath.replace(/\\/g, '/');
   if (IGNORED_PATH_SEGMENTS.some((segment) => normalizedPath.includes(segment))) {
+    return true;
+  }
+  if (/\.(?:test|spec)\.[jt]sx?$/i.test(normalizedPath)) {
     return true;
   }
 

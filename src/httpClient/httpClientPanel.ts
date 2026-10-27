@@ -13,6 +13,10 @@ import {
   HttpClientInitialState,
   HttpRequestConfig,
 } from './httpClientTypes';
+import {
+  getSharedVariables,
+  setSharedVariables,
+} from './httpClientProvider';
 
 /**
  * Manages the HTTP Client Webview panel lifecycle, HTML generation,
@@ -21,10 +25,12 @@ import {
 export class HttpClientPanel {
   public static currentPanel: HttpClientPanel | undefined;
   public static readonly viewType = 'apiRouteExplorer.httpClientPanel';
-  public static sharedVariables: Record<string, string> = {
-    baseUrl: 'http://localhost:3000',
-    token: '',
-  };
+  public static get sharedVariables(): Record<string, string> {
+    return getSharedVariables();
+  }
+  public static set sharedVariables(vars: Record<string, string>) {
+    setSharedVariables(vars);
+  }
 
   private readonly _panel: vscode.WebviewPanel;
   private readonly _extensionUri: vscode.Uri;
@@ -44,9 +50,9 @@ export class HttpClientPanel {
       : vscode.ViewColumn.One;
 
     if (initialState.baseUrl) {
-      HttpClientPanel.sharedVariables.baseUrl = initialState.baseUrl;
+      setSharedVariables({ baseUrl: initialState.baseUrl });
     }
-    initialState.variables = { ...HttpClientPanel.sharedVariables };
+    initialState.variables = getSharedVariables();
 
     // If an existing panel is active, reveal it and update state
     if (HttpClientPanel.currentPanel) {
@@ -109,9 +115,9 @@ export class HttpClientPanel {
    */
   public updateRoute(state: HttpClientInitialState): void {
     if (state.baseUrl) {
-      HttpClientPanel.sharedVariables.baseUrl = state.baseUrl;
+      setSharedVariables({ baseUrl: state.baseUrl });
     }
-    state.variables = { ...HttpClientPanel.sharedVariables };
+    state.variables = getSharedVariables();
     this._initialState = state;
     this._panel.title = `HTTP: ${state.method} ${state.openApiPath}`;
     this._panel.webview.postMessage({
@@ -132,7 +138,7 @@ export class HttpClientPanel {
 
     switch (message.type) {
       case 'ready': {
-        this._initialState.variables = { ...HttpClientPanel.sharedVariables };
+        this._initialState.variables = getSharedVariables();
         this._panel.webview.postMessage({
           type: 'init',
           payload: this._initialState,
@@ -142,13 +148,10 @@ export class HttpClientPanel {
 
       case 'saveVariables': {
         if (message.payload && message.payload.variables) {
-          HttpClientPanel.sharedVariables = {
-            ...HttpClientPanel.sharedVariables,
-            ...message.payload.variables,
-          };
+          setSharedVariables(message.payload.variables);
           this._panel.webview.postMessage({
             type: 'variablesUpdated',
-            payload: { variables: HttpClientPanel.sharedVariables },
+            payload: { variables: getSharedVariables() },
           });
         }
         break;
@@ -221,7 +224,15 @@ export class HttpClientPanel {
   private async executeRequest(config: HttpRequestConfig): Promise<void> {
     this._panel.webview.postMessage({ type: 'requestStart' });
 
-    const result = await this._requestService.execute(config);
+    const configuredTimeout = vscode.workspace
+      .getConfiguration('apiRouteExplorer')
+      .get<number>('httpClient.timeout', 10000);
+    const effectiveConfig: HttpRequestConfig = {
+      ...config,
+      timeoutMs: config.timeoutMs && config.timeoutMs > 0 ? config.timeoutMs : configuredTimeout,
+    };
+
+    const result = await this._requestService.execute(effectiveConfig);
 
     if (result.ok) {
       this._panel.webview.postMessage({
