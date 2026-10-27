@@ -53,9 +53,24 @@ export default function RouteDiscoveryPage() {
       </section>
 
       <section className="space-y-4">
+        <h2 className="text-xl font-bold text-[var(--foreground)]">Inline Editor CodeLens</h2>
+        <p className="text-xs sm:text-sm text-[var(--muted)] leading-relaxed">
+          Every discovered route handler in your open JavaScript or TypeScript files displays interactive inline CodeLens actions directly above the declaration line:
+        </p>
+        <ul className="space-y-2 text-xs sm:text-sm text-[var(--foreground)]">
+          <li>• <strong>$(beaker) Test GET /api/v1/users:</strong> Launches the Native HTTP Client pre-populated with the route&apos;s method, path parameters, and extracted body schema.</li>
+          <li>• <strong>$(pulse) Analyze:</strong> Opens the Route Analysis &amp; Health report for that specific endpoint.</li>
+          <li>• <strong>$(file-code) OpenAPI:</strong> Previews the OpenAPI 3.0.3 operation specification.</li>
+        </ul>
+        <p className="text-xs sm:text-sm text-[var(--muted)] leading-relaxed">
+          You can toggle inline CodeLens badges at any time via the <code>apiRouteExplorer.codeLens.enabled</code> workspace setting.
+        </p>
+      </section>
+
+      <section className="space-y-4">
         <h2 className="text-xl font-bold text-[var(--foreground)]">Safe Exclusion Patterns</h2>
         <p className="text-xs sm:text-sm text-[var(--muted)] leading-relaxed">
-          To maintain sub-second scanning performance across large repositories, API Routes Explorer excludes build artifacts and non-route directories by default:
+          To maintain sub-second concurrent batch scanning across large repositories, API Routes Explorer excludes build artifacts, test suites, and non-route directories by default:
         </p>
         <CodeBlock
           code={`node_modules/
@@ -64,7 +79,10 @@ dist/
 build/
 out/
 .next/
-coverage/`}
+.turbo/
+coverage/
+__tests__/
+*.test.* / *.spec.*`}
           language="text"
           title="Default Exclude Segments"
         />

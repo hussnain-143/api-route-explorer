@@ -43,6 +43,7 @@ export default function HttpClientDocsPage() {
           You can launch the HTTP Client Webview panel through multiple workflows:
         </p>
         <ul className="space-y-2 text-xs sm:text-sm text-[var(--foreground)]">
+          <li>• <strong>Inline Editor CodeLens:</strong> Click <code>$(beaker) Test METHOD /path</code> directly above any route handler in your code editor.</li>
           <li>• <strong>Activity Bar Route Click:</strong> Click the <strong>Test</strong> (⚡) icon next to any route item in the sidebar tree.</li>
           <li>• <strong>Right-Click Context Menu:</strong> Right-click a route in the tree and choose <strong>Test in HTTP Client</strong>.</li>
           <li>• <strong>Command Palette:</strong> Press <kbd className="px-1.5 py-0.5 rounded bg-[var(--surface-elevated)] border border-[var(--surface-border)] text-xs">Cmd+Shift+P</kbd> and run <code>API Routes Explorer: Open HTTP Client</code>.</li>
@@ -50,15 +51,22 @@ export default function HttpClientDocsPage() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-xl font-bold text-[var(--foreground)]">Dynamic Path Parameters</h2>
+        <h2 className="text-xl font-bold text-[var(--foreground)]">Dynamic Path, Query &amp; Body Auto-Detection</h2>
         <p className="text-xs sm:text-sm text-[var(--muted)] leading-relaxed">
-          When opening parameterized routes like <code>/api/v1/users/:id</code> or <code>/api/v1/posts/[slug]</code>, API Routes Explorer detects every parameter token and populates the <strong>Params</strong> tab:
+          When opening a route, API Routes Explorer statically inspects the route path and handler AST to pre-populate parameters automatically:
         </p>
         <ul className="space-y-1.5 text-xs sm:text-sm text-[var(--muted)]">
-          <li>• Parameter keys are pre-filled and marked as required based on the route definition.</li>
-          <li>• Entering a value dynamically replaces the parameter in the resolved URL preview in real time.</li>
-          <li>• Supports Express style (<code>:id</code>), Next.js style (<code>[id]</code>, <code>[...slug]</code>), and OpenAPI style (<code>&#123;id&#125;</code>).</li>
+          <li>• <strong>Path Parameters:</strong> Supports Express/Hono/Koa (<code>:id</code>), Next.js (<code>[id]</code>, <code>[...slug]</code>), and OpenAPI (<code>&#123;id&#125;</code>) tokens with real-time URL preview substitution.</li>
+          <li>• <strong>Body &amp; Query Schema Extraction:</strong> Automatically detects field names from <code>req.body</code> destructuring, Zod (<code>z.object(&#123;...&#125;)</code>), Joi (<code>Joi.object(&#123;...&#125;)</code>), and Fastify JSON schemas.</li>
+          <li>• <strong>Sensitive Field Masking:</strong> Automatically masks sensitive keys (such as <code>password</code>, <code>token</code>, <code>secret</code>, and <code>apiKey</code>) with <code>••••••••</code> in the UI while transmitting actual values on execution.</li>
         </ul>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-xl font-bold text-[var(--foreground)]">Environment Variables (<code>&#123;&#123;variable&#125;&#125;</code>)</h2>
+        <p className="text-xs sm:text-sm text-[var(--muted)] leading-relaxed">
+          Define reusable Postman-style variables such as <code>&#123;&#123;baseUrl&#125;&#125;</code>, <code>&#123;&#123;token&#125;&#125;</code>, or <code>&#123;&#123;apiKey&#125;&#125;</code> in the <strong>Variables</strong> tab. Variables are persisted in your VS Code workspace state and automatically interpolated across URLs, query parameters, headers, and request bodies.
+        </p>
       </section>
 
       <section className="space-y-4">

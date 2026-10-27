@@ -20,6 +20,9 @@ export const metadata: Metadata = {
     "Next.js API routes",
     "Fastify routes",
     "NestJS routes",
+    "Hono routes",
+    "Koa routes",
+    "VS Code CodeLens API",
     "API route discovery",
     "OpenAPI VS Code",
     "API documentation VS Code",
@@ -98,6 +101,7 @@ export default function RootLayout({
         softwareVersion: siteConfig.version,
         description: siteConfig.longDescription,
         url: siteConfig.url,
+        downloadUrl: siteConfig.links.marketplace,
         offers: {
           "@type": "Offer",
           price: "0",

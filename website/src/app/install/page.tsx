@@ -45,14 +45,22 @@ export default function InstallPage() {
               Install directly from the official Microsoft Visual Studio Code Extension Marketplace with automatic background updates.
             </p>
           </div>
-          <a
-            href={siteConfig.links.marketplace}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-semibold text-xs text-center transition-all shadow-md shadow-emerald-500/20"
-          >
-            Install from VS Code Marketplace ↗
-          </a>
+          <div className="space-y-2.5">
+            <a
+              href={siteConfig.links.marketplace}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-semibold text-xs text-center transition-all shadow-md shadow-emerald-500/20"
+            >
+              Install from VS Code Marketplace ↗
+            </a>
+            <a
+              href="vscode:extension/hussnain-143.api-routes-explorer"
+              className="block w-full py-2.5 px-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-semibold text-xs text-center transition-all"
+            >
+              Open Directly in VS Code ⚡
+            </a>
+          </div>
         </div>
 
         {/* Option 2: Quick Open in VS Code */}
@@ -116,7 +124,7 @@ export default function InstallPage() {
           </li>
           <li className="flex items-start gap-2">
             <span className="text-emerald-400 font-bold">•</span>
-            <span><strong>Project Type:</strong> Any project using Express, Next.js, Fastify, or NestJS.</span>
+            <span><strong>Project Type:</strong> Any project using Express, Next.js, Fastify, NestJS, Hono, or Koa Router.</span>
           </li>
         </ul>
       </section>
