@@ -5,7 +5,11 @@ import {
   DuplicateRouteGroup,
   RoutePathGroup,
 } from './duplicateDetector';
-import { resolveRouterPrefixes } from './prefixResolver';
+import {
+  resolveRouterPrefixes,
+  getLastDiscoveryDiagnostics,
+  RouteDiscoveryDiagnostics,
+} from './prefixResolver';
 import {
   analyzeRouteHandlers,
   MissingHandlerWarning,
@@ -36,6 +40,8 @@ export interface RouteAnalysisResult {
   relationships: Map<string, RouteRelationship>;
   middlewareGroups: MiddlewareUsageGroup[];
   statistics: RouteStatistics;
+  discoveryDiagnostics?: RouteDiscoveryDiagnostics;
+  fileSources?: Map<string, string> | Record<string, string>;
 }
 
 /**
@@ -98,5 +104,7 @@ export function analyzeWorkspaceRoutes(
     relationships,
     middlewareGroups,
     statistics,
+    discoveryDiagnostics: getLastDiscoveryDiagnostics(),
+    fileSources,
   };
 }

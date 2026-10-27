@@ -11,14 +11,44 @@ export const BASE_EXCLUDE_SEGMENTS = [
   'node_modules',
   '.git',
   '.next',
+  '.turbo',
   'dist',
   'build',
   'coverage',
   'out',
+  '__tests__',
 ];
 
 export const SCAN_EXCLUDE_PATTERN =
-  '{**/node_modules/**,**/.git/**,**/.next/**,**/dist/**,**/build/**,**/coverage/**,**/out/**}';
+  '{**/node_modules/**,**/.git/**,**/.next/**,**/.turbo/**,**/dist/**,**/build/**,**/coverage/**,**/out/**,**/__tests__/**,**/*.test.*,**/*.spec.*}';
+
+const SCAN_BATCH_SIZE = 24;
+
+/**
+ * Determines whether a file's source text should be retained in memory for cross-file
+ * router prefix resolution, handler inspection, or schema/DTO parameter extraction.
+ */
+export function isRelevantSourceForAnalysis(source: string, fileRoutes: ApiRoute[]): boolean {
+  if (fileRoutes.length > 0) {
+    return true;
+  }
+  return (
+    source.includes('.use(') ||
+    source.includes('.register(') ||
+    source.includes('.route(') ||
+    source.includes('@Module(') ||
+    source.includes('@Controller(') ||
+    source.includes('Router(') ||
+    source.includes('z.object(') ||
+    source.includes('Joi.object(') ||
+    source.includes('req.body') ||
+    source.includes('req.query') ||
+    source.includes('req.params') ||
+    source.includes('request.body') ||
+    source.includes('export ') ||
+    source.includes('module.exports')
+  );
+}
 
 /**
  * Computes the active exclusion glob pattern by merging built-in safe defaults
@@ -38,6 +68,7 @@ export function getScanExcludePattern(): string {
     }
 
     const globList = Array.from(allSegments).map((s) => `**/${s}/**`);
+    globList.push('**/*.test.*', '**/*.spec.*');
     return `{${globList.join(',')}}`;
   } catch {
     return SCAN_EXCLUDE_PATTERN;
@@ -93,8 +124,12 @@ export function scanSingleFile(
   routeIndex: RouteIndex,
   fileSources: Map<string, string>
 ): ApiRoute[] {
-  fileSources.set(filePath, source);
   const fileRoutes = parseRoutesForFile(filePath, source);
+  if (isRelevantSourceForAnalysis(source, fileRoutes)) {
+    fileSources.set(filePath, source);
+  } else {
+    fileSources.delete(filePath);
+  }
   routeIndex.setFileRoutes(filePath, fileRoutes);
   return fileRoutes;
 }
@@ -177,34 +212,47 @@ export async function scanWorkspaceDetailed(
     const totalFiles = fileUris.length;
     const textDecoder = new TextDecoder('utf-8');
 
-    for (let i = 0; i < totalFiles; i++) {
+    for (let batchStart = 0; batchStart < totalFiles; batchStart += SCAN_BATCH_SIZE) {
       if (token?.isCancellationRequested) {
         return { routes: [], fileSources, routeIndex, cancelled: true };
       }
 
-      const uri = fileUris[i];
-      if (progress && (i % 25 === 0 || i === totalFiles - 1)) {
-        progress.report({
-          message: `${i + 1} / ${totalFiles} files`,
-          increment: (1 / totalFiles) * 100,
-        });
+      const batchUris = fileUris.slice(batchStart, Math.min(batchStart + SCAN_BATCH_SIZE, totalFiles));
+      const batchResults = await Promise.all(
+        batchUris.map(async (uri) => {
+          try {
+            const fileBytes = await vscode.workspace.fs.readFile(uri);
+            const source = textDecoder.decode(fileBytes);
+            const fileRoutes = parseRoutesForFile(uri.fsPath, source);
+            return { uri, source, fileRoutes, ok: true as const };
+          } catch (fileError) {
+            console.warn(`[API Routes Explorer] Could not process file: ${uri.fsPath}`, fileError);
+            return { uri, source: '', fileRoutes: [] as ApiRoute[], ok: false as const };
+          }
+        })
+      );
+
+      for (const item of batchResults) {
+        if (!item.ok) {
+          continue;
+        }
+        if (isRelevantSourceForAnalysis(item.source, item.fileRoutes)) {
+          fileSources.set(item.uri.fsPath, item.source);
+        }
+        if (item.fileRoutes.length > 0) {
+          routes.push(...item.fileRoutes);
+          routeIndex.setFileRoutes(item.uri.fsPath, item.fileRoutes);
+        } else {
+          routeIndex.setFileRoutes(item.uri.fsPath, []);
+        }
       }
 
-      try {
-        const fileBytes = await vscode.workspace.fs.readFile(uri);
-        const source = textDecoder.decode(fileBytes);
-        fileSources.set(uri.fsPath, source);
-
-        const fileRoutes = parseRoutesForFile(uri.fsPath, source);
-        if (fileRoutes.length > 0) {
-          routes.push(...fileRoutes);
-          routeIndex.setFileRoutes(uri.fsPath, fileRoutes);
-        } else {
-          routeIndex.setFileRoutes(uri.fsPath, []);
-        }
-      } catch (fileError) {
-        // Safe error handling: log diagnostic information and proceed without crashing
-        console.warn(`[API Routes Explorer] Could not process file: ${uri.fsPath}`, fileError);
+      if (progress) {
+        const processedCount = Math.min(batchStart + batchUris.length, totalFiles);
+        progress.report({
+          message: `${processedCount} / ${totalFiles} files`,
+          increment: (batchUris.length / totalFiles) * 100,
+        });
       }
     }
   } catch (error) {

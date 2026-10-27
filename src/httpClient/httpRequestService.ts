@@ -81,6 +81,22 @@ export function validateAndResolveRequest(config: HttpRequestConfig): Validation
     };
   }
 
+  // Collapse repeating prefix segments in the URL template BEFORE substituting path parameter values
+  // so that parameter values matching a path segment (e.g. /posts/{slug} with slug="posts") are preserved.
+  const schemeMatch = urlString.match(/^(https?:\/\/[^/?#]+)(\/[^?#]*)?([?#].*)?$/);
+  if (schemeMatch) {
+    const originPart = schemeMatch[1];
+    const pathPart = schemeMatch[2] || '/';
+    const queryAndHashPart = schemeMatch[3] || '';
+    const originalEndedWithSlash = pathPart.length > 1 && pathPart.endsWith('/');
+    const templateSegments = pathPart.split('/').filter(Boolean);
+    const collapsedTemplateSegments = collapseRepeatingSegments(templateSegments);
+    const trailing = originalEndedWithSlash && collapsedTemplateSegments.length > 0 ? '/' : '';
+    const normalizedTemplatePath =
+      (collapsedTemplateSegments.length > 0 ? '/' + collapsedTemplateSegments.join('/') : '/') + trailing;
+    urlString = `${originPart}${normalizedTemplatePath}${queryAndHashPart}`;
+  }
+
   // 2. Path parameter substitution and validation ({param} and :param)
   const placeholderRegex = /\{([^}]+)\}/g;
   const colonParamRegex = /(?<![a-zA-Z0-9_]):([a-zA-Z_][a-zA-Z0-9_]*)/g;
@@ -177,20 +193,25 @@ export function validateAndResolveRequest(config: HttpRequestConfig): Validation
     };
   }
 
-  // Normalize path segments to collapse any repeating blocks (e.g. /api/v1/api/v1)
-  const segments = parsedUrl.pathname.split('/').filter(Boolean);
-  const collapsed = collapseRepeatingSegments(segments);
+  // Clean up any double slashes resulting from optional empty path parameters
   const originalEndedWithSlash = config.url.split('?')[0].endsWith('/');
-  const trailingSlash = originalEndedWithSlash && collapsed.length > 0 ? '/' : '';
-  parsedUrl.pathname = (collapsed.length > 0 ? '/' + collapsed.join('/') : '/') + trailingSlash;
+  const cleanSegments = parsedUrl.pathname.split('/').filter(Boolean);
+  const trailingSlash = originalEndedWithSlash && cleanSegments.length > 0 ? '/' : '';
+  parsedUrl.pathname = (cleanSegments.length > 0 ? '/' + cleanSegments.join('/') : '/') + trailingSlash;
 
-  // 4. Query parameter processing
+  // 4. Query parameter processing (supports repeated/array query parameters)
   if (config.queryParams && Array.isArray(config.queryParams)) {
+    const seenKeys = new Set<string>();
     for (const qp of config.queryParams) {
       if (qp.enabled && qp.key && qp.key.trim() !== '') {
         const k = interpolateVariables(qp.key.trim(), config.variables);
         const v = interpolateVariables(qp.value, config.variables);
-        parsedUrl.searchParams.set(k, v);
+        if (!seenKeys.has(k)) {
+          parsedUrl.searchParams.set(k, v);
+          seenKeys.add(k);
+        } else {
+          parsedUrl.searchParams.append(k, v);
+        }
       }
     }
   }

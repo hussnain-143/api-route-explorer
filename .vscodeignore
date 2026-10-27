@@ -20,5 +20,8 @@ scratch/**
 site/**
 website/**
 .git/**
+.DS_Store
+**/.DS_Store
+
 
 

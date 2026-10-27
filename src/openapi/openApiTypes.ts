@@ -152,6 +152,7 @@ export interface OpenApiGenerationOptions {
   includeSourceMetadata?: boolean;
   expandWildcardMethods?: boolean;
   workspaceRoot?: string;
+  fileSources?: Map<string, string> | Record<string, string>;
 }
 
 /**

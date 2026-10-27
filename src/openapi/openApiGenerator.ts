@@ -6,8 +6,10 @@ import {
   OpenApiGenerationOptions,
   OpenApiGenerationResult,
   OpenApiOperation,
+  OpenApiParameter,
   OpenApiPathItem,
   OpenApiRouteDeclarationMetadata,
+  OpenApiSchema,
   OpenApiSupportedMethod,
   OpenApiTag,
 } from './openApiTypes';
@@ -18,6 +20,8 @@ import {
   generateOperationId,
 } from './openApiPathBuilder';
 import { getRouteKey } from '../analysis/routeRelationshipAnalyzer';
+import { extractRouteParameters } from '../analysis/parameterExtractor';
+import { ApiParameter } from '../models/parameter';
 
 const SUPPORTED_HTTP_METHODS: OpenApiSupportedMethod[] = [
   'get',
@@ -247,6 +251,29 @@ export function generateOpenApiDocument(
   };
 }
 
+function mapParamTypeToOpenApiSchema(param: ApiParameter): OpenApiSchema {
+  const rawType = typeof param.type === 'string' ? param.type.toLowerCase() : 'string';
+  if (rawType === 'number' || rawType === 'float' || rawType === 'double') {
+    return { type: 'number' };
+  }
+  if (rawType === 'integer' || rawType === 'int') {
+    return { type: 'integer' };
+  }
+  if (rawType === 'boolean' || rawType === 'bool') {
+    return { type: 'boolean' };
+  }
+  if (rawType === 'array') {
+    return { type: 'array', items: { type: 'string' } };
+  }
+  if (rawType === 'object') {
+    return { type: 'object' };
+  }
+  if (param.isSensitive) {
+    return { type: 'string', format: 'password' };
+  }
+  return { type: 'string' };
+}
+
 /**
  * Builds a single OpenAPI operation object.
  */
@@ -267,11 +294,44 @@ function buildOperation(
     ? `${method.toUpperCase()} (ANY wildcard handler)`
     : `${method.toUpperCase()} ${openApiPath}`;
 
+  // Extract query, header, and body parameters when source code or route parameters are available
+  const effectiveSources = options.fileSources ?? analysis?.fileSources;
+  const hasFileSource =
+    effectiveSources &&
+    (effectiveSources instanceof Map
+      ? effectiveSources.has(primaryRoute.filePath)
+      : Boolean((effectiveSources as Record<string, string>)[primaryRoute.filePath]));
+
+  const extractedParams: ApiParameter[] =
+    primaryRoute.parameters && primaryRoute.parameters.length > 0
+      ? primaryRoute.parameters
+      : hasFileSource
+      ? extractRouteParameters(primaryRoute, effectiveSources)
+      : [];
+
+  const allOperationParams: OpenApiParameter[] = [...pathParameters];
+  const seenParams = new Set<string>(pathParameters.map((p) => `path:${p.name.toLowerCase()}`));
+
+  for (const p of extractedParams) {
+    if (p.location === 'query') {
+      const key = `${p.location}:${p.name.toLowerCase()}`;
+      if (!seenParams.has(key)) {
+        seenParams.add(key);
+        allOperationParams.push({
+          name: p.name,
+          in: p.location,
+          required: Boolean(p.required),
+          schema: mapParamTypeToOpenApiSchema(p),
+        });
+      }
+    }
+  }
+
   const operation: OpenApiOperation = {
     operationId,
     summary: summaryPrefix,
     tags: [tag],
-    parameters: pathParameters.length > 0 ? pathParameters : undefined,
+    parameters: allOperationParams.length > 0 ? allOperationParams : undefined,
     responses: buildDefaultResponses(method),
   };
 
@@ -279,16 +339,41 @@ function buildOperation(
     operation.description = `Handled by wildcard route: ${primaryRoute.path}`;
   }
 
-  // Build minimal safe RequestBody for POST, PUT, PATCH
+  // Build RequestBody for POST, PUT, PATCH (enriched with extracted body parameter schemas when available)
   if (method === 'post' || method === 'put' || method === 'patch') {
+    const bodyParams = extractedParams.filter((p) => p.location === 'body');
+    const bodySchema: OpenApiSchema = {
+      type: 'object',
+    };
+
+    if (bodyParams.length > 0) {
+      const properties: Record<string, OpenApiSchema> = {};
+      const requiredFields: string[] = [];
+
+      for (const bp of bodyParams) {
+        if (!bp.name || bp.name.includes('.')) {
+          continue;
+        }
+        properties[bp.name] = mapParamTypeToOpenApiSchema(bp);
+        if (bp.required) {
+          requiredFields.push(bp.name);
+        }
+      }
+
+      if (Object.keys(properties).length > 0) {
+        bodySchema.properties = properties;
+      }
+      if (requiredFields.length > 0) {
+        bodySchema.required = requiredFields;
+      }
+    }
+
     operation.requestBody = {
       description: 'Request payload',
-      required: false,
+      required: bodyParams.some((bp) => bp.required),
       content: {
         'application/json': {
-          schema: {
-            type: 'object',
-          },
+          schema: bodySchema,
         },
       },
     };

@@ -2,7 +2,7 @@
   "name": "api-routes-explorer",
   "displayName": "API Routes Explorer",
   "description": "Discover, analyze, search, and navigate API routes directly inside VS Code.",
-  "version": "1.5.4",
+  "version": "1.6.0",
   "publisher": "hussnain-143",
   "publisherDisplayName": "Hussnain Ahmed",
   "author": {
@@ -26,6 +26,11 @@
     "nextjs",
     "fastify",
     "nestjs",
+    "hono",
+    "koa",
+    "openapi",
+    "http-client",
+    "codelens",
     "rest",
     "endpoints",
     "navigation"
@@ -97,6 +102,11 @@
           "type": "number",
           "default": 10000,
           "description": "Timeout in milliseconds for HTTP Client requests (default: 10000ms / 10s)."
+        },
+        "apiRouteExplorer.codeLens.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show inline CodeLens actions (Test API, Analyze, OpenAPI) above discovered API routes in the editor."
         }
       }
     },
@@ -422,7 +432,7 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
-    "test:unit": "mocha --ui tdd out/test/routeParser.test.js",
+    "test:unit": "mocha --ui tdd --require ./out/test/vscodeMock.js \"out/test/*.test.js\"",
     "test": "vscode-test",
     "package": "npx @vscode/vsce package --no-dependencies"
   },

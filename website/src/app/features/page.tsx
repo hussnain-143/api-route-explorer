@@ -62,9 +62,9 @@ export default function FeaturesPage() {
             </p>
           </div>
           <div className="p-5 rounded-xl border border-[var(--surface-border)] bg-[var(--surface-elevated)] space-y-2">
-            <h3 className="font-semibold text-sm text-[var(--foreground)]">Direct Source Jumping</h3>
+            <h3 className="font-semibold text-sm text-[var(--foreground)]">Inline Editor CodeLens</h3>
             <p className="text-[var(--muted)] leading-relaxed">
-              Clicking any route in the Activity Bar opens the exact source file and highlights the line where the endpoint handler is defined.
+              Click <code>Test</code>, <code>Analyze</code>, or <code>OpenAPI</code> directly above route declarations in your code editor, or jump from the Activity Bar tree to the exact line.
             </p>
           </div>
         </div>
@@ -171,9 +171,9 @@ router.get('/users/me', getCurrentUser);`}
               Export specs for your entire workspace or copy a single operation snippet to share with frontend developers and API gateways.
             </p>
             <ul className="space-y-2 text-[var(--foreground)]">
-              <li>• Generates standardized paths, HTTP operations, and parameter objects</li>
-              <li>• Exports directly to <code>openapi.json</code> or <code>openapi.yaml</code></li>
-              <li>• Works offline without running database connections or runtime servers</li>
+              <li>• Generates standardized paths, HTTP operations, query parameters, and requestBody schemas</li>
+              <li>• Automatically extracts Zod, Joi, and destructured body properties into OpenAPI 3.0.3 schemas</li>
+              <li>• Exports directly to <code>openapi.json</code> or <code>openapi.yaml</code> offline</li>
             </ul>
           </div>
           <CodeBlock

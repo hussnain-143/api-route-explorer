@@ -17,7 +17,7 @@ export const siteConfig = {
   longDescription:
     "API Routes Explorer is a developer-focused VS Code extension that automatically discovers, analyzes, tests, and documents backend API routes directly from your editor. Stop context switching between code, terminal windows, Postman, and Swagger docs.",
   url: "https://apirouteexplorer.dev",
-  version: "1.5.4",
+  version: "1.6.0",
   author: {
     name: "Hussnain Ahmed",
     url: "https://github.com/hussnain-143",
@@ -66,6 +66,12 @@ export const siteConfig = {
       tagline: "@Controller(), @Get(), @Post(), @Param()",
       desc: "Decorator-driven route mapping combining controller path prefixes and action decorators.",
       example: "@Controller('users')\n@Get(':id')\ngetUser(@Param('id') id: string) {}",
+    },
+    {
+      name: "Hono & Koa",
+      tagline: "app.route(), router.use(), subRouter.routes()",
+      desc: "Cross-file sub-router prefix mounting and route discovery for Hono and Koa Router backends.",
+      example: "app.route('/api/v1/books', bookRoutes);",
     },
   ],
   navItems: [

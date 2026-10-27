@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "API Routes Explorer Changelog — Version Timeline",
-    description: "Release notes for v1.5.0 and previous versions of API Routes Explorer.",
+    description: "Release notes for v1.6.0 and previous versions of API Routes Explorer.",
     url: `${siteConfig.url}/changelog`,
   },
 };
@@ -18,10 +18,23 @@ export const metadata: Metadata = {
 export default function ChangelogPage() {
   const releases = [
     {
+      version: "v1.6.0",
+      date: "October 2026",
+      title: "Inline Editor CodeLens, OpenAPI Schema Intelligence & Hono/Koa Support",
+      badge: "Latest Release",
+      highlights: [
+        "Inline Editor CodeLens actions (Test API, Analyze, OpenAPI) rendered directly above route declarations in JS/TS files.",
+        "Richer OpenAPI 3.0.3 specification compiler extracting query parameters and Zod/Joi/destructured requestBody schemas automatically.",
+        "Static cross-file router mount resolution for Hono (app.route) and Koa Router (router.use with .routes()).",
+        "Persistent HTTP Client workspace variables ({{baseUrl}}, {{token}}), multi-value query parameters, and concurrent batched workspace scanning.",
+        "299 automated unit tests passing across 19 comprehensive test suites.",
+      ],
+    },
+    {
       version: "v1.5.4",
       date: "October 2026",
       title: "Proper Dynamic Parameter Auto-Naming & Validation Engine",
-      badge: "Latest Release",
+      badge: undefined,
       highlights: [
         "Fully dynamic parameter auto-naming for request body payloads across Zod, Joi, Fastify, and destructured handlers.",
         "Automatic key insertion without artificial mock values, prefilled fake text, or 'sample_' prefixes.",
